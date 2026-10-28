@@ -7804,28 +7804,54 @@ function renderHome(){
   </div>`;
 }
 
+/* 聊天列表排序：谁最近有动静谁在上面。不按成员顺序固定，避免看位置就猜到是谁。 */
+function chatSortKey(id){
+  const log=S.chatLog[id]||[];
+  if(!log.length) return null;
+  const last=log[log.length-1];
+  const m=String(last.t||"").match(/^(\d{1,2}):(\d{2})$/);
+  const nowMin=(S.hour||0)*60+(S.minute||0);
+  let mins;
+  if(m){
+    mins=parseInt(m[1],10)*60+parseInt(m[2],10);
+    if(mins>nowMin+180) mins-=1440; // 明显晚于当前时间 → 是昨天留下的
+  }else{
+    mins=nowMin-1500;             // “三天前”这类残留记录沉到底
+  }
+  return {mins, n:log.length};
+}
 function renderChatList(){
   ensureSeedChats();
   const screen=document.getElementById("screen");
-  let html=`<h3 style="margin-bottom:8px">聊天</h3><p class="muted" style="margin-bottom:8px">${S.ownerId?"灰掉的还没说话。过了凌晨，他会在聊天里给你写一段很长的话。":"只有一个号码。别的，还没有出现。"}</p>`;
-  // 未知号码（开场匿名线；解锁男主后保留为灰色）
-  const ulog=S.chatLog.unknown||[];
-  if(ulog.length){
-    const last=ulog[ulog.length-1];
-    const uPrev=last?(last.type==="sys"?last.text:(last.text||"")):"";
-    const uUnread=!S.ownerId&&(S.unread.unknown||0);
-    html+=`<button class="chat-row" style="${S.ownerId?'opacity:.42':''}" onclick="openChat('unknown')">
-      <div class="avatar" style="background:#26262b"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:22px;color:#8a8a92">❓</div></div>
-      <div class="chat-meta">
-        <div class="top"><span class="name">未知号码${uUnread?`<span class="unread">${uUnread}</span>`:""}</span>
-        <span class="time">${last?last.t:""}</span></div>
-        <div class="prev">${esc(uPrev)}</div>
-      </div>
-    </button>`;
-  }
-  if(!S.ownerId){ screen.innerHTML=html; return; }
-  const open=new Set(chatUnlockedIds());
-  CHARS.forEach(c=>{
+  let html=`<h3 style="margin-bottom:8px">聊天</h3><p class="muted" style="margin-bottom:8px">${S.ownerId?"没说话的在下面。过了凌晨，他会在聊天里给你写一段很长的话。":"只有一个号码。别的，还没有出现。"}</p>`;
+  // 未知号码和所有成员一起排队：按最后一条消息的时间倒序，没消息的沉底
+  const rows=[];
+  if((S.chatLog.unknown||[]).length) rows.push({id:"unknown", key:chatSortKey("unknown")});
+  if(S.ownerId) CHARS.forEach(c=>rows.push({id:c.id, key:chatSortKey(c.id)}));
+  rows.sort((a,b)=>{
+    if(a.key && b.key) return (b.key.mins-a.key.mins) || (b.key.n-a.key.n);
+    if(a.key) return -1;
+    if(b.key) return 1;
+    return 0; // 都没消息：保持原顺序（稳定排序）
+  });
+  rows.forEach(r=>{
+    if(r.id==="unknown"){
+      const ulog=S.chatLog.unknown||[];
+      const last=ulog[ulog.length-1];
+      const uPrev=last?(last.type==="sys"?last.text:(last.text||"")):"";
+      const uUnread=!S.ownerId&&(S.unread.unknown||0);
+      html+=`<button class="chat-row" style="${S.ownerId?'opacity:.42':''}" onclick="openChat('unknown')">
+        <div class="avatar" style="background:#26262b"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:22px;color:#8a8a92">❓</div></div>
+        <div class="chat-meta">
+          <div class="top"><span class="name">未知号码${uUnread?`<span class="unread">${uUnread}</span>`:""}</span>
+          <span class="time">${last?last.t:""}</span></div>
+          <div class="prev">${esc(uPrev)}</div>
+        </div>
+      </button>`;
+      return;
+    }
+    const c=CHARS.find(x=>x.id===r.id);
+    if(!c) return;
     const log=S.chatLog[c.id]||[];
     if(!log.length){
       html+=`<div class="chat-row" style="opacity:.38"><div class="avatar" style="background:#333">${avatarHTML(c.id,44)}</div><div class="chat-meta"><div class="name">${c.name}</div><div class="prev">还没出现</div></div></div>`;

@@ -1,4 +1,4 @@
-const CACHE = "summer-park-v23";
+const CACHE = "summer-park-v24";
 const ASSETS = [
   "./index.html",
   "./manifest.webmanifest",

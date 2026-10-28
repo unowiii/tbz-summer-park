@@ -2648,6 +2648,10 @@ function layersContent(layer) {
     "（无头像）捡到的人，把状态栏上的字拿掉。那是你的名字。它不该出现在这里。",
     "（无头像）主人不会来认领。不是因为忙。是因为认领需要一张脸，而这一层没有。",
     `Hyunjae：语音十一秒。中间一个口型，像在数 ${name.length} 下。没有发出声音。数完，他笑了一下，又把笑收回去。`,
+    "残页 · 上一个捡到它的人：在。我在长椅这边。你不用过来。",
+    "残页 · 上一个捡到它的人：他让我去充电。我充了。回来的时候，记录里多了一句我没发过的「不用了」。",
+    "残页 · 上一个捡到它的人：已读。已读。已读。最后一条只有两个字：在吗。不是我发的。谁发的，我一直没敢问第二遍。",
+    "系统：残页没有署名。失物登记表上「已领回」三个字是后来补写的——笔迹和登记栏不一样。没人知道那部手机最后在谁手里。也没人知道，上一个捡到它的人去了哪里。",
     "系统：最底层没有头像，也没有号码。只有你进来之前就写好的空白。",
   ];
 }
@@ -3383,7 +3387,9 @@ function endingRevealBlock(kind) {
   else if (kind === "deep") verdict = good
     ? "好人没能拦住你。你看见了太多。他沉默了，像收工终于被允许。"
     : "你顺着引诱走得够远。出园时预览是空白——他要的不是认领，是目击者。";
-  else if (kind === "hidden") verdict = `无头像对话只重复「${n}」。覆盖页写下：手机属于 ${lead}（${align}）。假面「${fake.title}」从未是真的。`;
+  else if (kind === "hidden") verdict = typeof deepHiddenSeen==="function" && deepHiddenSeen()
+    ? `无头像对话只重复「${n}」。残页里的上一任，连「抬头」都是同一句——这句话不是对你说的，是对每一个坐到长椅前的人说的。覆盖页写下：手机属于 ${lead}（${align}）。假面「${fake.title}」从未是真的。`
+    : `无头像对话只重复「${n}」。覆盖页写下：手机属于 ${lead}（${align}）。假面「${fake.title}」从未是真的。删除第三层还没有恢复——那里有上一个捡到它的人。`;
   else if (kind === "battery") verdict = good
     ? `${lead} 曾让你去充电。你没有。黑屏里最后一帧，好人的警告变成了隔音。`
     : `${lead} 把你留在耗电的地方。黑屏是他的句号。`;
@@ -5668,6 +5674,9 @@ function recoverDeleted(layer, confirmed){
     "三层：备忘录只剩一行："+(S.playerName||"？？")+" 会打开到这里。删除失败。删除失败。删除失败。"
   ];
   addRecord("已删除·第"+layer+"层", (typeof layersContent==="function"?layersContent(layer).join("\n"):texts[layer]));
+  if(layer>=3 && typeof addRecord==="function"){
+    addRecord("上一个失主", "残页里那个人也回过「在」。也在长椅坐过。最后一条「在吗」不是他发的。名字被划掉了——没人知道他是谁，也没人知道他后来去了哪里。");
+  }
   addKeyword("删除层"+layer);
   if(layer>=2) S.emptyUnlocked=true;
   if(layer>=3 && isLateNight() && isLowBat()){
@@ -6876,18 +6885,32 @@ function triggerEnding(kind){
   }
   renderEnding(kind);
 }
+function deepHiddenSeen(){
+  return (S.deletedLayer>=3) || !!(S.puzzle&&S.puzzle.unlockedL3);
+}
 function showFacelessThenEnd(){
   document.getElementById("dock").style.display="none";
   const screen=document.getElementById("screen");
   const n=S.playerName||"你";
+  const deep=deepHiddenSeen();
+  let bubbles;
+  if(deep){
+    bubbles=`<div class="bubble them">${esc(n)}</div>
+      <div class="bubble them">你看过残页了。所以这几句，你听得懂。</div>
+      <div class="bubble them">上一任也回过「在」。也是长椅。也是把状态栏上的字，当成了时间。</div>
+      <div class="bubble them">手机不是丢的。它每次都自己回到长椅上，等下一个人坐下。</div>
+      <div class="bubble them">残页里没有署名。不是因为删掉了——是因为写名字的地方，本来就不是给人填的。</div>
+      <div class="bubble them">${esc(n)}，抬头。</div>`;
+  }else{
+    bubbles=`<div class="bubble them">${esc(n)}</div>
+      <div class="bubble them">我知道你还没恢复到第三层。</div>
+      <div class="bubble them">没关系。残页一直在原地。上一个捡到它的人，也在。</div>
+      <div class="bubble them">${esc(n)}，抬头。</div>
+      <div class="bubble sys" style="opacity:.62">（已删除 · 第三层：未恢复。那里有上一个捡到它的人留下的东西。）</div>`;
+  }
   screen.innerHTML=`<div>
     <div class="chat-header"><div class="avatar" style="background:#111">?</div><div><b>　　</b><div class="muted">无备注</div></div></div>
-    <div class="bubbles">
-      <div class="bubble them">${esc(n)}</div>
-      <div class="bubble them">我知道你会恢复到第三层。</div>
-      <div class="bubble them">手机不是丢的。</div>
-      <div class="bubble them">${esc(n)}，抬头。</div>
-    </div>
+    <div class="bubbles">${bubbles}</div>
     <button class="btn danger" onclick="renderEnding('hidden')">……继续</button>
   </div>`;
 }

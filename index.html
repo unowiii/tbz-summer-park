@@ -6556,16 +6556,16 @@ function renderDisclaimerGate(){
     <div class="gate-card">
       <h3>阅读须知 · Fan IF</h3>
       <ul class="gate-rules">
-        <li>本作为粉丝向互动小说（Fan IF），向 <b>THE BOYZ</b> 致敬，非官方作品。</li>
-        <li>请保持尊重：禁止仇恨、造谣、恶意剪辑人设或骚扰真人。</li>
-        <li>禁止擅自搬运/再上传本游戏完整文件到未授权平台牟利。</li>
-        <li>游戏内音乐是原创<strong>夏夜音盒</strong>（木马华尔兹、灯牌、空地），不是官方录音，也不是惊吓警报。原曲请走官方渠道。</li>
-        <li>含中度恐怖、闪烁与心理暗示；不适请立即退出。</li>
+        <li>本作是粉丝创作的互动小说（Fan IF），向 <b>THE BOYZ</b> 致敬，非官方作品。</li>
+        <li>请保持善意：不发布仇恨言论，不编造谣言，不恶意曲解成员性格，也不要去打扰真人。</li>
+        <li>请勿擅自转载，或将本游戏的完整文件上传到未经授权的平台牟利。</li>
+        <li>游戏内音乐均为原创「<strong>夏夜音盒</strong>」（木马华尔兹、灯牌、空地），不是官方录音，也不是惊吓音效；想听原曲请走官方渠道。</li>
+        <li>作品含中度恐怖、闪烁画面与心理暗示，如感不适请立即退出。</li>
       </ul>
       <p class="gate-cd" id="gateCd">${ready?"可以确认了":("请阅读 · "+left+" 秒后可勾选")}</p>
       <label class="gate-check ${ready?"":"disabled"}" id="gateLabel">
         <input type="checkbox" id="gateBox" ${ready?"":"disabled"} onchange="syncGateConfirm()"/>
-        我已阅读以上条款，并同意以同人善意进行游戏
+        我已阅读以上须知，并愿意以善意参与本作
       </label>
       <input type="text" id="gateType" class="gate-type" placeholder="请输入：我已阅读并同意" ${ready?"":"disabled"} oninput="syncGateConfirm()"/>
       <button class="btn primary" id="gateGo" disabled onclick="confirmDisclaimer()">确认进入</button>

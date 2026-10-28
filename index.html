@@ -2679,7 +2679,7 @@ const REPLIES = {
   younghoon: {
     追问: ["饮食区外面。有面包，还热。", "……", "……"],
     忽视: ["嗯。", "。", ""],
-    安抚: ["还好。谢。", "别说了。吃东西。", ""],
+    安抚: ["还好。谢谢。", "别说了。吃东西。", ""],
     质疑: ["照片在。别放大。", "你看图。别问我。", ""],
   },
   hyunjae: {
@@ -2950,7 +2950,7 @@ const ENDING_BLURB_REF = {
     },
     younghoon: {
       title: "面包",
-      body: ["他掰了一半面包给你，只说了一个「谢」。", "「照片别放大。就当我拍得差。」"],
+      body: ["他掰了一半面包给你，只说了一个「谢谢」。", "「照片别放大。就当我拍得差。」"],
       keepTitle: "别放大",
       keep: ["相册自己往后翻，每张都是同一个人慢慢转过来。", "「这一张，是你明天要拍的。」"],
     },
@@ -3061,7 +3061,7 @@ const LEAD_HINTS = {
   sangyeon: "队长。先问你吃没吃，再下很短的指令。关心藏在句号里。",
   jacob: "慢、暖，句子软软的。关心完会自己笑一下，像怕冒犯你。",
   juyeon: "话少、直，三个字以内。回得慢不是冷，是想好了才发。",
-  younghoon: "少话，干巴巴。先丢一句「谢」，再提面包，或者叫你别放大。",
+  younghoon: "少话，干巴巴。先丢一句「谢谢」，再提面包，或者叫你别放大。",
   hyunjae: "爱逗，正经话包在笑话里。突然不笑、开始问你吃了没，就该停。",
   kevin: "打字慢，一句要停很久。先分享没写完的曲子，再叫你把音量拧小。",
 };
@@ -4957,7 +4957,7 @@ const LEAD_DAY_MEMOS = {
     q: `我一直在等红灯变绿。等了很久。
 你别笑我，我认真的。
 （如果明天我没有回你，不是我不在，是我在等。）`,
-    eric: `姐——不是，我该怎么叫你。算了。
+    eric: `怒那——不是，我该怎么叫你。算了。
 今天我在后台数人。数了两次。第二次多了一个。
 我没跟别人说。我只跟你说。`,
     new: `你今天说话的口气变了。比以前短。
@@ -5006,7 +5006,7 @@ const LEAD_DAY_MEMOS = {
 不后悔。`,
     younghoon: `最后一天。面包我放在长椅上了。
 凉的也能吃。
-谢你陪我说话。`,
+谢谢你陪我说话。`,
     hyunjae: `最后一晚，讲个正经的：
 我不太会讲正经的，所以就这样吧。
 你笑一下，我就当收到了。`,
@@ -5271,7 +5271,7 @@ juyeon:[
 {id:"jy5b",phase:2,minDay:3,lines:[{from:"them",text:"在。"},{from:"them",text:"你先走也没关系。我会……慢慢跟在灯亮的方向。不催你。"}],replies:[{label:"一起走？",type:"追问",att:2,push:0},{label:"那我先走了",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}],reqAtt:6},
 {id:"jy6",phase:2,minDay:3,lines:[{from:"them",text:"最后一句。"},{from:"them",text:"空地那边……别去。木马可以转，人不用跟着转进暗处。"},{from:"them",text:"……晚安。就算现在不是晚上。"}],replies:[{label:"晚安",type:"安抚",att:3,push:0},{label:"空地有什么",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}],reqNight:true}
 ],
-younghoon:[{id:"yh1",phase:0,minDay:1,lines:[{from:"them",text:"谢。"},{from:"them",text:"相册随便翻。别放大第一张。"}],replies:[{label:"我看看",type:"安抚",att:1,push:0},{label:"有不能看的吗",type:"追问",att:2,push:1},{label:"好",type:"忽视",att:0,push:0}]},{id:"yh2",phase:0,minDay:1,lines:[{from:"them",text:"长椅那张。看着怪。"},{from:"them",text:"我本来想重拍。没拍成。"}],replies:[{label:"哪里怪？",type:"追问",att:2,push:1,kw:"构图",zoneHint:"photo"},{label:"挺好看的",type:"安抚",att:1,push:0},{label:"嗯",type:"忽视",att:0,push:0}],reqAtt:1},{id:"yh2b",phase:0,minDay:1,lines:[{from:"them",text:"饮食区还有面包。"},{from:"them",text:"你要的话。……就这些。"}],replies:[{label:"什么光",type:"追问",att:2,push:0},{label:"好",type:"安抚",att:1,push:0},{label:"……",type:"忽视",att:0,push:0}],reqAtt:2},{id:"yh3",phase:1,minDay:2,lines:[{from:"them",text:"别放大看。"},{from:"them",text:"像素会骗人。"}],replies:[{label:"你在怕什么",type:"追问",att:2,push:1,anomaly:1},{label:"好，不放大",type:"安抚",att:1,push:0},{label:"我偏要看",type:"质疑",att:2,push:1,warnIgnore:1,anomaly:1}]},{id:"yh4",phase:1,minDay:2,lines:[{from:"them",text:"……"},{from:"them",text:"右下角。别点。"}],replies:[{label:"点了会怎样",type:"追问",att:3,push:1,anomaly:1},{label:"不点",type:"安抚",att:1,push:0},{label:"（去点）",type:"质疑",att:2,push:0,warnIgnore:1}],reqNight:true},{id:"yh5",phase:2,minDay:3,lines:[{from:"them",text:"……"},{from:"sys",text:"（一条图片消息，几乎全黑）"},{from:"them",text:"[几乎全黑的照片：中央有淡淡轮廓]",type:"image"}],replies:[{label:"这是什么",type:"追问",att:3,push:1,anomaly:1,kw:"黑图轮廓"},{label:"我滑走了",type:"安抚",att:1,push:0},{label:"……吓人",type:"质疑",att:2,push:0}]},
+younghoon:[{id:"yh1",phase:0,minDay:1,lines:[{from:"them",text:"谢谢。"},{from:"them",text:"相册随便翻。别放大第一张。"}],replies:[{label:"我看看",type:"安抚",att:1,push:0},{label:"有不能看的吗",type:"追问",att:2,push:1},{label:"好",type:"忽视",att:0,push:0}]},{id:"yh2",phase:0,minDay:1,lines:[{from:"them",text:"长椅那张。看着怪。"},{from:"them",text:"我本来想重拍。没拍成。"}],replies:[{label:"哪里怪？",type:"追问",att:2,push:1,kw:"构图",zoneHint:"photo"},{label:"挺好看的",type:"安抚",att:1,push:0},{label:"嗯",type:"忽视",att:0,push:0}],reqAtt:1},{id:"yh2b",phase:0,minDay:1,lines:[{from:"them",text:"饮食区还有面包。"},{from:"them",text:"你要的话。……就这些。"}],replies:[{label:"什么光",type:"追问",att:2,push:0},{label:"好",type:"安抚",att:1,push:0},{label:"……",type:"忽视",att:0,push:0}],reqAtt:2},{id:"yh3",phase:1,minDay:2,lines:[{from:"them",text:"别放大看。"},{from:"them",text:"像素会骗人。"}],replies:[{label:"你在怕什么",type:"追问",att:2,push:1,anomaly:1},{label:"好，不放大",type:"安抚",att:1,push:0},{label:"我偏要看",type:"质疑",att:2,push:1,warnIgnore:1,anomaly:1}]},{id:"yh4",phase:1,minDay:2,lines:[{from:"them",text:"……"},{from:"them",text:"右下角。别点。"}],replies:[{label:"点了会怎样",type:"追问",att:3,push:1,anomaly:1},{label:"不点",type:"安抚",att:1,push:0},{label:"（去点）",type:"质疑",att:2,push:0,warnIgnore:1}],reqNight:true},{id:"yh5",phase:2,minDay:3,lines:[{from:"them",text:"……"},{from:"sys",text:"（一条图片消息，几乎全黑）"},{from:"them",text:"[几乎全黑的照片：中央有淡淡轮廓]",type:"image"}],replies:[{label:"这是什么",type:"追问",att:3,push:1,anomaly:1,kw:"黑图轮廓"},{label:"我滑走了",type:"安抚",att:1,push:0},{label:"……吓人",type:"质疑",att:2,push:0}]},
 {id:"yh3b",phase:1,minDay:2,lines:[{from:"them",text:"新图。……别急着点。"},{from:"them",text:"先回我：你还在亮处吗。"}],replies:[{label:"在",type:"安抚",att:2,push:0},{label:"图里有什么",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}],reqAtt:4},
 {id:"yh5b",phase:2,minDay:3,lines:[{from:"them",text:"……收图。"},{from:"them",text:"别把右下角当入口。听我的。"}],replies:[{label:"好",type:"安抚",att:2,push:0},{label:"入口？",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}],reqNight:true}],
 hyunjae:[
@@ -5416,7 +5416,7 @@ const CHAR_ENDING_BASE = {
 下面还有一句，像是犹豫完才敢发的：明天我还是这个点。`,
 
   younghoon: `他从袋子里拿出一个面包，掰了一半给你。
-「谢。」他说。没了。
+「谢谢。」他说。没了。
 你们并排坐着吃完，谁也没说话。风把他头发吹乱，他懒得理，倒是先伸手把你被风吹到脸上的头发拨开了。
 站起来的时候他忽然说：「照片别放大。就当我拍得差。」
 走了几步，他补一句：「下次拍好一点。」
@@ -6378,7 +6378,7 @@ const COMPANION_LINES = {
     low:["省电。","关掉。我在。"]
   },
   younghoon:{
-    enter:["走。谢。","跟着我。别说话。"],
+    enter:["走。谢谢。","跟着我。别说话。"],
     home:["有面包。等会儿。","这边安静。……太安静了。"],
     fear:["不去。","……陪你去。别怪我走神。"],
     camera:["照片在。别放大。","拍可以。别存。"],

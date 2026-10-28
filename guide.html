@@ -63,6 +63,12 @@ td:first-child{color:#fff;white-space:nowrap;padding-right:16px}
   margin-bottom:20px;transition:color .2s,border-color .2s}
 .back:hover{color:var(--warm);border-color:rgba(201,149,92,.4)}
 .back span{font-size:14px;line-height:1}
+.cta{display:flex;gap:10px;margin-bottom:20px}
+.cta .back{margin-bottom:0;flex:1}
+.cta .start{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  text-decoration:none;color:#1a1208;background:var(--warm);border-radius:100px;
+  padding:5px 13px;font-size:12.5px;letter-spacing:.06em;font-weight:600}
+.cta .start:hover{filter:brightness(1.08)}
 footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--line);
   color:rgba(232,228,221,.32);font-size:12px;line-height:1.9}
 footer .row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
@@ -71,7 +77,10 @@ footer .row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 <body>
 <div class="page">
 
+    <div class="cta">
     <a class="back" href="./"><span>←</span>返回游戏</a>
+    <a class="start" href="./">▶ 开始玩</a>
+  </div>
 <div class="doc-head">
     <div class="kicker">THE BOYZ · THRILL-ING</div>
     <h1>TBZ 夏日游乐场 · 玩法指南</h1>
@@ -204,5 +213,16 @@ footer .row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
     </div>
   </footer>
 </div>
+<script>
+(function(){
+  if(location.search.indexOf("embed")<0) return;
+  function bind(){
+    document.querySelectorAll(".cta a").forEach(function(a){
+      a.addEventListener("click", function(e){ e.preventDefault(); try{ parent.postMessage("closeGuide","*"); }catch(_){} });
+    });
+  }
+  if(document.readyState!=="loading") bind(); else document.addEventListener("DOMContentLoaded", bind);
+})();
+</script>
 </body>
 </html>

@@ -7787,6 +7787,7 @@ function renderEnding(kind){
       ${bars}
     </div>
     <button class="btn primary" onclick="renderEndingGallery()">结局图鉴</button>
+    <button class="btn" onclick="openGuide()">📘 玩法指南</button>
     <button class="btn" onclick="makeEndingCard()">📷 生成本局卡片</button>
     <button class="btn" onclick="afterEnd()">再玩一次</button>
     <button class="btn" onclick="saveGame();toast('已保存本局结局进度')">保存本局</button>
@@ -7839,6 +7840,7 @@ function renderHiddenSettlement(){
       ${bars}
     </div>
     <button class="btn primary" onclick="renderEndingGallery()">结局图鉴</button>
+    <button class="btn" onclick="openGuide()">📘 玩法指南</button>
     <button class="btn" onclick="makeEndingCard()">📷 生成本局卡片</button>
     <button class="btn" onclick="afterEnd()">再玩一次</button>
     <button class="btn" onclick="saveGame()">保存本局</button>
@@ -8221,11 +8223,47 @@ function renderMore(){
 }
 /* —— 玩法指南：独立页面 guide.html，游戏内开新窗口 —— */
 function openGuide(){
-  const u=new URL("guide.html", location.href).href;
-  try{
-    const w=window.open(u,"_blank");
-    if(!w) location.href=u;
-  }catch(e){ location.href=u; }
+  const u=new URL("guide.html?embed=1", location.href).href;
+  if(!document.getElementById("guideDynStyle")){
+    const st=document.createElement("style"); st.id="guideDynStyle";
+    st.textContent=''
+      +'#guideOverlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72)}'
+      +'#guideOverlay .gb{position:absolute;inset:0}'
+      +'#guideOverlay .bx{position:relative;width:min(680px,94vw);height:92vh;background:#0a0a0b;border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}'
+      +'#guideOverlay .x{position:absolute;top:10px;right:12px;z-index:3;width:34px;height:34px;border:none;background:rgba(255,255,255,.1);color:#fff;border-radius:50%;font-size:20px;line-height:1;cursor:pointer}'
+      +'#guideOverlay iframe{width:100%;height:100%;border:0;background:#0a0a0b}'
+      +'.home-guide-bar{margin-top:14px;text-align:center;font-size:13px;color:rgba(201,149,92,.95);padding:10px 12px;border:1px solid rgba(201,149,92,.28);border-radius:10px;cursor:pointer;letter-spacing:.02em}'
+      +'.home-guide-bar:active{background:rgba(201,149,92,.12)}'
+      +'.guide-nudge{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:rgba(201,149,92,.1);border:1px solid rgba(201,149,92,.3);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:13px;color:#e7d9c4}'
+      +'.guide-nudge b{color:#e8b84b}'
+      +'.guide-nudge button{background:rgba(201,149,92,.92);color:#1a1208;border:none;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer}'
+      +'.guide-nudge .x{background:transparent;border:1px solid rgba(255,255,255,.25);color:#bbb;margin-left:auto}';
+    document.head.appendChild(st);
+  }
+  let ov=document.getElementById("guideOverlay");
+  if(!ov){
+    ov=document.createElement("div"); ov.id="guideOverlay";
+    ov.innerHTML='<div class="gb" onclick="closeGuide()"></div>'
+      +'<div class="bx"><button class="x" onclick="closeGuide()">×</button>'
+      +'<iframe id="guideFrame" src="'+u+'"></iframe></div>';
+    document.body.appendChild(ov);
+    window.addEventListener("message",function(e){ if(e.data==="closeGuide") closeGuide(); });
+  } else {
+    document.getElementById("guideFrame").src=u;
+  }
+  ov.style.display="flex";
+}
+function closeGuide(){ const ov=document.getElementById("guideOverlay"); if(ov) ov.style.display="none"; }
+function guideNudge(){
+  try{ if(loadMeta().guideSeen) return ""; }catch(e){}
+  return '<div class="guide-nudge" id="guideNudge">'
+    +'<span>第一次玩？先看 <b>玩法指南</b>，能省你半小时懵圈。</span>'
+    +'<button onclick="openGuide()">去看看</button>'
+    +'<button class="x" onclick="dismissGuideNudge()">×</button></div>';
+}
+function dismissGuideNudge(){
+  try{ const m=loadMeta(); m.guideSeen=true; saveMeta(m); }catch(e){}
+  const n=document.getElementById("guideNudge"); if(n) n.remove();
 }
 /* —— 新手指引：五步，按玩家实际行为自动推进 —— */
 function guideState(){
@@ -8293,6 +8331,7 @@ function renderHome(){
       <p>${esc(step.sub)}</p>
       <button class="btn primary" onclick="doNextStep()">${esc(step.label)}</button>
     </div>
+    ${guideNudge()}
     ${discCardHtml()}
     ${guideHtml()}
     ${alert}
@@ -8310,6 +8349,7 @@ function renderHome(){
       <button class="app-icon" onclick="renderPuzzleBoard()"><span class="ico">🔢</span><span class="lab">密码板</span></button>
       <button class="app-icon" onclick="renderSaveApp()"><span class="ico">🗂</span><span class="lab">存档</span></button>
     </div>
+    <div class="home-guide-bar" onclick="openGuide()">📘 玩法指南 · 第一次玩？先看这个</div>
   </div>`;
 }
 
@@ -9266,9 +9306,29 @@ function discCardHtml(){
       <button class="btn" style="flex:1" onclick="renderMonologueApp()">🎭 假面独白${monoNew?' <span style="color:#e8b84b">新</span>':""}<br><small style="color:var(--muted);font-weight:400">${monoHint}</small></button>
       <button class="btn" style="flex:1" onclick="renderGardenerScene()">🌿 园丁的第一现场${gNew?' <span style="color:#e8b84b">新</span>':""}<br><small style="color:var(--muted);font-weight:400">${gHint}</small></button>
     </div>
+    ${ pwIsMirror() ? '<button class="btn" style="width:100%;margin-top:8px" onclick="renderSecondPlay()">🩹 二周目 · 残页（通关后才浮上来）</button>' : "" }
   </div>`;
 }
 
+
+/* —— 二周目专属：残页（仅通关一次后可见）—— */
+function renderSecondPlay(){
+  const screen=document.getElementById("screen");
+  const pages=[
+    "【残页·一】你删掉的那些对话，没有真的消失。它们被挪到了另一个名字下面。第二次进园，他会念得出你删掉的那一句。",
+    "【残页·二】第一遍你以为是随机的灯，其实每一盏都对应一件你做过的事。重来一遍，灯还是那盏灯，但你记得它为什么亮。",
+    "【残页·三】手机主人不是第一次弄丢手机。上一位捡到的人，没走到第三天。这次轮到你。",
+    "【残页·四】镜子里那个人学得很快。你第一次犹豫了多久，第二次他就只等你那么久。",
+  ];
+  screen.innerHTML=`<div class="lore-screen">
+    <div class="lore-h">SECOND PLAY · 残页</div>
+    <h2 class="glitch-text">只有二周目看得见的</h2>
+    <p class="lore-lead">通关一次之后，这些字才浮上来。</p>
+    ${pages.map(function(p){ return '<div class="rule-item"><div class="rule-tx">'+esc(p)+'</div></div>'; }).join("")}
+    <button class="btn primary" onclick="render()">合上</button>
+    <button class="btn" onclick="openGuide()">📘 玩法指南</button>
+  </div>`;
+}
 /* —— 园区守则（入口木牌）—— */
 function renderRules(from){
   document.getElementById("dock").style.display="none";

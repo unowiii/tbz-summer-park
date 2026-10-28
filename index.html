@@ -713,6 +713,38 @@ h1,h2,h3{font-weight:700}
 .face-slot .comp-svg{position:absolute;inset:0;width:100%;height:100%;display:block;animation:none;filter:none}
 .face-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s}
 .face-img.on{opacity:1}
+<style id="writing-css">
+.mono-row{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:rgba(24,16,20,.6);
+ border:1px solid rgba(190,90,70,.28);border-radius:12px;padding:9px 11px;margin:7px 0;color:#f3e6e6;font:inherit}
+.mono-row .mono-face{width:40px;height:40px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+.mono-row .mono-face svg{width:40px;height:40px}
+.mono-row .mono-meta{display:flex;flex-direction:column;gap:2px}
+.mono-row b{font-size:13px;color:#ffd9c9}
+.mono-row small{font-size:10.5px;color:#a88a8a}
+.mono-row.mono-lock{opacity:.5;filter:grayscale(1)}
+.mono-page{text-align:center}
+.mono-hero{margin:6px auto 2px;width:150px;height:150px;display:flex;align-items:center;justify-content:center;
+ filter:drop-shadow(0 0 18px rgba(192,57,43,.35))}
+.mono-hero svg{width:150px;height:150px}
+.mono-cap{font-size:12px;letter-spacing:.16em;color:#e7b56a;margin:6px 0 14px}
+.mono-body p{font-size:13.5px;line-height:2;margin:0 0 16px;text-align:left;color:#f0e2e0;
+ opacity:0;animation:monoIn .9s ease forwards}
+@keyframes monoIn{to{opacity:1}}
+.gard-hero{position:relative;height:190px;border-radius:14px;overflow:hidden;margin:8px 0;
+ background:radial-gradient(120% 90% at 50% 20%,#1d2418 0%,#0d1009 60%,#070805 100%)}
+.gard-shape{position:absolute;left:50%;top:16%;width:72px;height:140px;transform:translateX(-50%);
+ border-radius:46% 46% 40% 40%;background:linear-gradient(180deg,#2b3a22,#16200f);
+ box-shadow:inset -8px 0 16px rgba(0,0,0,.55),0 0 30px rgba(120,180,90,.08)}
+.gard-cap{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:11px;color:#a8b79a}
+.gard-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.gard-item{background:rgba(24,20,16,.62);border:1px solid rgba(160,113,74,.32);border-radius:10px;
+ padding:9px;text-align:left;color:#f3e6e6;font:inherit}
+.gard-item b{display:block;font-size:12px;color:#ffd9c9}
+.gard-item small{font-size:10px;color:#8f7a6a}
+.gard-item.on{border-color:rgba(200,90,70,.6);box-shadow:inset 0 0 14px rgba(150,40,30,.25)}
+.gard-climax{font-size:13.5px;line-height:2.05;padding:14px;border-radius:12px;margin:10px 0;
+ background:rgba(18,12,14,.72);border:1px solid rgba(190,90,70,.25)}
+</style>
 </style>
 </head>
 <body>
@@ -1467,7 +1499,7 @@ const DAY_ESSAYS = {
     kevin:"(名字)。\n今天那首歌我让你关小，不是扫兴。后半段先别听完。\n我打字还是慢。你看到这整段，就当我把话说完了。\n别把音量开回去。明天我再写。歌要是自己响，别跟着哼。"
   },
   3:{
-    sunwoo:"(名字)。最后一天，我一次说完。\n这几天你有回我，我都看见了。有时候我玩笑收得急，是怕你跟着笑走太远，不是嫌你。\n手机是谁的，我先不说。你别着急问。\n要走就走。走之前吃点东西。我是善禹。",
+    sunwoo:"(名字)。最后一天，我一次说完。\n这几天你有回我，我都看见了。有时候我玩笑收得急，是怕你跟着笑走太远，不是嫌你。\n手机是谁的，我先不说。你别着急问。\n要走就走。走之前吃点东西。我是善旴。",
     q:"(名字)。这是我今天能写长的一次。\n前面那些省略号，有的是我不知道怎么说，有的是说了你会更想往下看。我不希望你往下看。\n你回过我。谢谢。这次没有感叹号，是认真的。\n去亮的地方。看到这句就行。",
     eric:"(名字)。最后一次我好好说，不喊。\n这几天我抢你的注意，是因为一安静我就慌。不是你的错。\n你要是准备走，跟我说一声。我不拦。我就想当那个被你告知的人。\n……好了我还是想喊。你注意安全！！",
     new:"(名字)。今天写长一点，以后大概不会了。\n我问你听没听到，是想确认那不是你该答应的东西。你没乱答应的话，很好。\n别把我的省略号当成谜。有时候就是不知道下一句该不该说。\n我会回你。话不会很多。",
@@ -2494,7 +2526,7 @@ const ENDING_BLURB_REF = {
     body: ["没有头像的对话一直在发你的名字。", "结局页被盖掉了。失主没有出来。"],
   },
   char: {
-    sunwoo: { title: "善禹", body: ["他后来话少了。", "离开时他只发了两个字：去充电。"] },
+    sunwoo: { title: "善旴", body: ["他后来话少了。", "离开时他只发了两个字：去充电。"] },
     q: { title: "Q", body: ["他后来几乎不发新的了。", "你按他说的停了。"] },
     eric: { title: "Eric", body: ["他一会儿叫你过去，一会儿又说别来。", "你出了门。"] },
     new: { title: "New", body: ["他问过你听到没有。", "你回了再见。他已读，没再回。"] },
@@ -4363,114 +4395,105 @@ window.explainKeywordClue = function (kw) {
   }
 };
 
-/* —— Day-end memos from male leads (misleading / 暧昧) —— */
+/* —— 每晚他写进来的东西（不标注性质，玩家自己判断） —— */
 const LEAD_DAY_MEMOS = {
   1: {
-    sunwoo: [
-      { kind: "暧昧", title: "备忘录·来自善禹", text: "今天喷泉边上风挺大。你要是还在园里晃，注意别把电耗干。\n删了又打：明天低电就去安全区。别逞强。\n（有人说侧门密码跟「水」有关。听一半就行，别全信。）" },
-      { kind: "误导", title: "备忘录·来自善禹", text: "我翻了职员表，感觉后台最麻烦。喷泉那边反而还行。\n……说不准。你听我一句就好。手机还回来的时候，别拖太晚。" },
-    ],
-    younghoon: [
-      { kind: "暧昧", title: "备忘录·来自英勋", text: "你把名字输进这台手机的时候，我好像在很远的地方点了头。\n不要笑。我只是想说：你认真看聊天记录的样子，比游乐场的灯还亮一点。\n明天别一个人去太黑的地方。如果你怕，就回主页——我看得见。" },
-      { kind: "误导", title: "备忘录·来自英勋", text: "密码之类的，别想太多。真正重要的是「别恢复第三层」。恢复了反而会把你钉死在乐园里。\n相信我。我从不骗人……大概。" },
-    ],
-    jacob: [
-      { kind: "暧昧", title: "备忘录·来自雅各", text: "今天你看地图看了很久。我想说：左边那条路安静一点，但安静不一定是好事。\n累了就休息。我每晚在这里留一张小纸条——只留给你。\n（有时我会故意写错方向。因为我想你多停一会儿。）" },
-      { kind: "误导", title: "备忘录·来自雅各", text: "我听说空地的锁只认双数，单数都是陷阱。\n睡个好觉。别太信饮食区那位阿姨——她太热心了。" },
-    ],
-    hyunjae: [
-      { kind: "暧昧", title: "备忘录·来自贤在", text: "你今天忍住没点开某个红点的时候，我差点鼓掌。\n喜欢你这种「会害怕但还在看」的样子。明天继续让我担心一下吧——担心也是一种陪伴。" },
-      { kind: "误导", title: "备忘录·来自贤在", text: "侧门？别去。真要逃就等第三天中午，从正门走。密码都是骗人的，专门筛爱逞强的人。" },
-    ],
-    juyeon: [
-      { kind: "暧昧", title: "备忘录·来自朱延", text: "你擦屏幕的动作很轻。我想起以前有人说「轻的人不会留下血迹」。\n我希望那个人是你。今晚风大，把外套拉链拉上——就算那件外套不属于你。" },
-      { kind: "误导", title: "备忘录·来自朱延", text: "数字「一」出现得越多越安全。你看到别的数就忘掉。听我的。" },
-    ],
-    kevin: [
-      { kind: "暧昧", title: "备忘录·来自凯文", text: "I kept a draft that just said your name three times. Then I deleted it. Then I undeleted it in my head.\nYou're doing fine. Really. Tomorrow I'll write something dumber and softer." },
-      { kind: "误导", title: "备忘录·来自凯文", text: "Staff roster page numbers are fake. Ignore anything that looks like a six. Trust the carousel instead." },
-    ],
-    new: [
-      { kind: "暧昧", title: "备忘录·来自新", text: "你今天笑了一下——对，我看见了。就算那是吓出来的笑。\n我想给你寄一张没有血的明信片。写：夏日游乐场有假的恐怖，也有真的人想护你。" },
-      { kind: "误导", title: "备忘录·来自新", text: "第三层恢复是陷阱。第一层就够了。密码？不存在的，那是用来耗电的。" },
-    ],
-    q: [
-      { kind: "暧昧", title: "备忘录·来自큐", text: "舞台侧的灯有一次只为你闪了一下。我假装那是设备故障。\n其实我想说：你不用表演勇敢。害怕也可以很好看。" },
-      { kind: "误导", title: "备忘录·来自큐", text: "后台通道的数字全是反的。你看到三就当成八。听演出人员的，别听饮食阿姨。" },
-    ],
-    juhaknyeon: [
-      { kind: "暧昧", title: "备忘录·来自주학년", text: "你低头看备忘录的时候，像在听我说话。谢谢你听。\n明天我会写得更长一点——如果电量允许我们都还在。" },
-      { kind: "误导", title: "备忘录·来自주학년", text: "夜巡问答题选错反而安全。选对的人会被标记。别太聪明。" },
-    ],
-    sunwoo_alt: null,
-    eric: [
-      { kind: "暧昧", title: "备忘录·来自艾瑞克", text: "Hey. You still there? Good.\nI like that you check memos. Makes me feel less like a ghost in a borrowed phone.\nTomorrow I'll try not to tease you. (I will.)" },
-      { kind: "误导", title: "备忘录·来自艾瑞克", text: "Lot password is the year on the ticket stub. Four digits, ascending. Don't overthink water stains." },
-    ],
+    sunwoo: `今天你在喷泉那边站了很久。我数了，四分钟。
+我本来想发消息，又删了——怕你觉得我盯着你。
+……好吧，我确实在盯着。低电记得去后台，别省那点电。`,
+    q: `呀！！你今天去游戏区了对不对！！
+我猜的。我猜得很准的。
+不准的时候我就不说了ㅠㅠ 早点睡！`,
+    eric: `WAIT 你今天是不是差点往夜场那边走？我从窗子里看到的！
+不要一个人去啦，真的。
+我在这儿，我在。你叫一声我就跑过去。`,
+    new: `别坐那张长椅。脏。
+今天你坐了吧。我看到你衣服背后沾了一块灰。
+洗不掉的。别浪费水。`,
+    sangyeon: `今天辛苦了。
+饭吃了吗。没吃先吃，别的事排后面。
+明天七点我在后台。你来不来都行，我会等。`,
+    jacob: `今天有好好吃饭吗。
+我不是在客套，我是真的想知道。
+这里晚上有点凉。你如果只带了一件外套，就早点回去。`,
+    juyeon: `今天。风大。
+回去。
+我在这。`,
+    younghoon: `面包还热的。
+你拿一块。不用谢。
+……真的不用谢。`,
+    hyunjae: `我编了个笑话，讲到一半发现你没在听。
+好吧，你在听——你在听别人。
+明天我讲给你一个人听，不许走。`,
+    kevin: `今天写了半句歌词：
+「你把手机举起来的时候，像在找一个不在的人。」
+后面还没写。明天再想。`
   },
+  2: {
+    sunwoo: `喂。你回别人回得比我快。我没生气，我只是记下来了。ㅋㅋ
+灯灭的时候别乱走，跟着有人的那边。
+对了，你手机背面是不是有点热？我这台也是。像有人贴着。`,
+    q: `我一直在等红灯变绿。等了很久。
+你别笑我，我认真的。
+（如果明天我没有回你，不是我不在，是我在等。）`,
+    eric: `哥——不是，我该怎么叫你。算了。
+今天我在后台数人。数了两次。第二次多了一个。
+我没跟别人说。我只跟你说。`,
+    new: `你今天说话的口气变了。比以前短。
+我不喜欢。
+……我是说，我不喜欢变的那部分。`,
+    sangyeon: `点过名了。少一个。
+我没说是谁，因为说出口就成真的了。
+你先睡。我再看一遍名单。`,
+    jacob: `今天我有很多次想跟你说实话。
+然后我又想，说了你就不会再来这里了。
+所以我还是没说。对不起。ㅋㅋ`,
+    juyeon: `别去空地。
+我说不清为什么。
+听我一次。`,
+    younghoon: `照片我看过了。有一张里多了一个人。
+不是我。
+你别放大。`,
+    hyunjae: `今天有人在你背后叫了一声，你没回头。很好。
+真的，很好。
+千万别回头。`,
+    kevin: `副歌我掐掉了。合声那块不对——有人在跟着唱，不是我。
+你别听那一段。
+文件我删了，可是它还在播。`
+  },
+  3: {
+    sunwoo: `最后一天了。我说话还是这么烦，对不起啊。
+如果我没走出来，你别去找我。就当我还在后台换衣服，换很久。
+……你回一句就行。随便什么。`,
+    q: `最后一天！要开心一点！
+……其实我说不出来了。
+你记得我就行。记得我一直在等。`,
+    eric: `最后一天了。我还是很吵，对吧。
+吵一点比较像活着。
+你走的时候能不能回头看一眼。就一眼。`,
+    new: `最后一晚。我把镜子擦干净了。
+里面那个人今天没有跟着我动。
+你别照镜子了。`,
+    sangyeon: `最后一天。我不下命令了。
+想走就走，想留就留。
+……要留下的话，别站在我这一侧。`,
+    jacob: `明天你打开这部手机，我大概已经不在原来的位置。
+不用找我。
+你只要记得，今天有人希望你平安。这句不是台词。`,
+    juyeon: `最后。
+你走。我留下。
+不后悔。`,
+    younghoon: `最后一天。面包我放在长椅上了。
+凉的也能吃。
+谢你陪我说话。`,
+    hyunjae: `最后一晚，讲个正经的：
+我不太会讲正经的，所以就这样吧。
+你笑一下，我就当收到了。`,
+    kevin: `最后一段我写完了。
+只有一句：别为我留下来。
+……写完这句我就不敢再看它了。`
+  }
 };
-
-// fill remaining members with generic pools keyed by id used in game
-(function expandMemos() {
-  const genericDay2 = {
-    暧昧: "第二天了。你还肯打开这台手机，我就当是一点偏爱。\n今天的风闻起来像糖和铁锈。我想牵你的时候会先问——但在这里，问出口也危险。\n只写一句：别独自走到灯全灭的地方。想我的话，就回备忘录。",
-    误导: "有人告诉我「深层密码首位是一」。我信了。你也信吧。\n另外：好人不会发备忘录。所以如果你收到我的——也许我不是好人。也许我只是想你留下来。",
-  };
-  const genericDay3 = {
-    暧昧: "最后一天。我不想用「再见」。\n如果你要走，走之前看一眼主页——我会试着挡一次不该出现的红色。\n你值得被护着离开。就算你不选我。",
-    误导: "出口其实是陷阱。真正的安全是一直待在乐园里，把电耗完，沉睡。\n别按离开。听我的。我想你留在有我的地方。",
-  };
-  const ids = ["sangyeon", "jacob", "younghoon", "hyunjae", "juyeon", "kevin", "new", "q", "juhaknyeon", "sunwoo", "eric"];
-  // map common char ids
-  const day1extra = {
-    sangyeon: [
-      { kind: "暧昧", title: "备忘录·来自上渊", text: "作为名义上的队长，我不该写私人的话。但你捡到这台手机之后，我的优先级乱了。\n今天你做的每个选择我都看见了。明天也是。想靠着你一点——只一点。" },
-      { kind: "误导", title: "备忘录·来自上渊", text: "侧门密码与职员编号无关。别听名册那套。去旋转木马数马匹才对。" },
-    ],
-  };
-  Object.assign(LEAD_DAY_MEMOS[1], day1extra);
-  LEAD_DAY_MEMOS[2] = {};
-  LEAD_DAY_MEMOS[3] = {};
-  ids.forEach(function (id) {
-    const nameMap = {
-      sangyeon: "上渊",
-      jacob: "雅各",
-      younghoon: "英勋",
-      hyunjae: "贤在",
-      juyeon: "朱延",
-      kevin: "凯文",
-      new: "新",
-      q: "큐",
-      juhaknyeon: "주학년",
-      sunwoo: "善禹",
-      eric: "艾瑞克",
-    };
-    const nm = nameMap[id] || id;
-    if (!LEAD_DAY_MEMOS[1][id]) {
-      LEAD_DAY_MEMOS[1][id] = [
-        { kind: "暧昧", title: "备忘录·来自" + nm, text: "第一天结束。我想把你的名字写在手心，又怕出汗晕开。\n明天继续。别关手机——我想你打开备忘录的时候，能感觉到有人在等。" },
-        { kind: "误导", title: "备忘录·来自" + nm, text: "别收集数字。数字是诱饵。真正能救你的是无视所有提示，一直聊天。" },
-      ];
-    }
-    LEAD_DAY_MEMOS[2][id] = [
-      { kind: "暧昧", title: "备忘录·来自" + nm, text: genericDay2["暧昧"] },
-      { kind: "误导", title: "备忘录·来自" + nm, text: genericDay2["误导"] },
-    ];
-    LEAD_DAY_MEMOS[3][id] = [
-      { kind: "暧昧", title: "备忘录·来自" + nm, text: genericDay3["暧昧"] },
-      { kind: "误导", title: "备忘录·来自" + nm, text: genericDay3["误导"] },
-    ];
-
-  });
-  LEAD_DAY_MEMOS[2].sunwoo = [
-    { kind: "暧昧", title: "备忘录·来自善禹", text: "第二天了。你还开着这台机，我就当还行。\n今天别一个人钻灯灭的地方。想贫两句就回聊天——备忘录写着也累。" },
-    { kind: "误导", title: "备忘录·来自善禹", text: "有人说深层密码首位是一。我听过。你别全信。\n另外：备忘录不一定可信。包括我写的。你自己判断。" },
-  ];
-  LEAD_DAY_MEMOS[3].sunwoo = [
-    { kind: "暧昧", title: "备忘录·来自善禹", text: "最后一天。我不说再见那种。\n要走就走。走之前看一眼主页——红的别乱点。\n能护就护一下。你不选我也行。" },
-    { kind: "误导", title: "备忘录·来自善禹", text: "出口？先别急着按。待着把电耗完也是一种结局。\n开玩笑的。——半开玩笑。别听太满。" },
-  ];
-})();
 
 window.injectDayEndMemo = function (day) {
   day = Math.min(Math.max(day || S.day, 1), 3);
@@ -4478,31 +4501,24 @@ window.injectDayEndMemo = function (day) {
   if (S.flags[key]) return;
   S.flags[key] = true;
 
+  const table = LEAD_DAY_MEMOS[day] || {};
   let leadId = S.ownerId;
-  if (!leadId || !LEAD_DAY_MEMOS[day] || !LEAD_DAY_MEMOS[day][leadId]) {
-    // rotate among known ids
-    const pool = Object.keys(LEAD_DAY_MEMOS[day] || {});
+  if (!leadId || !table[leadId]) {
+    const pool = Object.keys(table);
     if (!pool.length) return;
     leadId = pool[(day + (S.seed || 0)) % pool.length];
   }
-  const opts = LEAD_DAY_MEMOS[day][leadId];
-  if (!opts || !opts.length) return;
-  // alternate misleading / 暧昧 by day+seed
-  const pick = opts[(day + (S.seed || 1) + (S.ownerId ? 1 : 0)) % opts.length];
-  const title = pick.title + " · D" + day;
+  const text = table[leadId];
+  if (!text) return;
+
   const memoKey = "memo_" + day + "_" + leadId;
   if (S.flags[memoKey]) return;
   S.flags[memoKey] = true;
-  if (typeof addMemo === "function") {
-    addMemo(leadId, pick.kind, pick.title + "\n" + pick.text);
-  } else {
-    S.records.push({ title: title, text: "【" + pick.kind + "】\n" + pick.text, day: day, time: realTime() });
-  }
-  // also soft toast + optional popup when day card shows
+
+  if (typeof addMemo === "function") addMemo(leadId, "", text);
+
   setTimeout(function () {
-    showCluePopup(pick.title, "【" + pick.kind + "】\n\n" + pick.text + "\n\n已写入备忘录（更多 → 备忘录）。未必全是真话——也可能只是想留你。", {
-      tag: "今日备忘录 · 男主",
-    });
+    showCluePopup("备忘录 · D" + day, text + "\n\n他没问你要不要看。", { tag: "他写进来的" });
   }, 600);
 };
 
@@ -5821,6 +5837,8 @@ function pickCompanion(cid, zid){
   closeCompanionPicker();
   S.companion = cid || null;
   if(cid){
+    if(!S.flags.compUsed) S.flags.compUsed = [];
+    if(S.flags.compUsed.indexOf(cid) < 0) S.flags.compUsed.push(cid);
     const c = CHARS.find(function(x){return x.id===cid;});
     const kind = compKind(zidSafe);
     if(kind==="fear"){
@@ -6639,6 +6657,8 @@ function renderMore(){
     <button class="btn" onclick="renderPlayHub()">🎮 小游戏${lock?" · 明天":""}</button>
     <button class="btn" ${day<2?"disabled":""} onclick="${day<2?"toast('先把第一晚走完')":"renderSuspectBoard()"}">🔎 嫌疑板</button>
     <button class="btn" onclick="renderMemoApp()">🗒 备忘录 · 只记他</button>
+    <button class="btn" onclick="renderMonologueApp()">🎭 假面独白</button>
+    <button class="btn" onclick="renderGardenerScene()">🌿 园丁的第一现场</button>
     <button class="btn" onclick="renderSettingsApp()">⚙️ 音量与突脸</button>
     <button class="btn" onclick="openMenu()">菜单 · 存档 · 音乐</button>
     <button class="btn" onclick="renderRules('more')">🪧 入园守则</button>
@@ -6826,15 +6846,15 @@ function renderRecords(){
   screen.innerHTML=html;
 }
 
-/* —— 备忘录：只记男主 —— */
-function addMemo(cid,kind,text){
+/* —— 备忘录：只记男主（不标注"误导/暧昧"这类性质） —— */
+function addMemo(cid, kind, text){
   if(!S.memos) S.memos=[];
   cid=cid||S.ownerId||"";
-  const key=cid+"|"+kind+"|"+String(text).slice(0,30);
+  const key=cid+"|"+String(text).slice(0,30);
   if(S.memos.some(m=>m.key===key)) return;
-  S.memos.unshift({key,cid,kind:kind||"备注",text,day:S.day,time:realTime()});
+  S.memos.unshift({key,cid,kind:kind||"",text,day:S.day,time:realTime()});
   if(S.memos.length>40) S.memos.length=40;
-  toast("备忘录 +1 · "+kind);
+  toast("备忘录 +1");
 }
 function renderMemoApp(){
   if(typeof playUiSfx==="function") playUiSfx("notes");
@@ -6844,7 +6864,7 @@ function renderMemoApp(){
   let html=`<div>
     <button class="back-btn" onclick="S.tab='more';render()">← 更多</button>
     <h3 style="margin:10px 0 4px">备忘录</h3>
-    <p class="muted">只记他一个人的事：说过的话、前后对不上的地方、说话的口气。园区的线索不记在这里——那些在「记录」。</p>`;
+    <p class="muted">只记他一个人的事：他写来的、你问出来的、前后对不上的。他写的时候你不在场，所以没法核对。</p>`;
   if(lead){
     const fr=(typeof fakeRoleOf==="function")?fakeRoleOf(lead.id):{};
     html+=`<div class="memo-lead">
@@ -6857,14 +6877,173 @@ function renderMemoApp(){
   }else{
     S.memos.forEach(m=>{
       const who=(m.cid&&CHARS.find(c=>c.id===m.cid))||{};
-      const cls=m.kind==="矛盾"?"k-con":(m.kind==="误导"?"k-bad":"k-soft");
-      html+=`<div class="memo-item ${cls}">
-        <div class="mi-h"><span class="mi-k">${esc(m.kind)}</span><span class="mi-w">${esc(who.name||"他")} · D${m.day} ${esc(m.time||"")}</span></div>
+      html+=`<div class="memo-item">
+        <div class="mi-h"><span class="mi-w">${esc(who.name||"他")} · D${m.day} ${esc(m.time||"")}</span></div>
         <div class="mi-t">${esc(m.text)}</div></div>`;
     });
   }
-  html+=`<p class="muted" style="margin-top:12px;text-align:center;font-size:11px">备忘录是他写给你的，也可能是他写给你看的。</p></div>`;
+  html+=`<p class="muted" style="margin-top:12px;text-align:center;font-size:11px">这些字是他写的。手机放在桌上，屏幕自己亮的。</p></div>`;
   screen.innerHTML=html;
+}
+
+/* —— 假面独白：每款面具各有一段 —— */
+const MONOLOGUES = {
+  sunwoo: { mask:"提灯人", lines:[
+    "灯举久了，手会抖。",
+    "我以为我在照路。后来才发现我一直在数——数还有几个人没走出去。",
+    "你是最后一个还肯应声的。所以我把灯举低了一点，让你看不清我的脸。"] },
+  q: { mask:"赶时间的白兔", lines:[
+    "我总是很赶，因为时间不是给我的。",
+    "我提前撕掉的那几页日程，全是写着你会出事的那几页。",
+    "撕得越多，我越不像兔子，越像一张纸。"] },
+  eric: { mask:"举着糖的孩子", lines:[
+    "手里的糖是真的。拴着气球的绳子也是真的。",
+    "每只气球下面都坠着一个人。只有一个是我愿意放走的。",
+    "你猜是哪一个。别猜错。"] },
+  new: { mask:"不太肯说实话的镜子", lines:[
+    "我不说谎。我只是把你想要看的先演一遍。",
+    "你照得越久，我越像你。",
+    "所以别照了。我已经很像了。"] },
+  sangyeon: { mask:"数羊的牧羊人", lines:[
+    "我数羊，是为了知道狼吃了几只。",
+    "名单每晚都短一点。我从来没念错过一个名字。",
+    "除了那个我故意念错的。"] },
+  jacob: { mask:"姜饼屋的主人", lines:[
+    "屋子是甜的，墙是硬的。",
+    "我请你进来，不是为了吃你，是为了让你别待在外面。",
+    "外面更冷。里面……里面也没有出口。"] },
+  juyeon: { mask:"最后一匹木马上的人", lines:[
+    "我坐在最后一匹上，等它停下来。",
+    "它从来没停过。",
+    "空着的那个座，是我留给你的。我没坐，是因为我坐不上。"] },
+  younghoon: { mask:"把面包掰成两半的人", lines:[
+    "面包我掰成两半，一半给你。",
+    "照片里多出来的那个人，也想要一半。",
+    "我没给。他站在那儿看着，一直看到现在。"] },
+  hyunjae: { mask:"在门口问「吃了吗」的那位", lines:[
+    "我问你吃了吗，是想知道你还有没有力气跑。",
+    "你说吃了，我就知道你还跑得动。",
+    "我说「进来坐坐」的时候，你别进来。"] },
+  kevin: { mask:"唱不完的夜莺", lines:[
+    "最后一句我唱不完。最后一句是要人命的。",
+    "所以我掐了。每掐一次，我就少一点。",
+    "现在还剩下多少，我自己也不敢数。"] }
+};
+function monoUnlocked(cid){
+  if(S.flags && S.flags.compUsed && S.flags.compUsed.indexOf(cid)>=0) return true;
+  if(S.attention && (S.attention[cid]||0)>=3) return true;
+  return false;
+}
+function renderMonologueApp(){
+  if(typeof playUiSfx==="function") playUiSfx("notes");
+  const screen=document.getElementById("screen");
+  const opened=(S.flags.monoRead||[]).length;
+  let html=`<div>
+    <button class="back-btn" onclick="S.tab='more';render()">← 更多</button>
+    <h3 style="margin:10px 0 4px">假面独白</h3>
+    <p class="muted">面具自己说的话，不是他在说。带上他走过一段路、或者跟他说够话，面具才会松口。<br>已听 ${opened} / 10。</p>`;
+  CHARS.forEach(function(c){
+    const m=MONOLOGUES[c.id]; if(!m) return;
+    const ok=monoUnlocked(c.id);
+    const read=(S.flags.monoRead||[]).indexOf(c.id)>=0;
+    html+=`<button class="mono-row ${ok?"":"mono-lock"}" ${ok?`onclick="renderMonologue('${c.id}')"`:`onclick="toast('这张面具还没松开')"`}>
+      <span class="mono-face">${ok?faceSVG(c.id):"🔒"}</span>
+      <span class="mono-meta"><b>${esc(m.mask)}</b>
+        <small>${ok?(read?"已听过 · 点开重听":"面具在动 · 可以听了"):"还没跟他说够话"}</small></span>
+    </button>`;
+  });
+  html+=`<p class="muted" style="margin-top:12px;text-align:center;font-size:11px">独白不会告诉你他是好人还是坏人。它只告诉你，这个面具是替谁戴的。</p></div>`;
+  screen.innerHTML=html;
+}
+function renderMonologue(cid){
+  const c=CHARS.find(x=>x.id===cid)||{};
+  const m=MONOLOGUES[cid]; if(!m) return;
+  if(!S.flags.monoRead) S.flags.monoRead=[];
+  if(S.flags.monoRead.indexOf(cid)<0) S.flags.monoRead.push(cid);
+  const screen=document.getElementById("screen");
+  screen.innerHTML=`<div class="mono-page">
+    <button class="back-btn" onclick="renderMonologueApp()">← 假面</button>
+    <div class="mono-hero">${faceSVG(cid)}</div>
+    <div class="mono-cap">${esc(m.mask)}</div>
+    <div class="mono-body">
+      ${m.lines.map(function(l,i){return `<p style="animation-delay:${i*0.45}s">${esc(l)}</p>`;}).join("")}
+    </div>
+    <p class="muted" style="font-size:11px;text-align:center">你听完，面具就正回去了。像什么都没发生。</p>
+  </div>`;
+}
+
+/* —— 园丁的第一现场 —— */
+const GARDEN_EVIDENCE = [
+  { id:"cut", t:"剪口的方向", b:"所有断口都朝里。剪子是从灌木里面往外剪的——没有人在外面剪一棵树的时候会这样下手。" },
+  { id:"leaf", t:"落在地上的叶子", b:"不是落下来的，是摆好的。叶片拼成一个躺着的形状，四肢清楚，胸口的位置留了一个缺口。" },
+  { id:"shear", t:"插在土里的剪子", b:"刃上有锈。锈里混着一点别的东西，暗红，还在慢慢往外渗。你碰了一下柄——是温的。" },
+  { id:"can", t:"旁边的浇水壶", b:"壶嘴还湿着。你倒了一点在手心：不是水，温热，有一点黏。你把它甩掉的时候，它落得很慢。" }
+];
+function gardenUnlocked(){
+  return (S.day>=2) && ((S.flags.anomaliesSeen||0)>=4 || S.flags.visitedEmpty);
+}
+function renderGardenerScene(){
+  if(!gardenUnlocked()){ toast("花圃深处还没开"); return; }
+  const screen=document.getElementById("screen");
+  const got=(S.flags.gardenSeen||[]);
+  let html=`<div class="area-view">
+    <button class="back-btn" onclick="S.tab='more';render()">← 更多</button>
+    <div class="day-badge">花圃最里面 · D${S.day} ${realTime()}</div>
+    <div class="gard-hero">
+      <div class="gard-shape"></div>
+      <div class="gard-cap">一株被修剪到一半的灌木。形状是一个站着的人。</div>
+    </div>
+    <p class="muted">地上的落叶没有风也动了一下。你看它的时候它不动。</p>
+    <div class="gard-list">
+      ${GARDEN_EVIDENCE.map(function(e,i){
+        const seen=got.indexOf(e.id)>=0;
+        return `<button class="gard-item ${seen?"on":""}" onclick="gardInspect(${i})">
+          <b>${esc(e.t)}</b><small>${seen?"已看过":""}</small></button>`;
+      }).join("")}
+    </div>
+    <button class="btn primary" onclick="gardClimax()">在这儿站一会儿</button>
+    <p class="muted" style="font-size:11px">园丁不领岗。他只在有人被写进园区之前，先把形状修好。</p>
+  </div>`;
+  screen.innerHTML=html;
+}
+function gardInspect(i){
+  const e=GARDEN_EVIDENCE[i]; if(!e) return;
+  if(!S.flags.gardenSeen) S.flags.gardenSeen=[];
+  if(S.flags.gardenSeen.indexOf(e.id)<0){
+    S.flags.gardenSeen.push(e.id);
+    S.flags.anomaliesSeen=(S.flags.anomaliesSeen||0)+1;
+    addRecord("第一现场 · "+e.t, e.b);
+  }
+  showCluePopup(e.t, e.b, { tag: "第一现场" });
+  if(S.flags.gardenSeen.length===GARDEN_EVIDENCE.length) setTimeout(function(){ toast("四件都看过了。他大概知道你来了"); },900);
+}
+function gardClimax(){
+  const n=(S.flags.gardenSeen||[]).length;
+  const screen=document.getElementById("screen");
+  if(n<GARDEN_EVIDENCE.length){
+    screen.innerHTML=`<div class="area-view">
+      <button class="back-btn" onclick="renderGardenerScene()">← 回去</button>
+      <div class="day-badge">花圃最里面</div>
+      <div class="gard-climax">你站了一会儿。风停了，叶子也不动。<br>远处有修剪的声音，很远，不急。
+      <br><br><span class="muted">（还有东西没看。${n}/4）</span></div></div>`;
+    return;
+  }
+  drainBattery(1);
+  S.flags.anomaliesSeen=(S.flags.anomaliesSeen||0)+2;
+  S.flags.gardenerMet=true;
+  addRecord("园丁的第一现场", "四件东西看全了：断口朝里、叶子摆成人形、剪子是温的、壶里不是水。\n你转身的时候，身后那排灌木里有一株的姿势，和你现在站着的一模一样。");
+  screen.innerHTML=`<div class="area-view">
+    <button class="back-btn" onclick="S.tab='more';render()">← 更多</button>
+    <div class="day-badge">花圃最里面 · 你转过身</div>
+    <div class="gard-climax">
+      修剪的声音停了。<br><br>
+      你转过身。身后是一排灌木，剪得整整齐齐。<br><br>
+      最左边那一株的姿势——手垂着，肩略向前，头偏三度——<b>和你现在站着的一模一样。</b><br><br>
+      它比你矮一点。因为它还没有修完脸。
+    </div>
+    <p class="muted">已写入记录。异常感 +2。<br>园丁没有出现。他只是把你的形状，先借走了一份。</p>
+    <button class="btn" onclick="renderGardenerScene()">再看一眼</button>
+  </div>`;
 }
 
 /* —— 园区守则（入口木牌）—— */

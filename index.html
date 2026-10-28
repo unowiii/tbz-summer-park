@@ -820,6 +820,17 @@ body.flash-safe .anom-stream .bubble,body.flash-safe .missed-dot{animation:none!
 .cast-deed{font-size:12.8px;line-height:1.8;color:#cfc6bb;margin-top:8px;padding-left:9px;border-left:2px solid rgba(201,149,92,.5)}
 .cast-wish{font-size:12.8px;line-height:1.8;color:#e8b84b;margin-top:6px;padding-left:9px;border-left:2px solid rgba(232,184,75,.55)}
 
+.mon-panel{border:1px solid rgba(165,52,42,.5);background:linear-gradient(180deg,rgba(58,16,14,.55),rgba(16,8,8,.7));border-radius:14px;padding:16px 16px 13px;margin:16px 0}
+.mon-k{font-size:10px;letter-spacing:.24em;color:rgba(214,120,110,.85);margin-bottom:8px}
+.mon-name{font-size:19px;font-weight:600;color:#f2e2dc;letter-spacing:.02em;line-height:1.5;margin-bottom:10px}
+.mon-row{display:flex;justify-content:space-between;font-size:12.5px;color:#a89490;padding:5px 0;border-bottom:1px dashed rgba(255,255,255,.07)}
+.mon-row b{color:#e8b84b;font-weight:600}
+.mon-note{margin-top:11px;font-size:13.5px;line-height:1.9;color:#e7cfc7;padding-left:10px;border-left:2px solid rgba(165,52,42,.7)}
+.mon-fine{margin-top:10px;font-size:12px;line-height:1.8;color:#8e7d79}
+
+@keyframes monPulse{0%,100%{opacity:.72}50%{opacity:1}}
+.mon-panel .mon-name{animation:monPulse 4.2s ease-in-out infinite}
+
 </style>
 </style>
 </head>
@@ -3882,6 +3893,7 @@ function markSuspect(cid, mark) {
   if (mark === "bad") {
     if (!S.flags.accused) S.flags.accused = {};
     S.flags.accused[cid] = absMin();
+    try{ triSuspect(cid,3); }catch(e){}
     if (S.flags.confrontDone) delete S.flags.confrontDone[cid];
   } else if (mark === "clear" && S.flags.accused) {
     delete S.flags.accused[cid];
@@ -6192,6 +6204,12 @@ function applyReply(cid, reply){
   S.chatLog[cid].push({from:"me",text:reply.label,type:"text",t:realTime()});
   if(cid==="jacob" && /水渍|柜台|饮食|手机/.test(reply.label||"")){ S.flags.toldJacobWater=true; if(typeof checkQuestProgress==="function") checkQuestProgress(); }
   S.attention[cid]=(S.attention[cid]||0)+(reply.att||0);
+  /* v3：安抚=靠近他，追问/质疑=你开始不信他。两者都会让他记住你 */
+  try{
+    if(reply.type==="安抚"){ triAdmire(cid,2); }
+    else if(reply.type==="追问"){ triAdmire(cid,1); triSuspect(cid,1); }
+    else if(reply.type==="质疑"){ triSuspect(cid,2); }
+  }catch(e){}
   if(reply.push) S.stage[cid]=Math.min(2,(S.stage[cid]||0)+reply.push);
   if(reply.anomaly){ gainAnomaly(reply.anomaly); S.flags.repliedAnomaly++; }
   if(reply.warnIgnore) S.flags.warningsIgnored+=reply.warnIgnore;
@@ -7837,6 +7855,7 @@ function renderEnding(kind){
       </div>
       <p class="settle-note">危险区域：${esc(dangerStr)} · 身份：${esc(({staff:"工作人员",reporter:"记者",passerby:"路人"})[S.identity]||"—")}</p>
     </div>
+    ${monsterPanelHtml()}
     ${endingExtraPanels()}
     <div class="settle-panel">
       <div class="settle-title">收集度 · ${col.percent}%</div>
@@ -7890,6 +7909,7 @@ function renderHiddenSettlement(){
       </div>
       <p class="settle-note">危险区域：${esc(dangerBits.length?dangerBits.join("、"):"未踏入")} · ${esc(identityAttitudeHint())}</p>
     </div>
+    ${monsterPanelHtml()}
     ${endingExtraPanels()}
     <div class="settle-panel">
       <div class="settle-title">收集度 · ${col.percent}%</div>
@@ -8021,20 +8041,21 @@ function renderStoryIntro(){
   const screen=document.getElementById("screen");
   screen.innerHTML=`<div class="intro-screen">
     <div class="intro-kicker">STORY · 第 0 天</div>
-    <h2 class="glitch-text">同一个最后一天</h2>
+    <h2 class="glitch-text">把手机还给他</h2>
     <div class="intro-body">
       <p>八点差十分，广播说活动到此结束，请游客沿指示牌离场。</p>
       <p>天还没黑透。卖气球的那盏小灯先灭了，接着是兑奖处的卷帘，一格一格往下咬。</p>
       <p>你跟着人流往外走——然后你站住了。</p>
-      <p>因为你知道接下来会发生什么。兑奖处的卷帘会卡在第三格；广播会重复一句已经播过的话；拍照区长椅上有东西在震。你不知道自己为什么知道。你只是知道。</p>
-      <p>长椅上是一部手机。没锁，屏幕亮着。壁纸是一张合影，十一个人，最右边空着一个位置。</p>
-      <p>合影里那些脸你全都认得。</p>
-      <p>可你叫不出任何一个名字。</p>
-      <p class="intro-rule">每年夏天的最后一天，这座园区会重新开一次门。进来的人会被发一个童话身份，照着规则走完三天，才能出去。出去的人第二天照常生活，像什么都没发生过。</p>
-      <p class="intro-rule">上一次，你们十一个人一起进来的。那一次出了问题——有一个人没能出去。</p>
-      <p class="intro-rule">从那以后，每到这一天，他们就被重新拉回来。你也是。他们全都记得上一次。你只记得一种感觉：好像有什么东西，被你忘在了这里。</p>
-      <p class="intro-rule">所以这一次，他们每一个人都会走过来帮你。用各自的方式，帮你"好好过完这三天"。<br>只是每个人对"好好过完"的理解，都不太一样。</p>
-      <p class="intro-rule">入口的木牌上还有三行字，被雨泡糊了。那不是园区写的——是上一次留下来的人，用指甲刻的：<em>别答应风里的名字。</em></p>
+      <p>因为你知道接下来会发生什么。</p>
+      <p>兑奖处的卷帘会卡在第三格。广播会重复一遍已经播过的话。拍照区的长椅上，有东西在震。</p>
+      <p>你全都知道。你不知道自己为什么知道。</p>
+      <p>长椅上是一部手机。没锁，屏幕亮着。壁纸是一张合影——十一个人，最右边空着一个位置。</p>
+      <p>你盯着那张合影看了很久。</p>
+      <p>那些人的脸，你一个一个都认得。</p>
+      <p>你叫不出任何一个名字。</p>
+      <p class="intro-rule">手机震了一下。一条新消息浮上来，只有两个字：<b>在吗</b>。</p>
+      <p class="intro-rule">你把它拿了起来。你想的很简单——还给失主，然后回家。<br>这件事听起来不难。<br>今天晚上，你会试很多次。</p>
+      <p class="intro-rule">入口的木牌上刻着三行字，被雨泡糊了，像是用指甲一下一下划出来的：<em>别答应风里的名字。</em></p>
     </div>
     <div class="intro-tips">回一个人，才会亮起下一个人。夜里十一点以后，他们的话会变短。<br>电量是你的，也有一部分是它的。</div>
     <button class="btn primary" onclick="S.view='title';renderSetup()">开始今晚</button>
@@ -8052,11 +8073,11 @@ function renderLoreBook(){
     <h2 class="glitch-text">这个园区的规矩</h2>
     <p class="lore-lead">你手上只有一部手机。剩下的，是别人愿意告诉你的部分。</p>
 
-    <div class="lore-sec"><h4>这是第几次<span class="tag">副本</span></h4>
-      <p>这不是一座真的游乐场。它是一个会反复开启的副本——每年夏天的最后一天，门开一次，规则重新发一遍，走完三天才能出去。</p>
-      <p>上一次，你们十一个人一起进来。那一次有人没能出去。</p>
-      <p>从那以后，每到这一天，他们就会被重新拉回这张门票上。<b>他们记得每一次。你只记得一种感觉。</b></p>
-      <p>他们都在帮你过这三天。只是"过完"这两个字，十个人有十种理解。</p></div>
+    <div class="lore-sec"><h4>没有人说过能出去<span class="tag">出口</span></h4>
+      <p>园区的闸机在入口，也在出口。它一直在，一直是开的。</p>
+      <p>可是没有一个人走进去过。你问十个人"出去以后是什么"，十个人都答得很顺——但他们答的是<b>听说</b>。</p>
+      <p>没有一个人说"我出去过"。</p>
+      <p>你问他们为什么不走，他们会先愣一下，然后很自然地换个话题。那个愣，很短，但每次都有。</p></div>
 
     <div class="lore-sec"><h4>为什么是童话<span class="tag">假面</span></h4>
       <p>副本不直接给你身份，它给你一个童话里的角色：牧羊人、猎人、面包房学徒、弄臣、守卫、弹琴的人、看风向的人、兔子、大声说话的人、拿麦克风的人。</p>
@@ -8658,6 +8679,7 @@ function maybeRecall(cid){
 
 /* ---------- 嫌疑对质：你标了他，他会察觉 ---------- */
 function maybeConfront(cid){
+  try{ triSuspect(cid,1); }catch(e){}
   if(cid===GROUP_ID || cid==="unknown") return false;
   if(S.day<2) return false;                          // 第一天还没那么敏感
   const acc=S.flags.accused;
@@ -9393,6 +9415,197 @@ function discCardHtml(){
 }
 
 
+/* —— 他们会自己发消息。发一些不该发的东西。你只能看着。 —— */
+const CROOK_WHISPERS = {
+  younghoon: [
+    {t:"今晚的月亮挺圆的吧", k:"月亮"},
+    {t:"我一直在看你。你回头看的时候我没躲。", k:"看"},
+    {t:"照片拍好了吗。我这边是空的。", k:"照片", mark:"tell"},
+    {t:"别站在我前面。光会穿过去。", k:"光", mark:"tell2"},
+  ],
+  kevin: [
+    {t:"你听，刚才那一拍。", k:"一拍"},
+    {t:"我手停了，声音还在。你听见没有。", k:"声音"},
+    {t:"我不是在弹。我只是记得它该响。", k:"弹", mark:"tell"},
+    {t:"后面那段不是我的。别再往下听了。", k:"后面", mark:"tell2"},
+  ],
+  juyeon: [
+    {t:"在。", k:"在"},
+    {t:"我在检票口。我一直在这儿。", k:"检票口"},
+    {t:"你要走就现在走。过了二十步我送不了。", k:"二十步", mark:"tell2"},
+    {t:"我不累。我也不饿。你别问了。", k:"不累", mark:"tell"},
+  ],
+};
+function crookWhisper(cid){
+  const t=triGet();
+  const pool=CROOK_WHISPERS[cid];
+  if(!pool) return;
+  if(!S.flags.crookIdx) S.flags.crookIdx={};
+  const i=S.flags.crookIdx[cid]||0;
+  const w=pool[Math.min(i,pool.length-1)];
+  S.flags.crookIdx[cid]=i+1;
+  const line={from:"them",text:w.t,type:"text",t:realTime(),read:false,beatId:"crook_"+cid+"_"+i};
+  if(!S.chatLog[cid]) S.chatLog[cid]=[];
+  S.chatLog[cid].push(line);
+  S.unread[cid]=(S.unread[cid]||0)+1;
+  if(w.mark==="tell"||w.mark==="tell2"){
+    if(!t.seenTells[cid]) t.seenTells[cid]=[];
+    if(t.seenTells[cid].indexOf(w.mark)<0) t.seenTells[cid].push(w.mark);
+  }
+  if(typeof renderChatList==="function"){} // 由 tick 刷新
+}
+/* 到点就漏一句。越晚越频繁，偏执越高越频繁 */
+function crookTick(){
+  const t=triGet();
+  if(S.flags.ended) return;
+  if(!S.flags.crookNext) S.flags.crookNext={};
+  const now=absMin();
+  Object.keys(CROOK_WHISPERS).forEach(function(cid){
+    const gap=Math.max(18, 60-(t.paranoia||0)*0.35)-(S.day-1)*8;
+    const last=S.flags.crookNext[cid]||0;
+    if(now-last<gap) return;
+    S.flags.crookNext[cid]=now;
+    crookWhisper(cid);
+  });
+}
+/* 偏执本身：怀疑得越多，园子越坏。灯、字、回声。 */
+function paranoiaLevel(){ return (triGet().paranoia||0); }
+function paranoiaHint(){
+  const p=paranoiaLevel();
+  if(p<20) return "";
+  if(p<45) return "灯比刚才暗了一点。你说不清是不是错觉。";
+  if(p<70) return "走廊尽头那盏灯，灭的位置比刚才靠前。";
+  if(p<90) return "你现在看谁，都觉得他在等你先说话。";
+  return "你开始怀疑自己是不是记错了。这才是最糟的。";
+}
+
+/* ==========================================================
+   v3 · 三个数：猜疑 / 欣赏 / 偏执
+   还有一个最终会「长出来」的东西。
+   玩家不看数字，只看人变了。
+   ========================================================== */
+
+/* 三个人从第一天起就不对。不是装的，是他们本来就不对。
+   类型不同，错的方式不同。 */
+const CROOKED = {
+  younghoon: {
+    kind: "身体",
+    tell: "他从来不在照片里。你给他拍，相框里只有背景。他说「我上相」。",
+    tell2: "影子比人慢半拍。你走快些，影子还留在原地。",
+    fear: "你一旦注意到，他会开始站得离墙近一点。"
+  },
+  kevin: {
+    kind: "声音",
+    tell: "他弹琴的时候，琴声比手慢一拍。你盯着看，手停了，声音还在。",
+    tell2: "他说「我弹给你听」，但录音里是空的。他说录音坏了。",
+    fear: "他每次都在同一个地方停住。你问为什么，他说「后面那段不是我的」。"
+  },
+  juyeon: {
+    kind: "存在",
+    tell: "他不吃东西，不喝水，不需要充电。问他累不累，他说「我不累」。",
+    tell2: "他不能离开检票口二十步。你让他送你，他说「我到这儿为止」。",
+    fear: "他不是在守门。他是门的一部分。"
+  },
+};
+
+/* 三维度：猜疑（你怀疑他）/ 欣赏（你靠近他）/ 偏执（你怀疑得越多，园子越坏） */
+function triInit(){
+  if(!S.flags.tri) S.flags.tri={sus:{},adm:{},paranoia:0,nightWho:null,seenTells:{}};
+  const t=S.flags.tri;
+  CHARS.forEach(function(c){
+    if(t.sus[c.id]==null) t.sus[c.id]=0;
+    if(t.adm[c.id]==null) t.adm[c.id]=0;
+  });
+  if(t.paranoia==null) t.paranoia=0;
+  if(!t.seenTells) t.seenTells={};
+  return t;
+}
+function triGet(){ triInit(); return S.flags.tri; }
+
+/* 猜疑：你标他、你质疑他、你反复看他的记录，都会涨 */
+function triSuspect(cid, n){
+  const t=triGet();
+  t.sus[cid]=(t.sus[cid]||0)+(n||1);
+  t.paranoia=Math.min(100,(t.paranoia||0)+(n||1));
+  if(typeof S!=='undefined') S.flags.triDirty=true;
+}
+/* 欣赏：你常找他、回他的话、跟他走，都会涨 */
+function triAdmire(cid, n){
+  const t=triGet();
+  t.adm[cid]=(t.adm[cid]||0)+(n||1);
+}
+/* 偏执：不针对人，针对整个园子。偏执高，灯坏得更快、字更乱、回声更多 */
+function triParanoia(n){
+  const t=triGet();
+  t.paranoia=Math.min(100,(t.paranoia||0)+(n||1));
+}
+
+/* 那件东西：猜疑和欣赏都最高的人 */
+function triVerdict(){
+  const t=triGet();
+  let best=null, bestSum=0, bestSus=0;
+  CHARS.forEach(function(c){
+    const su=t.sus[c.id]||0, ad=t.adm[c.id]||0;
+    if(su<=0 && ad<=0) return;
+    /* 只有被怀疑过的人才会变成"它"——但"又怀疑又离不开"的那个人最危险。
+       双高：sus*adm 直接放大；单边：只算一半。 */
+    let sum;
+    if(su>0 && ad>0) sum = su+ad + Math.min(su,ad)*2.2;
+    else sum = Math.max(su,ad)*0.55;
+    if(sum>bestSum){ bestSum=sum; best=c.id; bestSus=su; }
+  });
+  return best;
+}
+/* 它长成什么样：取决于这个人的童话身份 + 你偏执的深浅 */
+function triMonsterName(cid){
+  const t=triGet();
+  const p=t.paranoia||0;
+  const c=CHARS.find(function(x){return x.id===cid;})||{name:"它"};
+  const role=(FAKE_PARK_ROLES[cid]||{}).title||"";
+  if(p<30) return c.name+" · 还是那个"+role;
+  if(p<60) return c.name+" · "+role+"（不太对了）";
+  if(p<85) return c.name+" · 已经不是"+role+"了";
+  return "它 · 借了"+c.name+"的样子";
+}
+/* 三个不对劲的人：你看见的「不对」几条了 */
+function crookSeenCount(){
+  const t=triGet();
+  return Object.keys(t.seenTells||{}).length;
+}
+function crookMark(cid, which){
+  const t=triGet();
+  if(!t.seenTells[cid]) t.seenTells[cid]=[];
+  if(t.seenTells[cid].indexOf(which)<0){
+    t.seenTells[cid].push(which);
+    triSuspect(cid,2);
+    gainAnomaly(1);
+    toast("你记下了这件事。");
+  }
+}
+
+/* —— 你自己推出来的那件东西 —— */
+function monsterPanelHtml(){
+  const t=triGet();
+  const cid=triVerdict();
+  if(!cid) return "";
+  const c=CHARS.find(function(x){return x.id===cid;})||{name:"它",emoji:"?"};
+  const role=(FAKE_PARK_ROLES[cid]||{}).title||"";
+  const su=t.sus[cid]||0, ad=t.adm[cid]||0;
+  const name=triMonsterName(cid);
+  const crook=CROOKED[cid];
+  const cross = crook ? "他本来就不对——"+crook.kind+"不对。" : "";
+  const wish=(SELFISH_LINE[cid]||"");
+  return `<div class="mon-panel">
+    <div class="mon-k">LAST LOOK · 你自己推出这一步的</div>
+    <div class="mon-name">${esc(name)}</div>
+    <div class="mon-row"><span>你怀疑他的次数</span><b>${su}</b></div>
+    <div class="mon-row"><span>你靠近他的次数</span><b>${ad}</b></div>
+    <div class="mon-row"><span>整个园子被你怀疑成什么样</span><b>${t.paranoia||0}%</b></div>
+    <div class="mon-note">${esc(wish)}</div>
+    <div class="mon-fine">${esc(cross)}这不是它选的。是你一路问下来，把它问成了这样。${(t.paranoia||0)>60?"<br>你越不信，它就越像你以为的那个样子。":""}</div>
+  </div>`;
+}
+
 /* —— 十个人的童话身份册：认出来的才显示背后那句 —— */
 function castSeenList(){
   if(!S.flags.castSeen) S.flags.castSeen=[];
@@ -9445,7 +9658,7 @@ function renderSecondPlay(){
     "【残页·一】你删掉的那些对话，没有真的消失。副本把它们挪到了另一个名字下面——那个名字属于上一次的你。",
     "【残页·二】他们不是第一次陪你走这三天。你每一次问「你是谁」，他们都答一遍；你每一次忘，他们就再答一遍。",
     "【残页·三】空着的那一个座不是没有人的座。是留给上一次没能出去的那个人的。你坐过，所以你知道它有多凉。",
-    "【残页·四】牧羊人的本子上记着每一次的人数。翻到最后一页，写着：第 十一次，还是十一个人，出去十个。",
+    "【残页·四】牧羊人的本子上记着人数。你一页一页往前翻，翻到某一页，字迹忽然不是你认识的那种了。",
     "【残页·五】你这次之所以还记得一点点，是因为上一次的你，在最后那几分钟里，拼命留下了一样东西：这感觉。",
   ];
   screen.innerHTML=`<div class="lore-screen">
@@ -9789,6 +10002,7 @@ window.onload=()=>{
     updateStatus();
     if(typeof tryStatusJumpFace==="function" && S.battery<28 && Math.random()<0.08) tryStatusJumpFace();
     if(typeof maybeOwnerPing==="function") maybeOwnerPing({fromTimer:true});
+    if(typeof crookTick==="function") crookTick();
   }, 4000);
   // 每 45 秒兜底存一次，防止长时间翻备忘录被清掉
   setInterval(()=>{ if(S.playerName && !S.flags.ended) autoSaveNow(); }, 45000);

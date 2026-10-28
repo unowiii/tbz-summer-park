@@ -1,7 +1,18 @@
-const CACHE = "summer-park-v33";
+const CACHE = "summer-park-v34";
 const ASSETS = [
   "./index.html",
   "./guide.html",
+  "./img/zone_stage.png",
+  "./img/zone_bench.png",
+  "./img/zone_food.png",
+  "./img/zone_night.png",
+  "./img/zone_back.png",
+  "./img/zone_lot.png",
+  "./img/zone_game.png",
+  "./img/zone_carousel.png",
+  "./img/zone_fountain.png",
+  "./img/zone_ticket.png",
+  "./img/zone_photo.png",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

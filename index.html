@@ -8257,8 +8257,8 @@ function closeGuide(){ const ov=document.getElementById("guideOverlay"); if(ov) 
 function guideNudge(){
   try{ if(loadMeta().guideSeen) return ""; }catch(e){}
   return '<div class="guide-nudge" id="guideNudge">'
-    +'<span>第一次玩？先看 <b>玩法指南</b>，能省你半小时懵圈。</span>'
-    +'<button onclick="openGuide()">去看看</button>'
+    +'<span>欢迎来到园区。首次游玩前，建议先阅读<b>玩法指南</b>，可帮助你更快熟悉操作。</span>'
+    +'<button onclick="openGuide()">查看指南</button>'
     +'<button class="x" onclick="dismissGuideNudge()">×</button></div>';
 }
 function dismissGuideNudge(){
@@ -8349,7 +8349,7 @@ function renderHome(){
       <button class="app-icon" onclick="renderPuzzleBoard()"><span class="ico">🔢</span><span class="lab">密码板</span></button>
       <button class="app-icon" onclick="renderSaveApp()"><span class="ico">🗂</span><span class="lab">存档</span></button>
     </div>
-    <div class="home-guide-bar" onclick="openGuide()">📘 玩法指南 · 第一次玩？先看这个</div>
+    <div class="home-guide-bar" onclick="openGuide()">📘 玩法指南 · 首次游玩建议先阅读</div>
   </div>`;
 }
 

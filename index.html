@@ -838,6 +838,17 @@ body.flash-safe .anom-stream .bubble,body.flash-safe .missed-dot{animation:none!
 .home-guide-bar{margin-top:14px;text-align:center;font-size:13px;color:rgba(201,149,92,.95);padding:10px 12px;border:1px solid rgba(201,149,92,.28);border-radius:10px;cursor:pointer;letter-spacing:.02em}
 .home-guide-bar:active{background:rgba(201,149,92,.12)}
 
+/* —— 不对劲 · 记录页 —— */
+.crook-card{background:rgba(255,255,255,.035);border:1px solid rgba(165,52,42,.32);border-radius:12px;padding:12px 13px;margin:10px 0}
+.cr-h{display:flex;align-items:center;gap:7px;font-size:14px;color:#ece2d6;margin-bottom:8px}
+.cr-h b{font-weight:600}
+.cr-n{margin-left:auto;font-size:11px;color:#8e7d79;letter-spacing:.06em}
+.cr-note{padding:8px 0 8px 10px;border-left:2px solid rgba(165,52,42,.65);margin-top:6px}
+.cr-note b{display:block;font-size:12.5px;color:#e8b84b;margin-bottom:3px;font-weight:600}
+.cr-note div{font-size:12.5px;line-height:1.75;color:#c9c0b6}
+.cr-empty{font-size:12.5px;color:#7d726d;line-height:1.7}
+.cr-par{margin:14px 0 6px;font-size:12.5px;line-height:1.8;color:#a89490;text-align:center;font-style:italic}
+
 </style>
 </style>
 </style>
@@ -3931,6 +3942,42 @@ function suspectMarkLabel(cid) {
   if (m === "good") return "疑似好人";
   if (m === "bad") return "疑似坏人";
   return "未标记";
+}
+
+/* —— 不对劲 · 你自己记下的三条 —— */
+function renderCrookBoard(){
+  document.getElementById("dock").style.display="none";
+  document.getElementById("menuBtn").style.display="none";
+  const t=triGet();
+  const notes=triAllNotes();
+  const groups=["younghoon","kevin","juyeon"];
+  let blocks="";
+  groups.forEach(function(cid){
+    const c=CHARS.find(function(x){return x.id===cid;})||{name:cid,emoji:"?"};
+    const pool=TRI_NOTES.filter(function(x){return x.id===cid;});
+    const mine=pool.filter(function(x){return (t.seenTells[cid]||[]).indexOf(x.t)>=0;});
+    blocks+=`<div class="crook-card">
+      <div class="cr-h"><span>${c.emoji}</span><b>${esc(c.name)}</b>
+        <span class="cr-n">${mine.length}/${pool.length}</span></div>
+      ${mine.length? mine.map(function(x){
+        return `<div class="cr-note"><b>${esc(x.t)}</b><div>${esc(x.n)}</div></div>`;
+      }).join("") : `<div class="cr-empty">还没看出什么。多跟他待一会儿，多看他两眼。</div>`}
+    </div>`;
+  });
+  const par=t.paranoia||0;
+  const parTxt = par<25 ? "园子还算正常。你也没怎么怀疑过谁。"
+    : par<55 ? "灯有一两盏不亮了。你开始注意别人的手。"
+    : par<80 ? "你走到哪儿，都能听见有人在数数。"
+    : "你已经分不清，是谁先开始不对的。";
+  document.getElementById("screen").innerHTML=`<div class="lore-screen">
+    <div class="lore-h">CROOKED · 只有你看得见</div>
+    <h2 class="glitch-text">不对劲</h2>
+    <p class="lore-lead">这里不写结论。只记你亲眼看见过的、解释不通的那几件事。</p>
+    <p class="lore-lead" style="color:var(--muted);font-size:12px">一共三条。看到过就是看到过，没见过就是没见过——它不会提醒你第二遍。</p>
+    ${blocks}
+    <div class="cr-par">${esc(parTxt)}</div>
+    <button class="btn primary" onclick="S.tab='home';render()">合上</button>
+  </div>`;
 }
 
 function renderSuspectBoard() {
@@ -9482,6 +9529,7 @@ function discCardHtml(){
       <button class="btn" style="flex:1" onclick="renderMonologueApp()">🎭 假面独白${monoNew?' <span style="color:#e8b84b">新</span>':""}<br><small style="color:var(--muted);font-weight:400">${monoHint}</small></button>
       <button class="btn" style="flex:1" onclick="renderGardenerScene()">🌿 园丁的第一现场${gNew?' <span style="color:#e8b84b">新</span>':""}<br><small style="color:var(--muted);font-weight:400">${gHint}</small></button>
     </div>
+    <button class="btn" style="width:100%;margin-top:8px" onclick="renderCrookBoard()">🔍 不对劲 · 你亲眼看见的那几条<br><small style="color:var(--muted);font-weight:400">${triAllNotes().length}/3 · 不会有人替你数</small></button>
     ${ pwIsMirror() ? '<button class="btn" style="width:100%;margin-top:8px" onclick="renderSecondPlay()">🩹 二周目 · 残页（通关后才浮上来）</button>' : "" }
   </div>`;
 }
@@ -9522,7 +9570,9 @@ function crookWhisper(cid){
   S.unread[cid]=(S.unread[cid]||0)+1;
   if(w.mark==="tell"||w.mark==="tell2"){
     if(!t.seenTells[cid]) t.seenTells[cid]=[];
-    if(t.seenTells[cid].indexOf(w.mark)<0) t.seenTells[cid].push(w.mark);
+    const note=(TRI_NOTES||[]).filter(function(x){return x.id===cid;})[w.mark==="tell"?0:1];
+    const label=note?note.t:w.mark;
+    if(t.seenTells[cid].indexOf(label)<0) t.seenTells[cid].push(label);
   }
   if(typeof renderChatList==="function"){} // 由 tick 刷新
 }
@@ -9633,10 +9683,9 @@ function triMonsterName(cid){
   const t=triGet();
   const p=t.paranoia||0;
   const c=CHARS.find(function(x){return x.id===cid;})||{name:"它"};
-  const role=(FAKE_PARK_ROLES[cid]||{}).title||"";
-  if(p<30) return c.name+" · 还是那个"+role;
-  if(p<60) return c.name+" · "+role+"（不太对了）";
-  if(p<85) return c.name+" · 已经不是"+role+"了";
+  if(p<30) return c.name+" · 还是他";
+  if(p<60) return c.name+" · 不太对了";
+  if(p<85) return c.name+" · 已经不是他了";
   return "它 · 借了"+c.name+"的样子";
 }
 /* 三个不对劲的人：你看见的「不对」几条了 */
@@ -9655,6 +9704,41 @@ function crookMark(cid, which){
   }
 }
 
+/* —— 不对劲 · 只给三条，重复的不提示 —— */
+const TRI_NOTES = [
+  {id:"younghoon", t:"照片里没有他", n:"你翻了他所有的照片。每一张，他站过的位置都是空的。他说他上相。"},
+  {id:"younghoon", t:"影子跟不上", n:"太阳在他身后，影子却留在原地。你回头看第二眼，影子动了。"},
+  {id:"kevin", t:"手停了，声音没停", n:"他手放下去了，琴还在响。他说「你听错了」。"},
+  {id:"kevin", t:"录音里是空的", n:"你录了十几秒。放出来只有空调的声。他说录音坏了。"},
+  {id:"juyeon", t:"他不吃不喝", n:"一整天，你没见他喝过一口水。他说「我不渴」。"},
+  {id:"juyeon", t:"二十步", n:"他送你到检票口外二十步，就停了。再多一步，他脸上会抽一下。"},
+];
+function triNoteOf(cid){
+  const t=triGet();
+  return TRI_NOTES.filter(function(x){return x.id===cid && (t.seenTells[cid]||[]).indexOf(x.t)>=0; });
+}
+function triAllNotes(){
+  const t=triGet();
+  return TRI_NOTES.filter(function(x){return (t.seenTells[x.id]||[]).indexOf(x.t)>=0; });
+}
+/* 他察觉到你在看他 */
+function triWatched(cid){
+  const t=triGet();
+  if(!t || !t.seenTells || !t.seenTells[cid] || !t.seenTells[cid].length) return false;
+  const su=t.sus[cid]||0;
+  return su>0 && (su%2===0);
+}
+/* 他此刻以什么态度对你——只给感觉，不给数字 */
+function triToneOf(cid){
+  const t=triGet();
+  const su=t.sus[cid]||0, ad=t.adm[cid]||0;
+  if(su+ad===0) return "";
+  if(ad>=su*2 && ad>2) return "他今天对你说的话比平时多。";
+  if(su>=ad*2 && su>3) return "他今天回得很短。像在等你先说完。";
+  if(su>0 && ad>0) return "他说的话前后有点对不上。你没问。";
+  return "";
+}
+
 /* —— 你自己推出来的那件东西 —— */
 function monsterPanelHtml(){
   const t=triGet();
@@ -9665,7 +9749,12 @@ function monsterPanelHtml(){
   const su=t.sus[cid]||0, ad=t.adm[cid]||0;
   const name=triMonsterName(cid);
   const crook=CROOKED[cid];
-  const cross = crook ? "他本来就不对——"+crook.kind+"不对。" : "";
+  const mine=(t.seenTells && t.seenTells[cid]) || [];
+  const cross = crook
+    ? (mine.length
+        ? "你早就在他身上看见过不对——" + mine.join("、") + "。"
+        : "他本来就不对。只是你一直没往那儿想。")
+    : "";
   const wish=(SELFISH_LINE[cid]||"");
   return `<div class="mon-panel">
     <div class="mon-k">LAST LOOK · 你自己推出这一步的</div>
@@ -9673,6 +9762,7 @@ function monsterPanelHtml(){
     <div class="mon-row"><span>你怀疑他的次数</span><b>${su}</b></div>
     <div class="mon-row"><span>你靠近他的次数</span><b>${ad}</b></div>
     <div class="mon-row"><span>整个园子被你怀疑成什么样</span><b>${t.paranoia||0}%</b></div>
+    <div class="mon-row"><span>你记下的不对劲</span><b>${(t.seenTells&&t.seenTells[cid]?t.seenTells[cid].length:0)} 条</b></div>
     <div class="mon-note">${esc(wish)}</div>
     <div class="mon-fine">${esc(cross)}这不是它选的。是你一路问下来，把它问成了这样。${(t.paranoia||0)>60?"<br>你越不信，它就越像你以为的那个样子。":""}</div>
   </div>`;

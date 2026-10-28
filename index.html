@@ -8154,15 +8154,15 @@ function renderSetup(){
     <h2>你的身份</h2>
     <p class="muted">合理化你在游乐场的位置；工作人员可进入后台对话</p>
     <div class="identity-grid">
-      <button class="pick-card ${S.identity==='staff'?'selected':''}" onclick="S.identity='staff';renderSetup()">
+      <button class="pick-card ${S.identity==='staff'?'selected':''}" onclick="keepName();S.identity='staff';renderSetup()">
         <div class="nm">游乐场临时工作人员</div>
         <div class="desc">工牌通行、后台场务对话、充电点更多。保安/场务把你当自己人。</div>
       </button>
-      <button class="pick-card ${S.identity==='reporter'?'selected':''}" onclick="S.identity='reporter';renderSetup()">
+      <button class="pick-card ${S.identity==='reporter'?'selected':''}" onclick="keepName();S.identity='reporter';renderSetup()">
         <div class="nm">记者</div>
         <div class="desc">采访被防备；异常更快；NPC 更冷。</div>
       </button>
-      <button class="pick-card ${S.identity==='passerby'?'selected':''}" onclick="S.identity='passerby';renderSetup()">
+      <button class="pick-card ${S.identity==='passerby'?'selected':''}" onclick="keepName();S.identity='passerby';renderSetup()">
         <div class="nm">普通路人</div>
         <div class="desc">偶遇失物。标准节奏。</div>
       </button>
@@ -8170,6 +8170,10 @@ function renderSetup(){
     <button class="btn primary" onclick="goLeadPick()">进入园区 · 捡起手机</button>
     <button class="btn ghost" onclick="S.view='title';renderSetup()">返回</button>
   </div>`;
+}
+function keepName(){
+  const i=document.getElementById("nameIn");
+  if(i) S.playerName=(i.value||"").trim().slice(0,8);
 }
 function goLeadPick(){
   if(typeof ambienceUnlock==="function") ambienceUnlock();
@@ -8223,7 +8227,8 @@ function renderMore(){
 }
 /* —— 玩法指南：独立页面 guide.html，游戏内开新窗口 —— */
 function openGuide(){
-  const u=new URL("guide.html?embed=1", location.href).href;
+  const q=location.search.replace(/^\?/,"");
+  const u=new URL("guide.html"+(q?"?"+q+"&embed=1":"?embed=1"), location.href).href;
   if(!document.getElementById("guideDynStyle")){
     const st=document.createElement("style"); st.id="guideDynStyle";
     st.textContent=''
@@ -8245,11 +8250,14 @@ function openGuide(){
     ov=document.createElement("div"); ov.id="guideOverlay";
     ov.innerHTML='<div class="gb" onclick="closeGuide()"></div>'
       +'<div class="bx"><button class="x" onclick="closeGuide()">×</button>'
-      +'<iframe id="guideFrame" src="'+u+'"></iframe></div>';
+      +'<iframe id="guideFrame" src="'+u+'" style="opacity:0" onload="this.style.opacity=1"></iframe></div>';
     document.body.appendChild(ov);
     window.addEventListener("message",function(e){ if(e.data==="closeGuide") closeGuide(); });
   } else {
-    document.getElementById("guideFrame").src=u;
+    const f=document.getElementById("guideFrame");
+    f.style.opacity=0;
+    f.onload=function(){ f.style.opacity=1; };
+    f.src=u;
   }
   ov.style.display="flex";
 }

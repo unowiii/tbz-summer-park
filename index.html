@@ -159,6 +159,16 @@ h1,h2,h3{font-weight:700}
 .bubble .read.glitch{color:var(--danger)}
 .bubble.sys{align-self:center;background:transparent;color:var(--muted);font-size:11px;max-width:90%;text-align:center}
 .photo-thumb{position:relative}
+.memo-ghost{border-left:3px solid rgba(200,200,200,.22);opacity:.94}
+.memo-ghost .mi-t{font-style:italic;color:#c9c2bd;letter-spacing:.4px}
+.memo-ghost .mi-w{color:#8d8884}
+.gallery-row.ghost-row{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;border:1px dashed rgba(200,200,200,.32);opacity:.78}
+.gallery-row.ghost-row .gb{opacity:.6}
+.gallery-row.ghost-tap{opacity:.45;transition:opacity .3s}
+.real-late-card{border-left:3px solid rgba(190,80,80,.55);background:rgba(120,40,40,.07)}
+.real-late-card p{color:#cfb9b4}
+.erode-ghost{opacity:.62}
+.bubble.erode-ghost{font-style:italic;color:#9d9490;background:rgba(255,255,255,.03)}
 .ph-new{position:absolute;top:5px;right:5px;background:var(--crimson,#c0392b);color:#fff;font-size:10px;padding:2px 7px;border-radius:8px;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.5)}
 /* 撤回的消息：只有一行灰字，点它也没用 */
 .bubble.recalled{align-self:flex-start;background:transparent!important;border:1px dashed rgba(255,255,255,.13);color:#75757f;font-size:11px;font-style:italic;cursor:pointer}
@@ -1543,7 +1553,9 @@ function defaultState(){
       dayBriefed:{1:false,2:false,3:false}, disclaimerOk:false,
       refusedCharge:false, chargedCount:0, deadBattery:false,
       missedMsgWindow:false, jumpReduce:false, juyeonHeld:false, softScare:false, alignHints:0, npcMet:[],
-      flashSafe:false, tutorialSeen:false, autoSavedAt:0, anomFrac:0
+      flashSafe:false, tutorialSeen:false, autoSavedAt:0, anomFrac:0,
+      erodeCount:0, memoGhost:0, galleryGhostSeen:0, realLateSeen:false,
+      nameGlitchCount:0, memSaidDay:0, memSaid:0
     },
     milestones:[],
     view:"title", tab:"home", chatWith:null,
@@ -1978,13 +1990,17 @@ function updateStatus(){
   const stripTone=document.getElementById("stripTone");
   if(!sbB) return;
   const label = dayLabel()+" · "+(typeof clockLabel==="function"?clockLabel():fmtTime());
-  if(sbClock) sbClock.textContent = label;
+  if(sbClock){
+    let cTxt = isRealLate() ? (label + " ／ " + realClockText()) : label;
+    if(__erodeClockShift) cTxt = shiftClock(cTxt, __erodeClockShift);
+    sbClock.textContent = cTxt;
+  }
   // legacy ids if present
   const sbT=document.getElementById("sbTime");
   const sbD=document.getElementById("sbDay");
   if(sbT) sbT.textContent=fmtTime();
   if(sbD) sbD.textContent=dayLabel();
-  if(sbN) sbN.textContent=S.playerName||"";
+  if(sbN) sbN.textContent=(Date.now()<__nameGlitch.until? __nameGlitch.text : (S.playerName||""));
   sbB.textContent=Math.ceil(S.battery)+"%";
   sbB.className="bat "+(S.battery<20?"bat-low":S.battery<45?"bat-mid":"bat-ok");
   const phone=document.getElementById("phone");
@@ -2002,6 +2018,351 @@ function updateStatus(){
     strip.style.display="none";
   }
 }
+
+/* =========================================================================
+   恐怖增强四件套
+   1) 真实时间（可被测试钩子覆盖）
+   2) 它记得你：把玩家真实做过的事记在本机，再由"它"说出来
+   3) UI 入侵：状态栏名字、备忘录多一条、图鉴多一个人
+   4) 静默侵蚀：你不动，界面才敢自己变
+   ========================================================================= */
+
+/* —— 1) 真实时间 —— */
+function realNow(){
+  try{ if(window.__fakeRealNow) return new Date(window.__fakeRealNow); }catch(e){}
+  return new Date();
+}
+function realHour(){ return realNow().getHours(); }
+function isRealLate(){ const h=realHour(); return h>=0 && h<5; }
+function realClockText(){ const d=realNow(); const p=n=>String(n).padStart(2,"0"); return p(d.getHours())+":"+p(d.getMinutes()); }
+
+/* —— 2) 它记得你 —— */
+const MEM_KEY="tbz_thrill_mem";
+function loadMem(){
+  const blank={loads:0,deletes:0,runs:0,exits:0,leftTab:"",erasedSlot:0,said:{}};
+  try{
+    const raw=localStorage.getItem(MEM_KEY);
+    if(!raw) return blank;
+    const m=JSON.parse(raw);
+    if(!m || typeof m!=="object") return blank;
+    m.said=m.said||{};
+    return Object.assign(blank,m);
+  }catch(e){ return blank; }
+}
+function saveMem(m){ try{ localStorage.setItem(MEM_KEY, JSON.stringify(m)); }catch(e){} }
+function bumpMem(k,n){
+  const m=loadMem();
+  m[k]=(m[k]||0)+(n==null?1:n);
+  saveMem(m);
+  return m;
+}
+const MEM_TAB_PHRASE={chat:"聊天列表",album:"相册",map:"园区地图",records:"记录",notes:"备忘录",more:"更多",home:"主页",save:"存档页"};
+/* 离开时记下停在哪一页；真正关掉页面才算"关了一次屏幕" */
+function memOnHide(){
+  if(!S||!S.playerName) return;
+  try{
+    const m=loadMem();
+    m.leftTab=S.chatWith?"chat":(S.tab||"home");
+    saveMem(m);
+  }catch(e){}
+}
+function memOnLeave(){
+  if(!S||!S.playerName) return;
+  try{
+    const m=loadMem();
+    m.exits=(m.exits||0)+1;
+    m.leftTab=S.chatWith?"chat":(S.tab||"home");
+    saveMem(m);
+  }catch(e){}
+}
+function memPick(){
+  const m=loadMem();
+  if(!m.said.deletes && (m.deletes||0)>0){
+    return {key:"deletes", text:"你删掉了第 "+(m.erasedSlot||1)+" 格。删之前，你没问过里面那个人愿不愿意。"};
+  }
+  if(!m.said.loads && (m.loads||0)>0){
+    return {key:"loads", text:"你刚才是从前面翻回来的吧。翻的时候，我在这儿。"};
+  }
+  if(!m.said.left && m.leftTab){
+    const ph=MEM_TAB_PHRASE[m.leftTab]||"那一页";
+    return {key:"left", text:"你上次停在「"+ph+"」，然后就走了。屏幕替你留在了那儿。"};
+  }
+  if(!m.said.runs && (m.runs||0)>=2){
+    return {key:"runs", text:"这是第 "+(m.runs+1)+" 次了。门一次比一次松。"};
+  }
+  if(!m.said.exits && (m.exits||0)>=2){
+    return {key:"exits", text:"你把屏幕关掉过 "+(m.exits||0)+" 次。关掉以后，这里没停。"};
+  }
+  return null;
+}
+function memMarkSaid(key){
+  const m=loadMem();
+  m.said[key]=1;
+  saveMem(m);
+}
+function memEndingLine(){
+  const m=loadMem();
+  const parts=[];
+  if((m.deletes||0)>0) parts.push("你删掉过 "+(m.deletes)+" 次存档。被删掉的那一格里，人还在往前走。");
+  if((m.exits||0)>=3) parts.push("你把屏幕关掉过 "+(m.exits)+" 次。每一次，这里都继续。");
+  if((m.loads||0)>=4) parts.push("你一共往回翻了 "+(m.loads)+" 次。翻回去的那几段，现在还留着。");
+  return parts.length?parts[Math.floor(Math.random()*parts.length)]:"";
+}
+function saveAppMemLine(){
+  const m=loadMem();
+  if(!(m.deletes||0)) return "";
+  return `<div class="card" style="margin-top:12px;border-left:3px solid rgba(190,80,80,.45)">
+    <b>关于这几个格子</b>
+    <div class="muted" style="font-size:12.5px;margin-top:4px;line-height:1.65">你删过 ${m.deletes} 次存档。被删掉的那一格，进度没有停——只是你看不到了。</div>
+  </div>`;
+}
+/* 男主替"这里"开口：每局每天最多一句，每句一生只说一次 */
+function maybeMemoryWhisper(cid){
+  if(!S || !S.ownerId || cid!==S.ownerId) return false;
+  if(!S.chatLog || !S.chatLog[cid]) return false;
+  if((S.day||1)<2) return false;
+  if(S.flags.memSaidDay===S.day) return false;
+  if((S.flags.memSaid||0)>=3) return false;
+  const l=memPick();
+  if(!l) return false;
+  memMarkSaid(l.key);
+  S.flags.memSaidDay=S.day;
+  S.flags.memSaid=(S.flags.memSaid||0)+1;
+  S.chatLog[cid].push({from:"them",text:l.text,type:"text",t:realTime(),read:false});
+  if(S.unread) S.unread[cid]=(S.unread[cid]||0)+1;
+  gainAnomaly(1);
+  return true;
+}
+
+/* —— 3) UI 入侵 —— */
+let __nameGlitch={until:0,text:""};
+let __nameGlitchAt=0;
+function maybeNameGlitch(){
+  if(Date.now()-__nameGlitchAt<90000) return false;
+  if(!S||!S.playerName||!S.flags) return false;
+  if(S.flags.ended||S.flags.deadBattery) return false;
+  if((S.day||1)<2) return false;
+  if((S.flags.anomaliesSeen||0)<3) return false;
+  if((S.flags.nameGlitchCount||0)>=3) return false;
+  if(Math.random()>0.3) return false;
+  const pool=CHARS.filter(c=>c.id!==S.ownerId).map(c=>c.name);
+  if(!pool.length) return false;
+  __nameGlitchAt=Date.now();
+  S.flags.nameGlitchCount=(S.flags.nameGlitchCount||0)+1;
+  __nameGlitch={until:Date.now()+1600,text:pool[Math.floor(Math.random()*pool.length)]};
+  setTimeout(()=>{ __nameGlitch={until:0,text:""}; try{updateStatus();}catch(e){} },1700);
+  return true;
+}
+/* 备忘录里多出一条不是他写的 */
+function memGhostTake(){
+  if(!S||!S.flags) return null;
+  const st=S.flags.memoGhost||0;
+  if(st===0){
+    if((S.day||1)<2) return null;
+    if((S.flags.anomaliesSeen||0)<3 && (S.deletedLayer||0)<1) return null;
+    S.flags.memoGhost=1;
+    return "这一行不是我写的。";
+  }
+  if(st===1){ S.flags.memoGhost=2; return null; }  // 再打开一次就没了
+  return null;
+}
+/* 图鉴里多出第 11 个人 */
+function galleryGhostHtml(){
+  if(!S||!S.flags) return "";
+  if(S.flags.galleryGhostSeen) return "";
+  const deep=(S.deletedLayer||0)>=2 || (S.flags.anomaliesSeen||0)>=6 || ((loadMeta().clearCount||0)>=1);
+  if(!deep) return "";
+  return `<button class="gallery-row ghost-row" id="galleryGhost" onclick="galleryGhostTap()">
+    <span class="gb">？</span><div><b>？？？</b><div class="muted">这里没有这个人</div></div><span class="gx">?</span></button>`;
+}
+function galleryGhostTap(){
+  const el=document.getElementById("galleryGhost");
+  if(!el) return;
+  S.flags.galleryGhostSeen=1;
+  el.classList.add("ghost-tap");
+  el.innerHTML=`<span class="gb">　</span><div><b style="color:var(--muted)">这里没有这个人。</b><div class="muted">条目已消失</div></div><span class="gx">　</span>`;
+  gainAnomaly(1);
+  try{ if(typeof playUiSfx==="function") playUiSfx("settings"); }catch(e){}
+  setTimeout(()=>{ try{el.remove();}catch(e){} },1500);
+}
+
+/* —— 4) 静默侵蚀 —— */
+let _erodeT=null, _erodeOn=false, _erodeUndo=[];
+let __erodeClockShift=0;
+/* 把 "第2天 · 21:14" 里的时间整体挪 n 分钟，其余部分原样 */
+function shiftClock(txt,n){
+  if(!n) return txt;
+  return String(txt).replace(/(\d{1,2}):(\d{2})/,function(m,h,mi){
+    let t=parseInt(h,10)*60+parseInt(mi,10)+n;
+    t=((t%1440)+1440)%1440;
+    return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0");
+  });
+}
+const ERODE_LABELS=["别进去","再等一会儿","没有这个人。","先别按"];
+const ERODE_BUBBLES=["（已撤回）","你在看吗","别翻到后面","删掉我。"];
+function erodeClear(){
+  _erodeUndo.forEach(f=>{ try{ f(); }catch(e){} });
+  _erodeUndo=[];
+  _erodeOn=false;
+  const sc=document.getElementById("screen");
+  if(sc) sc.classList.remove("eroding");
+}
+function erodeCanRun(){
+  if(!S||!S.playerName||!S.flags||!S.flags.disclaimerOk) return false;
+  if(S.flags.ended||S.flags.deadBattery) return false;
+  if((S.flags.erodeCount||0)>=4) return false;
+  if((S.day||1)<2 && (S.flags.anomaliesSeen||0)<3) return false;
+  if(S.view==="title"||S.view==="intro") return false;
+  if(document.querySelector(".modal,.night-event")) return false;
+  return true;
+}
+function erodeOnRender(){
+  erodeClear();
+  clearTimeout(_erodeT);
+  if(!erodeCanRun()) return;
+  _erodeT=setTimeout(erodeFire, window.__erodeFast ? 400 : (34000+Math.random()*40000));
+}
+function erodeInterrupt(){
+  if(!_erodeOn) return;
+  erodeClear();
+  clearTimeout(_erodeT);
+  erodeOnRender();
+}
+function erodeFire(){
+  _erodeT=null;
+  if(!erodeCanRun()) return;
+  const screen=document.getElementById("screen");
+  if(!screen) return;
+  const cands=[];
+  /* 时钟倒退两分钟 */
+  cands.push(()=>{
+    const el=document.getElementById("sbDayClock");
+    if(!el) return false;
+    if(!/\d{1,2}:\d{2}/.test(el.textContent)) return false;
+    __erodeClockShift=-2;
+    el.textContent=shiftClock(el.textContent,__erodeClockShift);
+    _erodeUndo.push(()=>{ __erodeClockShift=0; });
+    return true;
+  });
+  /* 某个按钮的字换了 */
+  cands.push(()=>{
+    const btns=Array.from(screen.querySelectorAll(".btn,button.chip")).filter(b=>{
+      const t=(b.textContent||"").trim();
+      return t.length>=2 && t.length<=16;
+    });
+    if(!btns.length) return false;
+    const b=btns[Math.floor(Math.random()*btns.length)];
+    const old=b.textContent;
+    b.textContent=ERODE_LABELS[Math.floor(Math.random()*ERODE_LABELS.length)];
+    b.classList.add("erode-ghost");
+    _erodeUndo.push(()=>{ b.textContent=old; b.classList.remove("erode-ghost"); });
+    return true;
+  });
+  /* 聊天列表多一行 */
+  cands.push(()=>{
+    if(S.tab!=="chat" || S.chatWith) return false;
+    const first=screen.querySelector(".chat-row");
+    if(!first) return false;
+    const row=document.createElement("div");
+    row.className="chat-row erode-ghost";
+    row.style.opacity=".55";
+    row.innerHTML=`<div class="avatar" style="background:#17171b"></div>
+      <div class="chat-meta"><div class="top"><span class="name">…</span><span class="time">--:--</span></div>
+      <div class="prev">在吗</div></div>`;
+    first.parentNode.insertBefore(row, first);
+    _erodeUndo.push(()=>{ try{row.remove();}catch(e){} });
+    return true;
+  });
+  /* 相册多一格 */
+  cands.push(()=>{
+    if(S.tab!=="album") return false;
+    const grid=screen.querySelector(".album-grid");
+    if(!grid) return false;
+    const cell=document.createElement("div");
+    cell.className="photo-thumb erode-ghost";
+    cell.innerHTML=`<div style="width:100%;height:100%;background:rgba(0,0,0,.55)"></div>`;
+    grid.appendChild(cell);
+    _erodeUndo.push(()=>{ try{cell.remove();}catch(e){} });
+    return true;
+  });
+  /* 聊天气泡多一条 */
+  cands.push(()=>{
+    if(!S.chatWith) return false;
+    const holder=screen.querySelector(".bubbles") || screen.querySelector(".chat-view");
+    if(!holder) return false;
+    const b=document.createElement("div");
+    b.className="bubble them erode-ghost";
+    b.textContent=ERODE_BUBBLES[Math.floor(Math.random()*ERODE_BUBBLES.length)];
+    holder.appendChild(b);
+    _erodeUndo.push(()=>{ try{b.remove();}catch(e){} });
+    return true;
+  });
+  /* 主页某个图标的名字变成了省略号 */
+  cands.push(()=>{
+    if(S.tab!=="home") return false;
+    const labs=Array.from(screen.querySelectorAll(".app-icon .lab")).filter(l=>(l.textContent||"").trim().length>0);
+    if(!labs.length) return false;
+    const l=labs[Math.floor(Math.random()*labs.length)];
+    const old=l.textContent;
+    l.textContent="…";
+    _erodeUndo.push(()=>{ l.textContent=old; });
+    return true;
+  });
+  /* 随机打乱后逐个尝试，直到有一个成功 */
+  for(let i=cands.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=cands[i]; cands[i]=cands[j]; cands[j]=t; }
+  for(const fn of cands){
+    let ok=false;
+    try{ ok=fn(); }catch(e){ ok=false; }
+    if(ok){
+      _erodeOn=true;
+      screen.classList.add("eroding");
+      S.flags.erodeCount=(S.flags.erodeCount||0)+1;
+      return;
+    }
+  }
+}
+function erodeBindOnce(){
+  if(window.__erodeBound) return;
+  window.__erodeBound=true;
+  ["pointerdown","keydown","touchstart","wheel","input"].forEach(function(ev){
+    document.addEventListener(ev,function(){ if(_erodeOn) erodeInterrupt(); },{capture:true,passive:true});
+  });
+}
+
+/* —— 真实凌晨专属 —— */
+const REAL_LATE_AREA={
+  night:"现在是凌晨。园区早该闭了，可灯牌还亮着——亮的是你手机上的时间。",
+  empty:"（这一段只在这个点出现。）栅栏外有人在数数。数到你的岁数时，停了一下。",
+  photo:"（这一段只在这个点出现。）长椅上坐着一个背对你的人。他手上没有手机。他在看你手里这块。",
+  back:"（这一段只在这个点出现。）排班表最后一格写着今天的日期，值班人那一栏是空的，笔迹却是湿的。"
+};
+function realLateAreaHtml(zid){
+  if(!isRealLate()) return "";
+  const t=REAL_LATE_AREA[zid];
+  if(!t) return "";
+  if(!S||!S.playerName||(S.flags&&S.flags.ended)) return "";
+  return `<div class="card real-late-card"><p style="margin:0;line-height:1.7;font-size:13px">${esc(t)}</p></div>`;
+}
+function maybeRealLateHook(){
+  if(!S||!S.playerName||!S.flags) return false;
+  if(S.flags.ended||S.flags.deadBattery) return false;
+  if(!isRealLate()) return false;
+  if(S.flags.realLateSeen) return false;
+  S.flags.realLateSeen=true;
+  const now=realClockText();
+  if(S.chatLog && S.chatLog.unknown && S.chatLog.unknown.length){
+    S.chatLog.unknown.push({from:"them",text:"你也醒着。",type:"text",t:now,read:false});
+    if(S.unread) S.unread.unknown=(S.unread.unknown||0)+1;
+  }
+  if(S.ownerId && S.chatLog && S.chatLog[S.ownerId]){
+    S.chatLog[S.ownerId].push({from:"them",text:"现在几点。你那边，也是这个点吧。",type:"text",t:now,read:false});
+    if(S.unread) S.unread[S.ownerId]=(S.unread[S.ownerId]||0)+1;
+  }
+  addRecord("现在", "手机角落多了一个时间，"+now+"。不是你调出来的，和你手上的表一样。");
+  return true;
+}
+erodeBindOnce();
+
 
 // —— Save / load ——
 function saveGame(){
@@ -2079,6 +2440,7 @@ function loadGame(){
 /* 把一份存档对象套回当前游戏（自动存档 / 手动格子共用同一套修复逻辑） */
 function applyLoadedState(loaded){
   try{
+    try{ bumpMem("loads"); }catch(e){}
     if(!loaded || !loaded.playerName){ toast("这份存档读不出来"); return false; }
     const base=defaultState();
     S=Object.assign(base, loaded);
@@ -2153,6 +2515,7 @@ function deleteSlot(i){
   if(!readSlotRaw(i)){ toast("这个格子是空的"); return; }
   if(!confirm("删除格子 "+(i+1)+" 的存档？删掉就找不回来了。")) return;
   try{ localStorage.removeItem(SLOT_KEYS[i]); }catch(e){}
+  try{ const mm=bumpMem("deletes"); mm.erasedSlot=i+1; saveMem(mm); }catch(e){}
   renderSaveApp();
   toast("已删除");
 }
@@ -2291,6 +2654,7 @@ function renderSaveApp(){
         <button class="btn" style="flex:1;margin:0" onclick="openImportSaveCode()">导入存档码</button>
       </div>
     </div>
+    ${saveAppMemLine()}
   </div>`;
 }
 function resetGame(){
@@ -5863,6 +6227,7 @@ function openChat(cid){
   }else{
     toast("他把话收回去了");
   }
+  if(typeof maybeMemoryWhisper==="function") maybeMemoryWhisper(cid);
   drainBattery(0.8);
   advanceTime(2);
   // opening late chat at night may flash
@@ -6876,6 +7241,7 @@ function renderArea(zid){
     ${companionDockHTML(zid)}
     <div class="card"><p style="line-height:1.75;font-size:14px">${esc(txt)}</p>
     <p class="ambient">环境：${ambientSound(zid)}</p></div>
+    ${realLateAreaHtml(zid)}
     ${(()=>{
       let npcHtml="";
       const bonus=(typeof staffBackstageBonus==="function")?staffBackstageBonus(zid):null;
@@ -7314,6 +7680,7 @@ function renderEnding(kind){
     <h1>${esc(title)}</h1>
     <p class="ending-unlock">已解锁：${esc(endingDisplayName(kind))} · 身份：${esc(idLabel)}</p>
     ${ngClearCount()>1?`<p class="muted" style="margin-top:2px">第 ${ngClearCount()} 次走进这个园区。它认得你。</p>`:""}
+    ${memEndingLine()?`<p class="muted" style="margin-top:2px">${esc(memEndingLine())}</p>`:""}
     <p class="muted" style="margin-bottom:8px">${esc(identityAttitudeHint())}</p>
     <div class="body">${bodyToHtml(body)}</div>
     ${(typeof endingRevealBlock==="function"?endingRevealBlock(kind).html:"")}
@@ -7366,6 +7733,7 @@ function renderHiddenSettlement(){
     <h1>结局 · ？？？</h1>
     <p class="ending-unlock">已解锁：隐藏结局 · 身份：${esc(idLabel)}</p>
     ${ngClearCount()>1?`<p class="muted" style="margin-top:2px">第 ${ngClearCount()} 次走进这个园区。它认得你。</p>`:""}
+    ${memEndingLine()?`<p class="muted" style="margin-top:2px">${esc(memEndingLine())}</p>`:""}
     <div class="body">${bodyToHtml(body)}</div>
     ${(typeof endingRevealBlock==="function"?endingRevealBlock("hidden").html:"")}
     ${typeof lastWordBox==="function"?lastWordBox():""}
@@ -7396,6 +7764,7 @@ function charEndingText(cid,n){
   return pickEndingBody("char_"+cid);
 }
 function afterEnd(){
+  try{ bumpMem("runs"); }catch(e){}
   S=defaultState();
   document.getElementById("dock").style.display="none";
   document.getElementById("menuBtn").style.display="none";
@@ -7417,6 +7786,7 @@ function renderEndingGallery(){
     }
     return `<div class="gallery-row locked"><span class="gb">🔒</span><div><b>？？？</b><div class="muted">${esc(c.tease||c.hint)}</div><div class="muted" style="font-size:10px;opacity:.7;margin-top:2px">线索：${esc(c.hint)}</div></div></div>`;
   }).join("");
+  rows += galleryGhostHtml();
   screen.innerHTML=`<div class="ending settle gallery-view">
     <p class="ending-kicker">结局图鉴</p>
     <h1>UNLOCKED ${unlockedCount}/${cat.length}</h1>
@@ -7622,6 +7992,9 @@ function applyFlashSafe(){
 function render(){
   if(typeof syncAnomalyAlias==="function") syncAnomalyAlias();
   applyFlashSafe();
+  if(typeof maybeNameGlitch==="function") maybeNameGlitch();
+  if(typeof maybeRealLateHook==="function") maybeRealLateHook();
+  if(typeof erodeOnRender==="function") erodeOnRender();
   autoSave();
   if(typeof markLateLock==="function") markLateLock();
   updateStatus();
@@ -8528,6 +8901,8 @@ function renderMemoApp(){
         <div class="mi-t">${esc(m.text)}</div></div>`;
     });
   }
+  const _gh=memGhostTake();
+  if(_gh) html+=`<div class="memo-item memo-ghost"><div class="mi-h"><span class="mi-w">不是他的字</span></div><div class="mi-t">${esc(_gh)}</div></div>`;
   html+=`<p class="muted" style="margin-top:12px;text-align:center;font-size:11px">这些字是他写的。手机放在桌上，屏幕自己亮的。</p></div>`;
   screen.innerHTML=html;
 }
@@ -9122,9 +9497,12 @@ window.onload=()=>{
   if(!resumeLastSession()) render();
   // 切后台 / 关页面前强制落盘——iPhone 回收页面是静默的，只能抢在前面存
   const flush=()=>{ try{ flushAutoSave(); }catch(e){} };
-  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") flush(); });
-  window.addEventListener("pagehide", flush);
-  window.addEventListener("beforeunload", flush);
+  const leave=()=>{ try{ flushAutoSave(); }catch(e){} try{ memOnLeave(); }catch(e){} };
+  document.addEventListener("visibilitychange",()=>{
+    if(document.visibilityState==="hidden"){ flush(); try{ memOnHide(); }catch(e){} }
+  });
+  window.addEventListener("pagehide", leave);
+  window.addEventListener("beforeunload", leave);
   setInterval(()=>{
     if(S.flags.ended||!S.playerName) return;
     updateStatus();

@@ -1465,7 +1465,17 @@ const ZONES = [
   {id:"back",name:"后台",hint:"员工通道 / 临时工休息处",unlock:true,safe:true,charge:true,staffPrefer:true},
   {id:"empty",name:"空地",hint:"？？？",unlock:false,danger:true,hidden:true}
 ];
-const TIME_MULT = 1.2; // 时钟流速（越小一天越长）；1.75→1.2：第一天"傍晚到夜里"不再是十几个动作就烧完
+const TIME_MULT = 1.2; // 兜底流速
+/* 每天单独定速：三天要“动作数”均衡，而不是共用同一个倍数。
+   第1天只有 18:30→24:00（330 分钟），第2/3天是整 1440 分钟，
+   同一个倍数会让第一天 20 多个动作就烧完、第二天要一百个动作才熬过去。
+   目标：每天 45~50 个动作走完。
+   0.7 → 330/(10×0.7)≈47；3.0 → 1440/(10×3.0)=48；2.8 → 约 51（通常提前进结局） */
+const TIME_MULT_BY_DAY = {1:0.7, 2:3.0, 3:2.8};
+function timeMult(){
+  const d=Math.min(3, S.day||1);
+  return TIME_MULT_BY_DAY[d] || TIME_MULT;
+}
 const DAY_INFO = {
   1:{
     title:"第1天",
@@ -1683,7 +1693,7 @@ function advanceTime(mins, opts){
   if(S.flags.ended) return;
   opts = opts || {};
   const raw = Math.max(0, mins|0);
-  const add = opts.exact ? raw : Math.round(raw * (opts.mult != null ? opts.mult : TIME_MULT));
+  const add = opts.exact ? raw : Math.round(raw * (opts.mult != null ? opts.mult : timeMult()));
   const prevDay = S.day;
   S.minute += add;
   while(S.minute>=60){S.minute-=60;S.hour++;}
@@ -4947,7 +4957,7 @@ const LEAD_DAY_MEMOS = {
     q: `我一直在等红灯变绿。等了很久。
 你别笑我，我认真的。
 （如果明天我没有回你，不是我不在，是我在等。）`,
-    eric: `哥——不是，我该怎么叫你。算了。
+    eric: `姐——不是，我该怎么叫你。算了。
 今天我在后台数人。数了两次。第二次多了一个。
 我没跟别人说。我只跟你说。`,
     new: `你今天说话的口气变了。比以前短。
@@ -6200,7 +6210,7 @@ const COMP_ZONE_REACT = {
     game:"输了一局。……再来！这次你帮我盯着那个爪子！",
     carousel:"等它修好，我们骑最快的那匹。约好了，你不许赖。",
     fountain:"我刚才把鞋跑掉了一只ㅋㅋ 没人看见吧？……你都看见了？！",
-    night:"哥。……有点安静。你说句话，随便说，我听着。",
+    night:"……有点安静。你说句话，随便说，我听着。",
     back:"后台不让进吧？……诶你都进来了，那我也进。",
     late:"该回去了吧。……我陪你走绕远的那条，慢一点的那种。",
     low:"没电了怎么办ㅠㅠ 我手机也……啊不对，先救你的！"
@@ -6266,16 +6276,16 @@ const COMP_ZONE_REACT = {
     low:"相册存多了会卡。……删吧。删不下去的话，传给我。"
   },
   hyunjae:{
-    stage:"这舞台我偷偷上去过。……嘘，哥的秘密，只告诉你一份。",
+    stage:"这舞台我偷偷上去过。……嘘，这是我的秘密，只告诉你一份。",
     food:"烤串我包了。……别数我吃了几串，数了咱俩都尴尬。",
     photo:"你连拍了我三张？……删两张。留最好的那张。",
-    game:"这台机器我第一天就通关了。……想学？手放上来，哥教你。",
+    game:"这台机器我第一天就通关了。……想学？手放上来，我教你。",
     carousel:"转太快会晕。……你要晕就抓我袖子，抓歪了也行。",
     fountain:"许愿要收费的，一枚硬币。……穷人的愿望都攒着。我也是。",
     night:"夜场这地方……白天说它坏话的，晚上都来了。走里面点。",
-    back:"后台的排班表我会看。……谁晚上值夜，哥都替你筛过一遍。",
-    late:"十点了。哥不是你妈。……但你手机再不省电，明天谁叫你起床。",
-    low:"省电模式。……不，关了我一个就行。看哥的。"
+    back:"后台的排班表我会看。……谁晚上值夜，我都替你筛过一遍。",
+    late:"十点了。我不是你妈。……但你手机再不省电，明天谁叫你起床。",
+    low:"省电模式。……不，关了我一个就行。看我的。"
   },
   kevin:{
     stage:"灯牌闪的频率是 4/4 拍。……你看，整个园区都有节拍。",
@@ -6332,7 +6342,7 @@ const COMPANION_LINES = {
     home:["这摊位的老板认识我ㅋㅋ","我知道近路！……大概是这边。"],
     fear:["……这儿我不去。真的不去。","别拉我。……好吧，走。"],
     camera:["拍我拍我！","你拍到的那个……不是我吧？"],
-    late:["哥。……你听见了吗。","我们回去吧。我说真的。"],
+    late:["……你听见了吗。","我们回去吧。我说真的。"],
     low:["没电了怎么办。我手机也没电。","你把屏幕调暗一点。"]
   },
   new:{
@@ -6376,7 +6386,7 @@ const COMPANION_LINES = {
     low:["关屏幕。","省着用。"]
   },
   hyunjae:{
-    enter:["走，哥带路——别真信我ㅋㅋ","跟着。我走得慢，你正好跟上。"],
+    enter:["走，我带路——别真信我ㅋㅋ","跟着。我走得慢，你正好跟上。"],
     home:["这边我摸过三遍。闭着眼都能走。","夜场？我最熟。这不是好事。"],
     fear:["不去。这地方会吞声音。","……行吧。但你得一直说话，让我知道你在。"],
     camera:["拍我干嘛，我又不上镜。","哎——你刚才拍到的那个，别删。"],
@@ -8022,7 +8032,9 @@ function renderGroupChat(){
 /* ---------- 消息撤回：他等你回，等到不耐烦就把话收回去 ---------- */
 function recallWindow(){
   const d=S.day||1;
-  return d>=3?85:d>=2?130:150;   // 园内分钟；越到后面越没有耐心
+  // 按“动作次数”折算成分钟，不能写死分钟——每天流速不同，写死会让第三天变成两三步就撤回
+  const acts = d>=3 ? 8 : 12;   // 他愿意等几个动作
+  return Math.round(acts*10*timeMult());
 }
 function maybeRecall(cid){
   if(cid===GROUP_ID || cid==="unknown") return false;
@@ -8058,7 +8070,7 @@ function maybeConfront(cid){
   const acc=S.flags.accused;
   if(!acc || acc[cid]==null) return false;
   if((S.flags.confrontDone||{})[cid]) return false;
-  if(absMin()-acc[cid]<8) return false;              // 刚标完不会立刻被察觉
+  if(absMin()-acc[cid] < Math.round(10*timeMult())) return false;              // 刚标完不会立刻被察觉（约一个动作）
   S.flags.confrontDone=S.flags.confrontDone||{};
   S.flags.confrontDone[cid]=true;
   const isOwner=(cid===S.ownerId);

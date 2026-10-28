@@ -849,6 +849,69 @@ body.flash-safe .anom-stream .bubble,body.flash-safe .missed-dot{animation:none!
 .cr-empty{font-size:12.5px;color:#7d726d;line-height:1.7}
 .cr-par{margin:14px 0 6px;font-size:12.5px;line-height:1.8;color:#a89490;text-align:center;font-style:italic}
 
+/* —— 数值面板 —— */
+.tri-card{margin:10px 0;background:linear-gradient(180deg,rgba(58,16,14,.34),rgba(16,8,8,.55));border:1px solid rgba(165,52,42,.42);border-radius:12px;padding:11px 13px;cursor:pointer}
+.tri-h{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.16em;color:rgba(214,120,110,.9);margin-bottom:8px}
+.tri-go{color:#8e7d79;letter-spacing:.04em}
+.tri-line{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:11.5px}
+.tri-nm{width:64px;color:#cfc6bb;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tri-bar{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.07);display:flex;overflow:hidden}
+.tri-bar i{display:block;height:100%}
+.b-sus{background:linear-gradient(90deg,#7a2b26,#c0392b)}
+.b-adm{background:linear-gradient(90deg,#8a6a2a,#e8b84b)}
+.b-par{background:linear-gradient(90deg,#4a3f6b,#9370db)}
+.tri-num{width:82px;text-align:right;color:#9c8f8a;flex:none;font-variant-numeric:tabular-nums}
+.tri-par-line{margin-top:6px;padding-top:6px;border-top:1px dashed rgba(255,255,255,.08)}
+.tri-empty{font-size:12px;color:#7d726d;line-height:1.7}
+.tri-foot{margin-top:7px;font-size:11.5px;color:#a89490}
+.tri-foot b{color:#e8b84b;font-weight:600}
+
+.sb-par{background:rgba(255,255,255,.04);border:1px solid rgba(147,112,219,.3);border-radius:12px;padding:12px;margin:12px 0}
+.sb-par-h{display:flex;justify-content:space-between;font-size:13px;color:#d8cec4;margin-bottom:7px}
+.sb-par-h b{color:#b39ddb}
+.sb-par-bar{height:8px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden}
+.sb-par-bar i{display:block;height:100%;background:linear-gradient(90deg,#4a3f6b,#9370db)}
+.sb-par-t{margin-top:8px;font-size:12px;color:#a89490;line-height:1.7}
+.sb-table{border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;margin:12px 0}
+.sb-tr{display:grid;grid-template-columns:1.5fr .7fr .7fr .8fr;align-items:center;padding:9px 11px;font-size:12.5px;border-bottom:1px solid rgba(255,255,255,.05)}
+.sb-tr:last-child{border-bottom:0}
+.sb-th{background:rgba(255,255,255,.05);color:#8e7d79;font-size:11px;letter-spacing:.08em}
+.sb-v{text-align:center;font-variant-numeric:tabular-nums}
+.sb-v-sus{color:#e07a6a}.sb-v-adm{color:#e8b84b}.sb-v-note{color:#9c8f8a}
+.sb-danger{background:rgba(165,52,42,.12)}
+.sb-lead{box-shadow:inset 3px 0 0 #c0392b}
+.sb-nm{color:#e7dcd0;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.sb-tag{font-style:normal;font-size:9.5px;padding:1px 5px;border-radius:6px;background:rgba(192,57,43,.28);color:#f0b3aa}
+.sb-mon{margin:14px 0;padding:12px;border-radius:12px;background:rgba(165,52,42,.1);border:1px solid rgba(165,52,42,.34)}
+.sb-mon-k{font-size:10px;letter-spacing:.2em;color:rgba(214,120,110,.85)}
+.sb-mon-n{margin-top:6px;font-size:16px;color:#f2e2dc;font-weight:600}
+.sb-mon-t{margin-top:7px;font-size:11.5px;color:#8e7d79;line-height:1.7}
+.sb-empty{padding:14px;font-size:12.5px;color:#7d726d;line-height:1.8;border:1px dashed rgba(255,255,255,.12);border-radius:12px;margin:12px 0}
+
+/* —— 主页动作卡 —— */
+.act-card{margin:10px 0;border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;background:rgba(255,255,255,.02)}
+.act-h{padding:9px 13px;font-size:11px;letter-spacing:.16em;color:#8e7d79;border-bottom:1px solid rgba(255,255,255,.06)}
+.act-row{display:flex;align-items:center;gap:10px;width:100%;padding:11px 13px;background:none;border:0;border-bottom:1px solid rgba(255,255,255,.05);text-align:left;cursor:pointer;color:inherit}
+.act-row:last-child{border-bottom:0}
+.act-i{font-size:17px;flex:none;width:22px;text-align:center}
+.act-t{flex:1;min-width:0}
+.act-t b{display:block;font-size:13px;color:#e7dcd0;font-weight:600}
+.act-t small{display:block;font-size:11px;color:#8e7d79;margin-top:2px}
+.act-n{font-size:11.5px;color:#7d726d;flex:none;font-variant-numeric:tabular-nums}
+.act-row:active{background:rgba(255,255,255,.05)}
+
+/* —— 更多页分组 —— */
+.more-page h3{margin-bottom:4px}
+.more-grp{margin:14px 0}
+.more-gt{font-size:10.5px;letter-spacing:.18em;color:#8e7d79;margin-bottom:7px;padding-left:2px}
+.more-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.more-cell{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 4px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:#d8cec4;cursor:pointer;font-size:11px;line-height:1.3}
+.more-cell span{font-size:19px}
+.more-cell b{font-weight:500}
+.more-cell i{font-style:normal;font-size:9px;color:#8e7d79;display:block;margin-top:1px}
+.more-cell[disabled]{opacity:.36}
+.more-exit{border-color:rgba(165,52,42,.4);color:#e0a49b}
+
 </style>
 </style>
 </style>
@@ -3942,6 +4005,110 @@ function suspectMarkLabel(cid) {
   if (m === "good") return "疑似好人";
   if (m === "bad") return "疑似坏人";
   return "未标记";
+}
+
+/* —— 数值面板：明写数字 —— */
+function triLeadNow(){
+  const t=triGet();
+  let best=null,bestScore=-1;
+  CHARS.forEach(function(c){
+    const su=t.sus[c.id]||0, ad=t.adm[c.id]||0;
+    const sc=(su+ad)+(su>0&&ad>0?Math.min(su,ad)*1.5:0);
+    if(sc>bestScore){bestScore=sc;best=c.id;}
+  });
+  return best;
+}
+function triRowsData(){
+  const t=triGet();
+  const arr=CHARS.map(function(c){
+    return {id:c.id, name:c.name, emoji:c.emoji, color:c.color,
+      sus:t.sus[c.id]||0, adm:t.adm[c.id]||0,
+      notes:(t.seenTells&&t.seenTells[c.id]?t.seenTells[c.id].length:0)};
+  }).filter(function(x){ return x.sus>0||x.adm>0; });
+  arr.sort(function(a,b){ return (b.sus+b.adm)-(a.sus+a.adm); });
+  return arr;
+}
+/* 主页上的迷你数值条 */
+function triMiniHtml(){
+  const t=triGet();
+  const rows=triRowsData();
+  const par=Math.min(100,t.paranoia||0);
+  const lead=triVerdict();
+  const leadName=lead?(CHARS.find(function(c){return c.id===lead;})||{}).name:"—";
+  const mw=Math.max(6,Math.round(par));
+  let list;
+  if(!rows.length){
+    list=`<div class="tri-empty">还没有数。你回一个人、怀疑一个人，这里才开始动。</div>`;
+  }else{
+    list=rows.slice(0,3).map(function(r){
+      const tot=r.sus+r.adm;
+      const sw=Math.max(3,Math.round(r.sus/Math.max(tot,1)*100));
+      return `<div class="tri-line">
+        <span class="tri-nm">${esc(r.name)}</span>
+        <span class="tri-bar"><i class="b-sus" style="width:${sw}%"></i><i class="b-adm" style="width:${100-sw}%"></i></span>
+        <span class="tri-num">疑 ${r.sus} · 赏 ${r.adm}</span>
+      </div>`;
+    }).join("");
+  }
+  return `<div class="tri-card" onclick="renderStatBoard()">
+    <div class="tri-h"><span>本局数值</span><span class="tri-go">详情 ›</span></div>
+    ${list}
+    <div class="tri-line tri-par-line">
+      <span class="tri-nm">偏执</span>
+      <span class="tri-bar"><i class="b-par" style="width:${mw}%"></i></span>
+      <span class="tri-num">${par}%</span>
+    </div>
+    <div class="tri-foot">它现在最像 <b>${esc(leadName)}</b>${par>=60?"　·　越不信，越像":""}</div>
+  </div>`;
+}
+/* 完整数值页 */
+function renderStatBoard(){
+  document.getElementById("dock").style.display="none";
+  document.getElementById("menuBtn").style.display="none";
+  const t=triGet();
+  const rows=triRowsData();
+  const par=Math.min(100,t.paranoia||0);
+  const lead=triVerdict();
+  const leadName=lead?(CHARS.find(function(c){return c.id===lead;})||{}).name:"还没长出来";
+  let table;
+  if(!rows.length){
+    table=`<div class="sb-empty">还没有任何数值。带上一个人走一趟，或回他一句话，这里就会有数。</div>`;
+  }else{
+    table=`<div class="sb-table">
+      <div class="sb-tr sb-th"><span>他</span><span>猜疑</span><span>欣赏</span><span>不对劲</span></div>
+      ${rows.map(function(r){
+        const danger=(r.sus>0&&r.adm>0);
+        return `<div class="sb-tr${danger?" sb-danger":""}${lead===r.id?" sb-lead":""}">
+          <span class="sb-nm">${r.emoji||""} ${esc(r.name)}${lead===r.id?'<i class="sb-tag">它在长</i>':""}</span>
+          <span class="sb-v sb-v-sus">${r.sus}</span>
+          <span class="sb-v sb-v-adm">${r.adm}</span>
+          <span class="sb-v sb-v-note">${r.notes}/2</span>
+        </div>`;
+      }).join("")}
+    </div>`;
+  }
+  const parTxt = par<25 ? "园子还算正常。"
+    : par<55 ? "灯有一两盏不亮了。你开始注意别人的手。"
+    : par<80 ? "你走到哪儿都能听见有人在数数。"
+    : "你已经分不清，是谁先开始不对的。";
+  document.getElementById("screen").innerHTML=`<div class="lore-screen">
+    <div class="lore-h">STATUS · 本局</div>
+    <h2 class="glitch-text">数值</h2>
+    <p class="lore-lead">猜疑＝你怀疑他几次；欣赏＝你靠近他几次；不对劲＝你亲眼看见他不对的地方（满分 2）。</p>
+    <div class="sb-par">
+      <div class="sb-par-h"><span>偏执</span><b>${par}%</b></div>
+      <div class="sb-par-bar"><i style="width:${par}%"></i></div>
+      <div class="sb-par-t">${esc(parTxt)}</div>
+    </div>
+    ${table}
+    <div class="sb-mon">
+      <div class="sb-mon-k">它现在</div>
+      <div class="sb-mon-n">${esc(lead==="还没长出来"?"":triMonsterName(lead)) || "还没长出来"}</div>
+      <div class="sb-mon-t">双高（既怀疑又离不开）的那个人，长得最快。单边只能算半个。</div>
+    </div>
+    <button class="btn primary" onclick="S.tab='home';render()">回主页</button>
+    <button class="btn" onclick="renderCrookBoard()">🔍 不对劲 · 看见的那几条</button>
+  </div>`;
 }
 
 /* —— 不对劲 · 你自己记下的三条 —— */
@@ -8385,25 +8552,42 @@ function renderMore(){
   const day=S.day||1;
   const screen=document.getElementById("screen");
   const lock=day<2;
-  screen.innerHTML=`<div>
+  screen.innerHTML=`<div class="more-page">
     <h3>更多</h3>
-    <p class="muted" style="margin-bottom:8px">背包和备忘录在主页就能点。这里放的是更深的入口。</p>
-    <button class="btn" onclick="renderInventory()">🎒 背包</button>
-    <button class="btn" onclick="gotoTab('records')">📎 记录</button>
-    <button class="btn" onclick="gotoTab('notes')">📝 笔记</button>
-    <button class="btn" onclick="showDayCard(S.day,{instant:true})">📅 今日日程</button>
-    <button class="btn" ${lock?"disabled":""} onclick="${lock?"toast('删除层第二天再开')":"renderDeleted()"}">🗑 已删除${lock?" · 明天":""}</button>
-    <button class="btn" onclick="renderPlayHub()">🎮 小游戏${lock?" · 明天":""}</button>
-    <button class="btn" ${day<2?"disabled":""} onclick="${day<2?"toast('先把第一晚走完')":"renderSuspectBoard()"}">🔎 嫌疑板</button>
-    <button class="btn" onclick="renderMemoApp()">🗒 备忘录 · 只记他</button>
-    <button class="btn" onclick="renderMonologueApp()">🎭 假面独白</button>
-    <button class="btn" onclick="renderGardenerScene()">🌿 园丁的第一现场</button>
-    <button class="btn" onclick="renderSettingsApp()">⚙️ 音量与突脸</button>
-    <button class="btn" onclick="openMenu()">菜单 · 存档 · 音乐</button>
-    <button class="btn" onclick="renderRules('more')">🪧 入园守则</button>
-    <button class="btn" onclick="renderLoreBook()">📖 园区的规矩</button>
-    <button class="btn" onclick="openGuide()">📘 玩法指南</button>
-    <button class="btn ghost" onclick="tryLeavePark()">🚪 离开园区</button>
+    <p class="muted" style="margin-bottom:4px">背包、备忘录、数值在主页就能点。这里是剩下的。</p>
+
+    <div class="more-grp"><div class="more-gt">查看</div>
+      <div class="more-grid">
+        <button class="more-cell" onclick="renderStatBoard()"><span>📊</span><b>数值</b></button>
+        <button class="more-cell" onclick="renderCrookBoard()"><span>🔍</span><b>不对劲</b></button>
+        <button class="more-cell" onclick="renderInventory()"><span>🎒</span><b>背包</b></button>
+        <button class="more-cell" onclick="renderMemoApp()"><span>🗒</span><b>备忘录</b></button>
+        <button class="more-cell" onclick="gotoTab('records')"><span>📎</span><b>记录</b></button>
+        <button class="more-cell" onclick="gotoTab('notes')"><span>📝</span><b>笔记</b></button>
+      </div>
+    </div>
+
+    <div class="more-grp"><div class="more-gt">深入</div>
+      <div class="more-grid">
+        <button class="more-cell" ${lock?"disabled":""} onclick="${lock?"toast('删除层第二天再开')":"renderDeleted()"}"><span>🗑</span><b>已删除${lock?"<i>明天</i>":""}</b></button>
+        <button class="more-cell" onclick="renderPlayHub()"><span>🎮</span><b>小游戏</b></button>
+        <button class="more-cell" ${day<2?"disabled":""} onclick="${day<2?"toast('先把第一晚走完')":"renderSuspectBoard()"}"><span>🔎</span><b>嫌疑板${day<2?"<i>明天</i>":""}</b></button>
+        <button class="more-cell" onclick="renderGardenerScene()"><span>🌿</span><b>园丁</b></button>
+        <button class="more-cell" onclick="renderMonologueApp()"><span>🎭</span><b>假面独白</b></button>
+        <button class="more-cell" onclick="showDayCard(S.day,{instant:true})"><span>📅</span><b>日程</b></button>
+      </div>
+    </div>
+
+    <div class="more-grp"><div class="more-gt">设置与说明</div>
+      <div class="more-grid">
+        <button class="more-cell" onclick="renderSettingsApp()"><span>⚙️</span><b>音量与突脸</b></button>
+        <button class="more-cell" onclick="openMenu()"><span>☰</span><b>存档 / 音乐</b></button>
+        <button class="more-cell" onclick="renderRules('more')"><span>🪧</span><b>入园守则</b></button>
+        <button class="more-cell" onclick="renderLoreBook()"><span>📖</span><b>园区规矩</b></button>
+        <button class="more-cell" onclick="openGuide()"><span>📘</span><b>玩法指南</b></button>
+        <button class="more-cell more-exit" onclick="tryLeavePark()"><span>🚪</span><b>离开园区</b></button>
+      </div>
+    </div>
   </div>`;
 }
 /* —— 玩法指南：独立页面 guide.html，游戏内开新窗口 —— */
@@ -8520,10 +8704,11 @@ function renderHome(){
       <p>${esc(step.sub)}</p>
       <button class="btn primary" onclick="doNextStep()">${esc(step.label)}</button>
     </div>
-    ${guideNudge()}
-    ${discCardHtml()}
-    ${guideHtml()}
     ${alert}
+    ${triMiniHtml()}
+    ${guideNudge()}
+    ${actionCardHtml()}
+    ${guideHtml()}
     <div class="today-tip"><div class="tt">${esc(dayLabel())}</div>${esc(info.tone)}</div>
     <div class="home-apps">
       <button class="app-icon" onclick="gotoTab('chat')"><span class="ico">💬</span><span class="lab">聊天${unreadTotal?`(${unreadTotal})`:""}</span></button>
@@ -9503,6 +9688,44 @@ function zoneReLook(zid){
   renderArea(zid);
 }
 /* —— 主页：两处深入口的显眼提示 —— */
+/* 主页「深入入口」——改成分组动作卡，不再和数值混在一起 */
+function actionCardHtml(){
+  if(S.flags.ended) return "";
+  const monoRead=S.flags.monoRead||[];
+  const monoAvail=CHARS.filter(c=>monoUnlocked(c.id)&&monoRead.indexOf(c.id)<0).length;
+  const gOk=gardenUnlocked();
+  const gSeen=(S.flags.gardenSeen||[]).length;
+  const crookN=triAllNotes().length;
+  const day=S.day||1;
+  let a2,a3;
+  a2 = !gOk ? "第二天才开" : (gSeen===0?"四件东西摆在里面":(gSeen<4?gSeen+"/4 看过":"已经去过了"));
+  a3 = day<2 ? "第二晚才开" : "标记谁像好人／坏人";
+  return `<div class="act-card">
+    <div class="act-h">往下走</div>
+    <button class="act-row" onclick="renderCrookBoard()">
+      <span class="act-i">🔍</span>
+      <span class="act-t"><b>不对劲</b><small>你亲眼看见的那几条</small></span>
+      <span class="act-n">${crookN}/3 ›</span>
+    </button>
+    <button class="act-row" onclick="renderMonologueApp()">
+      <span class="act-i">🎭</span>
+      <span class="act-t"><b>假面独白</b><small>${monoAvail>0?"有 "+monoAvail+" 段可以听了":"跟他多说几句"}</small></span>
+      <span class="act-n">›</span>
+    </button>
+    <button class="act-row" onclick="renderGardenerScene()">
+      <span class="act-i">🌿</span>
+      <span class="act-t"><b>园丁的第一现场</b><small>${esc(a2)}</small></span>
+      <span class="act-n">›</span>
+    </button>
+    <button class="act-row" onclick="${day<2?"toast('第二晚才开')":"renderSuspectBoard()"}" ${day<2?'style="opacity:.45"':""}>
+      <span class="act-i">🔎</span>
+      <span class="act-t"><b>嫌疑板</b><small>${esc(a3)}</small></span>
+      <span class="act-n">›</span>
+    </button>
+    ${ pwIsMirror() ? `<button class="act-row" onclick="renderSecondPlay()"><span class="act-i">🩹</span><span class="act-t"><b>二周目 · 残页</b><small>通关后才浮上来</small></span><span class="act-n">›</span></button>` : "" }
+  </div>`;
+}
+
 function discCardHtml(){
   if(S.flags.ended) return "";
   const monoRead=S.flags.monoRead||[];

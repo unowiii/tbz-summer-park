@@ -1590,30 +1590,28 @@ function deliverDayEssays(day){
   if(!DAY_ESSAYS[day]) return;
   const key="essay_"+day;
   if(S.flags[key]) return;
+  // 只有所选男主会写；而且只在凌晨（00:00–04:59）送到，其他时间不发
+  if(S.hour>=5) return;
   S.flags[key]=true;
   const name=S.playerName||"你";
-  CHARS.forEach(c=>{
-    const raw=DAY_ESSAYS[day][c.id];
-    if(!raw) return;
-    if(!S.chatLog[c.id]) S.chatLog[c.id]=[];
-    S.chatLog[c.id].push({from:"them",text:raw.replace(/\(名字\)/g,name),type:"text",t:realTime(),essay:true});
-    S.unread[c.id]=(S.unread[c.id]||0)+1;
-  });
-  toast("第"+day+"天结束。十个人都写了一段，在聊天里。");
+  const lead=S.ownerId;
+  const raw=lead?DAY_ESSAYS[day][lead]:null;
+  if(!raw) return;
+  const c=CHARS.find(x=>x.id===lead);
+  if(!S.chatLog[lead]) S.chatLog[lead]=[];
+  S.chatLog[lead].push({from:"them",text:raw.replace(/\(名字\)/g,name),type:"text",t:realTime(),essay:true});
+  S.unread[lead]=(S.unread[lead]||0)+1;
+  toast("凌晨了。"+(c?c.name:"他")+"给你写了一段很长的话。");
 }
 function essaysHtml(day){
-  if(typeof deliverDayEssays==="function") deliverDayEssays(day);
+  // 结算页也只放男主那封（其他九人不再发小作文）
   const pack=DAY_ESSAYS[day];
-  if(!pack) return "";
+  if(!pack || !S.ownerId || !pack[S.ownerId]) return "";
   const name=S.playerName||"你";
-  let h='<div class="settle-panel"><div class="settle-title">第'+day+'天 · 他们写给你的</div>';
-  CHARS.forEach(c=>{
-    const t=String(pack[c.id]||"").replace(/\(名字\)/g,name);
-    const open=c.id===S.ownerId?" open":"";
-    const tag=c.id===S.ownerId?" · 男主":"";
-    h+='<details'+open+' style="margin:8px 0"><summary>'+esc(c.name)+tag+'</summary><p style="white-space:pre-wrap;line-height:1.7;font-size:13px;margin-top:6px">'+esc(t)+'</p></details>';
-  });
-  return h+"</div>";
+  const c=CHARS.find(x=>x.id===S.ownerId)||{name:"他"};
+  const t=String(pack[S.ownerId]).replace(/\(名字\)/g,name);
+  return '<div class="settle-panel"><div class="settle-title">第'+day+'天凌晨 · '+esc(c.name)+'写给你的</div>'
+    +'<p style="white-space:pre-wrap;line-height:1.7;font-size:13px;margin:8px 0">'+esc(t)+'</p></div>';
 }
 function lastWordReply(){
   const said=S.flags.lastWords||"";
@@ -1758,7 +1756,7 @@ function nextStep(){
     if(!p.night) return {title:"去一趟夜场",sub:"看完就回饮食区或舞台充电。",go:"map",label:"打开地图"};
     if(p.spot<1) return {title:"找出不一样的那一格",sub:"今晚只玩这一局。",go:"play",label:"开始"};
     if(p.marked<1) return {title:"标一个嫌疑",sub:"凭今天的对话，标一个你觉得不对、或觉得没事的人。",go:"suspect",label:"去标"};
-    return {title:"第二天结束前",sub:"再过一夜，聊天里会多出今天的小作文。也可以现在离开。",go:"leave",label:"离开园区"};
+    return {title:"第二天结束前",sub:"过了凌晨，他会给你写一段很长的话。也可以现在离开。",go:"leave",label:"离开园区"};
   }
   return {title:"怎么离开",sub:"放回长椅，带着看到的走，或顺着聊得最多的人。",go:"leave",label:"去结局"};
 }
@@ -7090,7 +7088,7 @@ function renderHome(){
 function renderChatList(){
   ensureSeedChats();
   const screen=document.getElementById("screen");
-  let html=`<h3 style="margin-bottom:8px">聊天</h3><p class="muted" style="margin-bottom:8px">灰掉的还没说话。每天结束，每个人都会发一段小作文。</p>`;
+  let html=`<h3 style="margin-bottom:8px">聊天</h3><p class="muted" style="margin-bottom:8px">灰掉的还没说话。过了凌晨，他会在聊天里给你写一段很长的话。</p>`;
   const open=new Set(chatUnlockedIds());
   CHARS.forEach(c=>{
     const log=S.chatLog[c.id]||[];

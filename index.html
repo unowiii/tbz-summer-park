@@ -330,6 +330,35 @@ h1,h2,h3{font-weight:700}
   0%{background:rgba(180,60,90,.45);color:#fff}
   100%{background:rgba(93,173,226,.12);color:#a8d4f0}
 }
+
+/* —— 减弱闪烁（光敏感友好）：只关高频闪，保留渐入与位移 —— */
+body.flash-safe .jump-face.show,body.flash-safe .scare.show{
+  animation:none!important;background:rgba(38,0,0,.72)!important;
+}
+body.flash-safe .jump-face .face-wrap,body.flash-safe .jump-face .face,
+body.flash-safe .scare .face{animation:none!important}
+body.flash-safe .phone.day-flash{animation:none!important}
+body.flash-safe .glitch-text{animation:none!important}
+body.flash-safe .day-strip.day-pulse,body.flash-safe .status-bar .day-clock.day-pulse{animation:none!important}
+body.flash-safe .map-zone.chargeable,body.flash-safe .wave-bar,body.flash-safe .ghost-dot{animation:none!important}
+body.flash-safe .anom-stream .bubble,body.flash-safe .missed-dot{animation:none!important}
+
+/* —— 新版本提示条 —— */
+#swUpdBar{
+  position:fixed;left:12px;right:12px;bottom:74px;z-index:600;
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:14px;
+  background:linear-gradient(180deg,rgba(42,16,22,.97),rgba(24,8,12,.97));
+  border:1px solid rgba(192,57,43,.55);box-shadow:0 10px 28px rgba(0,0,0,.55);
+  color:#f0e2e6;font-size:12.5px;line-height:1.5;letter-spacing:.02em;
+  animation:swBarIn .35s ease-out both;
+}
+#swUpdBar .swx{margin-left:auto;background:none;border:0;color:#a3868e;font-size:16px;padding:2px 4px}
+#swUpdBar button.swgo{
+  flex:0 0 auto;border:0;border-radius:10px;padding:7px 13px;
+  background:#c0392b;color:#fff;font-size:12.5px;font-weight:700;
+}
+@keyframes swBarIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .today-tip{border-left:3px solid var(--accent);background:rgba(93,173,226,.1);
   border-radius:0 12px 12px 0;padding:10px 12px;margin:8px 0;font-size:12px;line-height:1.65;color:#c5d0dc}
 .today-tip .tt{font-weight:700;color:var(--accent);margin-bottom:4px}
@@ -1478,7 +1507,8 @@ function defaultState(){
       seenContradiction:0, readGlitch:false,
       dayBriefed:{1:false,2:false,3:false}, disclaimerOk:false,
       refusedCharge:false, chargedCount:0, deadBattery:false,
-      missedMsgWindow:false, jumpReduce:false, juyeonHeld:false, softScare:false, alignHints:0, npcMet:[]
+      missedMsgWindow:false, jumpReduce:false, juyeonHeld:false, softScare:false, alignHints:0, npcMet:[],
+      flashSafe:false, tutorialSeen:false, autoSavedAt:0
     },
     milestones:[],
     view:"title", tab:"home", chatWith:null,
@@ -1487,7 +1517,7 @@ function defaultState(){
     pendingTravel:null,
     pendingLayer:null,
     pendingDayCard:null,
-    inv:[], quests:{active:null,done:[],offered:[]}, digits:[], puzzle:{unlockedLot:false,unlockedL3:false,attempt:0,slots:["","","",""]}, gp:{matchWins:0,rhythmWins:0,silenceWins:0,swipeWins:0,spotWins:0,lightWins:0,nightResolved:{},lastNightCheck:0}
+    inv:[], quests:{active:null,done:[],offered:[]}, digits:[], puzzle:{unlockedLot:false,unlockedL3:false,attempt:0,slots:["","","",""],lastHint:""}, gp:{matchWins:0,rhythmWins:0,silenceWins:0,swipeWins:0,spotWins:0,lightWins:0,nightResolved:{},lastNightCheck:0}
   };
 }
 let S = defaultState();
@@ -1646,6 +1676,7 @@ function advanceTime(mins, opts){
   }
   if(S.day>=3) S.flags.nightAnomalyStarted=true;
   updateStatus();
+  autoSave();
   if(S.pendingDayCard && !opts.silentDay){
     // show after current render cycle
     setTimeout(()=>showDayCard(S.pendingDayCard), 60);
@@ -1909,6 +1940,67 @@ function updateStatus(){
 function saveGame(){
   try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); toast("已存档"); }
   catch(e){ toast("存档失败"); }
+}
+
+/* —— 自动存档：进对话、换区、切日、切后台都静默写入 —— */
+let __autoSaveTimer=null;
+function autoSaveNow(){
+  if(!S || !S.playerName) return false;
+  if(S.flags && (S.flags.ended || S.flags.deadBattery)) return false;
+  try{
+    S.flags.autoSavedAt = Date.now();
+    localStorage.setItem(SAVE_KEY, JSON.stringify(S));
+    return true;
+  }catch(e){ return false; }
+}
+function autoSave(opts){
+  if(!S || !S.playerName || (S.flags && S.flags.ended)) return;
+  if(opts && opts.now){ autoSaveNow(); return; }
+  if(__autoSaveTimer) clearTimeout(__autoSaveTimer);
+  __autoSaveTimer=setTimeout(function(){ __autoSaveTimer=null; autoSaveNow(); }, 600);
+}
+function savedProgressLabel(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) return "";
+    const d=JSON.parse(raw);
+    if(!d || !d.playerName) return "";
+    const dd=Math.min(3, d.day||1);
+    const hh=String(d.hour==null?18:d.hour).padStart(2,"0");
+    const mm=String(d.minute==null?0:d.minute).padStart(2,"0");
+    const nm=(CHARS.find(c=>c.id===d.ownerId)||{}).name||"";
+    return "第"+dd+"天 "+hh+":"+mm+(nm?" · "+nm:"");
+  }catch(e){ return ""; }
+}
+function savedAtLabel(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) return "";
+    const d=JSON.parse(raw);
+    const at=((d&&d.flags&&d.flags.autoSavedAt)||0);
+    if(!at) return "";
+    const dt=new Date(at);
+    return String(dt.getHours()).padStart(2,"0")+":"+String(dt.getMinutes()).padStart(2,"0");
+  }catch(e){ return ""; }
+}
+// iPhone 切后台十几分钟会被系统回收页面；20 分钟内回到 App 就直接接上，不打断沉浸
+function resumeLastSession(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    const d=JSON.parse(raw);
+    if(!d || !d.playerName) return false;
+    if(d.flags && (d.flags.ended || d.flags.deadBattery)) return false;
+    const at=(d.flags && d.flags.autoSavedAt)||0;
+    if(!at || Date.now()-at > 1000*60*20) return false;
+    const ok=loadGame();
+    if(ok) setTimeout(function(){ toast("已回到上次的位置"); }, 320);
+    return ok;
+  }catch(e){ return false; }
+}
+function flushAutoSave(){
+  if(__autoSaveTimer){ clearTimeout(__autoSaveTimer); __autoSaveTimer=null; }
+  autoSaveNow();
 }
 function loadGame(){
   try{
@@ -2179,10 +2271,12 @@ function openMenu(){
     <button class="btn primary" onclick="this.closest('.modal').remove();if(typeof openMusicMenu==='function')openMusicMenu();else toast('音乐模块未加载')">🎶 音乐 · 夏夜音盒</button>
     <button class="btn" onclick="if(typeof ambienceToggle==='function'){ambienceToggle();toast(window.__ambienceMuted?'氛围音：关':'氛围音：开');openMenu()}">🎵 氛围音：${window.__ambienceMuted?'关':'开'}</button>
     <button class="btn" onclick="S.flags.jumpReduce=!S.flags.jumpReduce;S.flags.softScare=S.flags.jumpReduce;if(typeof ambienceSetSoft==='function')ambienceSetSoft(S.flags.jumpReduce);toast(S.flags.jumpReduce?'突脸/氛围：减弱':'突脸/氛围：默认');this.closest('.modal').remove()">👁 突脸强度：${S.flags.jumpReduce?'减弱中':'默认开'}</button>
+    <button class="btn" onclick="S.flags.flashSafe=!S.flags.flashSafe;applyFlashSafe();autoSaveNow();toast(S.flags.flashSafe?'闪烁：已减弱':'闪烁：默认');this.closest('.modal').remove()">⚡ 闪烁强度：${S.flags.flashSafe?'已减弱':'默认'}</button>
     <button class="btn" onclick="tryLeavePark();this.closest('.modal').remove()">🚪 离开游乐场</button>
     <button class="btn danger" onclick="if(confirm('确定清除？')){resetGame();this.closest('.modal').remove()}">🗑 重置</button>
     <button class="btn ghost" onclick="this.closest('.modal').remove()">关闭</button>
     <p class="muted" style="margin-top:8px">电量 ${Math.ceil(S.battery)}% · 突脸 ${S.jumpFaceCount}/5 · 异常感知 ${S.flags.anomaliesSeen}</p>
+    <p class="muted">自动存档：每次对话、换区、切日都会写入${savedAtLabel()?"（最近 "+savedAtLabel()+"）":""}。切后台不会丢进度。</p>
   </div>`;
   wrap.addEventListener("click",e=>{if(e.target===wrap)wrap.remove();});
   document.getElementById("phone").appendChild(wrap);
@@ -2222,11 +2316,16 @@ function endingMetaKey(kind){
 }
 function ENDING_CATALOG(){
   return [
-    {key:"safe", name:"安全向", hint:"少碰异常，及早离开", badge:"🌙"},
-    {key:"deep", name:"深入向", hint:"看见许多错位后仍离开", badge:"🔎"},
-    {key:"char", name:"角色专属", hint:"与某一成员关注显著更高", badge:"💬"},
-    {key:"hidden", name:"隐藏结局", hint:"低电·深夜·深层·危险区…", badge:"👁"},
-    {key:"battery", name:"黑屏", hint:"放弃充电或危险区耗尽", badge:"⬛"}
+    {key:"safe", name:"安全向", hint:"少碰异常，及早离开", badge:"🌙",
+      tease:"你没碰那些东西，走到门口就出去了。"},
+    {key:"deep", name:"深入向", hint:"看见许多错位后仍离开", badge:"🔎",
+      tease:"你看了不该看的三样，然后还是走了。"},
+    {key:"char", name:"角色专属", hint:"与某一成员关注显著更高", badge:"💬",
+      tease:"有一个人的对话框，你总是先点开。"},
+    {key:"hidden", name:"隐藏结局", hint:"低电·深夜·深层·危险区…", badge:"👁",
+      tease:"电量只剩一格，而你还想再删一层。"},
+    {key:"battery", name:"黑屏", hint:"放弃充电或危险区耗尽", badge:"⬛",
+      tease:"屏幕黑下去的时候，那边还在打字。"}
   ];
 }
 function getCollectionStats(){
@@ -3439,6 +3538,7 @@ function giveItem(id) {
     if (id === "lost_form" && typeof addRecord === "function") {
       addRecord("上一个失主", "登记表上一行：去年闭幕那天，一部手机被捡到、登记、领回。领回人的名字被划掉，开头是个「金」字。");
     }
+    autoSave({now:true});
   }
 }
 function useItem(id, ctx) {
@@ -4022,11 +4122,12 @@ function renderPuzzleBoard() {
   const slots = S.puzzle.slots || ["", "", "", ""];
   S.puzzle.slots = slots;
   const screen = document.getElementById("screen");
-  const vague = (S.puzzle.attempt||0) < 2
+  const att = S.puzzle.attempt || 0;
+  const vague = att < 2
     ? "数字散落在任务、相册旁注、夜事件与小游戏里。顺序很重要；池里可能有干扰项。"
-    : (S.puzzle.attempt < 5
+    : (att < 5
       ? "空地码偏「水渍—噪音—夜—擦拭」一条线；深层偏「配对—滑动—后台—花名册」。"
-      : "仍不对？对照记录关键词，不要用最先捡到的四个数硬凑。");
+      : "仍不对？对照记录里的关键词，不要用最先捡到的四个数硬凑。");
   screen.innerHTML = `<div class="mg-wrap"><h3>密码板</h3>
     <p class="muted">${vague}</p>
     <div class="digit-board">${slots.map((s, i) => `<div class="digit-slot" onclick="puzzleClearSlot(${i})">${s || "·"}</div>`).join("")}</div>
@@ -4034,6 +4135,7 @@ function renderPuzzleBoard() {
     <button class="btn primary" onclick="puzzleSubmit()">尝试解锁</button>
     <button class="btn" onclick="S.puzzle.slots=['','','',''];renderPuzzleBoard()">清空</button>
     <button class="btn ghost" onclick="renderInventory()">返回物品栏</button>
+    ${S.puzzle.lastHint?`<div class="card" style="margin-top:8px;font-size:12px;line-height:1.6;border-left:3px solid #c0392b"><b>上一次的反馈</b><br>${esc(S.puzzle.lastHint)}</div>`:""}
     <p class="muted" style="margin-top:8px">尝试 ${S.puzzle.attempt||0} · 空地 ${S.puzzle.unlockedLot||S.emptyUnlocked?"已开":"锁"} · 三层 ${S.puzzle.unlockedL3?"已开":"锁"}</p>
     <div class="card" style="margin-top:8px;font-size:12px;line-height:1.55"><b>场内拼法提示</b><br>
     空地闸机：按「水→灯牌静音位→夜巡拍子→擦拭角」的顺序收集四枚碎片。<br>
@@ -4068,6 +4170,7 @@ function puzzleSubmit() {
   if (code === lotCode) {
     S.puzzle.unlockedLot = true;
     S.emptyUnlocked = true;
+    S.puzzle.lastHint = "";
     toast("空地闸机打开");
     addRecord("密码·空地", "闸机咬合：2-9-4-7。");
     S.flags.anomaliesSeen++;
@@ -4076,6 +4179,7 @@ function puzzleSubmit() {
   }
   if (code === l3Code) {
     S.puzzle.unlockedL3 = true;
+    S.puzzle.lastHint = "";
     toast("删除第三层解锁");
     addRecord("密码·第三层", "锁芯承认 5-8-3-6。");
     S.flags.anomaliesSeen += 2;
@@ -4084,13 +4188,23 @@ function puzzleSubmit() {
     return;
   }
   // near-miss feedback without spoiling
+  let hint = "";
   if (code.length === 4) {
     const lotHit = [...lotCode].filter((ch, i) => code[i] === ch).length;
     const l3Hit = [...l3Code].filter((ch, i) => code[i] === ch).length;
-    if (lotHit >= 2 || l3Hit >= 2) toast("有数字对上了位置——但整串还不对。");
-    else if ([...code].some((ch) => lotCode.includes(ch) || l3Code.includes(ch))) toast("有的数见过，顺序或组合不对。");
-    else toast("这串里干扰项太多。");
-  } else toast("需要对满四位。");
+    const best = Math.max(lotHit, l3Hit);
+    const seen = [...code].some((ch) => lotCode.includes(ch) || l3Code.includes(ch));
+    if (best >= 3) hint = "有一串已经对上了三位的位置——只差最后一位。";
+    else if (best === 2) hint = "有一串对上了两位的位置。再挪一位就开了。";
+    else if (best === 1) hint = "只有一位位置是对的。顺序还得重新想。";
+    else if (seen) hint = "这些数字里确实有，但位置全错——顺序不对。";
+    else hint = "这四位里干扰项太多，先回备忘录对一遍关键词。";
+    toast(hint);
+  } else {
+    hint = "需要对满四位才能提交。";
+    toast(hint);
+  }
+  S.puzzle.lastHint = hint;
   if (S.puzzle.attempt >= 4 && Math.random() < 0.55) {
     S.flags.anomaliesSeen++;
     if (typeof maybeJumpFace === "function") maybeJumpFace("status");
@@ -5095,6 +5209,16 @@ const CHAR_ENDING_CODA = {
 function identityKey(){
   return (S.identity==="staff"||S.identity==="reporter"||S.identity==="passerby") ? S.identity : "passerby";
 }
+// 「上一个失主」闭环：被留下的这条线，最后在登记表上看见自己的名字
+function keepLedgerLine(){
+  const found = (typeof hasItem==="function" && hasItem("lost_form"))
+    || (S.records||[]).some(r=>/上一个失主/.test((r.title||"")+(r.kw||"")));
+  const nm = S.playerName || "你";
+  if(found){
+    return "\n\n后来你又翻到那本失物登记表。\n最新的一行是新的，墨还没干：名字写着「"+nm+"」，日期是今天。\n物品栏那一格：「手机（一部），未领回」。\n笔迹很端正——不是你的。\n\n你忽然想起来，上一行也是这么被划掉的。";
+  }
+  return "\n\n后来你在失物登记表上看见最新的一行。\n名字是「"+nm+"」，日期是今天，字迹很端正，不是你的。\n物品栏写着：手机（一部），未领回。";
+}
 function pickEndingBody(kind){
   const id=identityKey();
   const n=S.playerName||"你";
@@ -5129,7 +5253,8 @@ function pickEndingBody(kind){
     const src=keep?CHAR_ENDING_KEEP:CHAR_ENDING_BASE;
     const base=src[cid]||CHAR_ENDING_BASE[cid]||"你与他的对话最多。离开时游乐场灯火依旧，答案依旧没有。";
     const coda=CHAR_ENDING_CODA[id]||"";
-    return preface+base+coda+"\n\n（终局将揭晓失主与阵营。）";
+    const ledger = keep ? keepLedgerLine() : "";
+    return preface+base+ledger+coda+"\n\n（终局将揭晓失主与阵营。）";
   }
   return preface+"你离开了游乐场。手机是谁的，到这里还没说完。";
 }
@@ -5459,6 +5584,7 @@ function travelTo(zid, confirmed){
   // ambient keyword
   if(anomalyLevel()>=2) addKeyword(z.name+"违和");
   renderArea(zid);
+  autoSave({now:true});
   if(typeof maybeNightEvent==="function") setTimeout(function(){maybeNightEvent();}, 400);
 }
 
@@ -6553,7 +6679,7 @@ function renderEndingGallery(){
       const ids=u.identities?Object.keys(u.identities).map(k=>({staff:"工",reporter:"记",passerby:"路人"})[k]||k).join("/"):"";
       return `<div class="gallery-row unlocked"><span class="gb">${c.badge}</span><div><b>${esc(c.name)}</b><div class="muted">已解锁${ids?" · "+ids:""}</div></div><span class="gok">✓</span></div>`;
     }
-    return `<div class="gallery-row locked"><span class="gb">🔒</span><div><b>？？？</b><div class="muted">${esc(c.hint)}</div></div></div>`;
+    return `<div class="gallery-row locked"><span class="gb">🔒</span><div><b>？？？</b><div class="muted">${esc(c.tease||c.hint)}</div><div class="muted" style="font-size:10px;opacity:.7;margin-top:2px">线索：${esc(c.hint)}</div></div></div>`;
   }).join("");
   screen.innerHTML=`<div class="ending settle gallery-view">
     <p class="ending-kicker">结局图鉴</p>
@@ -6753,8 +6879,14 @@ function gotoTab(tab){
   });
 }
 
+function applyFlashSafe(){
+  const on = !!(S && S.flags && S.flags.flashSafe);
+  document.body.classList.toggle("flash-safe", on);
+}
 function render(){
   if(typeof syncAnomalyAlias==="function") syncAnomalyAlias();
+  applyFlashSafe();
+  autoSave();
   if(typeof markLateLock==="function") markLateLock();
   updateStatus();
   if(S.flags.ended){ renderEnding(S.flags.ending); return; }
@@ -6791,7 +6923,7 @@ function renderSetup(){
       屏幕还亮着。有人正在等你回话——先选一个。他今晚用的不是自己的名字，话也一天比一天少。<br><br>
       看到结局，你会知道手机是谁的。那时候可以直接打给他。</div>
       <button class="btn primary" onclick="if(typeof ambienceUnlock==='function')ambienceUnlock();S.view='setup';renderSetup()">开始</button>
-      <button class="btn" onclick="loadGame()">继续存档</button>
+      <button class="btn" onclick="loadGame()">继续存档${savedProgressLabel()?" · "+esc(savedProgressLabel()):""}</button>
       <button class="btn" onclick="renderEndingGallery()">结局图鉴</button>
       <p class="muted" style="margin-top:16px">图鉴 ${unc}/${ENDING_CATALOG().length} · 最佳收集 ${meta.bestCollect||0}%</p>
       <p class="muted">单机 · 本地存档 · 建议戴耳机</p>
@@ -6918,6 +7050,15 @@ function renderHome(){
       <p>${esc(step.sub)}</p>
       <button class="btn primary" onclick="doNextStep()">${esc(step.label)}</button>
     </div>
+    ${!S.flags.tutorialSeen?`<div class="card" style="border:1px solid rgba(93,173,226,.35)">
+      <b>第一次捡到手机 · 三条</b>
+      <div class="muted" style="font-size:12px;line-height:1.75;margin-top:6px">
+        ① 聊天里每条消息下面都有回复选项，选一个才算推进。<br>
+        ② 电量归零就是黑屏结局。舞台、饮食区、检票口、后台都能充电。<br>
+        ③ 异常值越高，他看见你的部分越多——日终信也会跟着变。
+      </div>
+      <button class="btn" style="margin-top:8px" onclick="S.flags.tutorialSeen=true;autoSaveNow();render()">知道了</button>
+    </div>`:""}
     ${alert}
     <div class="today-tip"><div class="tt">${esc(dayLabel())}</div>${esc(info.tone)}</div>
     <div class="home-apps">
@@ -7023,6 +7164,7 @@ function chooseReply(cid, idx){
   }
   renderChat(cid);
   if(checkHidden()){ triggerEnding("hidden"); }
+  autoSave({now:true});
 }
 
 function renderAlbum(){
@@ -7479,6 +7621,7 @@ function renderSettingsApp(){
         <span id="setVol">${vol}</span></div>
       <button class="btn" style="margin-top:8px" onclick="if(typeof ambienceToggle==='function'){ambienceToggle();renderSettingsApp()}">氛围音：${mute?"关":"开"}</button>
       <button class="btn" onclick="S.flags.jumpReduce=!S.flags.jumpReduce;S.flags.softScare=S.flags.jumpReduce;if(typeof ambienceSetSoft==='function')ambienceSetSoft(S.flags.jumpReduce);toast(S.flags.jumpReduce?'突脸/氛围：减弱':'突脸/氛围：默认');renderSettingsApp()">突脸强度：${S.flags.jumpReduce?"减弱":"默认"}</button>
+      <button class="btn" onclick="S.flags.flashSafe=!S.flags.flashSafe;applyFlashSafe();autoSaveNow();toast(S.flags.flashSafe?'闪烁：已减弱':'闪烁：默认');renderSettingsApp()">闪烁强度：${S.flags.flashSafe?"已减弱（光敏感友好）":"默认"}</button>
     </div>
     <div class="card muted" style="font-size:12px;margin-top:8px">
       亮度：自动（无法关闭）<br>
@@ -7543,14 +7686,58 @@ function playRecorderClip(i){
 window.onload=()=>{
   S=defaultState();
   if(typeof syncAnomalyAlias==="function") syncAnomalyAlias();
-  render();
+  // 刚被系统回收过（20 分钟内）就直接接回，不再让玩家从标题页重来
+  if(!resumeLastSession()) render();
+  // 切后台 / 关页面前强制落盘——iPhone 回收页面是静默的，只能抢在前面存
+  const flush=()=>{ try{ flushAutoSave(); }catch(e){} };
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") flush(); });
+  window.addEventListener("pagehide", flush);
+  window.addEventListener("beforeunload", flush);
   setInterval(()=>{
     if(S.flags.ended||!S.playerName) return;
     updateStatus();
     if(typeof tryStatusJumpFace==="function" && S.battery<28 && Math.random()<0.08) tryStatusJumpFace();
     if(typeof maybeOwnerPing==="function") maybeOwnerPing({fromTimer:true});
   }, 4000);
+  // 每 45 秒兜底存一次，防止长时间翻备忘录被清掉
+  setInterval(()=>{ if(S.playerName && !S.flags.ended) autoSaveNow(); }, 45000);
 };
+</script>
+<script>
+/* 新版本提示：Service Worker 更新后提示刷新，避免主屏旧版一直吃缓存 */
+(function(){
+  if(!("serviceWorker" in navigator)) return;
+  if(location.protocol!=="http:" && location.protocol!=="https:") return;
+  var pending=null, shown=false;
+  function showBar(){
+    if(shown || document.getElementById("swUpdBar")) return;
+    shown=true;
+    var d=document.createElement("div");
+    d.id="swUpdBar";
+    d.innerHTML='<span>本作已更新 · 有新内容</span><button type="button" class="swgo">刷新</button><button type="button" class="swx" aria-label="关闭">×</button>';
+    var go=d.querySelector(".swgo"), x=d.querySelector(".swx");
+    go.onclick=function(){
+      try{ if(pending) pending.postMessage({type:"SKIP_WAITING"}); }catch(e){}
+      setTimeout(function(){ location.reload(); }, 300);
+    };
+    x.onclick=function(){ d.remove(); shown=false; };
+    document.body.appendChild(d);
+    setTimeout(function(){ var el=document.getElementById("swUpdBar"); if(el) el.remove(); shown=false; }, 25000);
+  }
+  navigator.serviceWorker.ready.then(function(reg){
+    if(reg.waiting && navigator.serviceWorker.controller){ pending=reg.waiting; showBar(); }
+    reg.addEventListener("updatefound", function(){
+      var nw=reg.installing;
+      if(!nw) return;
+      nw.addEventListener("statechange", function(){
+        if(nw.state==="installed" && navigator.serviceWorker.controller){ pending=nw; showBar(); }
+      });
+    });
+    document.addEventListener("visibilitychange", function(){
+      if(document.visibilityState==="visible"){ reg.update().catch(function(){}); }
+    });
+  }).catch(function(){});
+})();
 </script>
 <script>
 if ("serviceWorker" in navigator) {

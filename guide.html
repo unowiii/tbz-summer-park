@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<link rel="manifest" href="./manifest.webmanifest"/>
+<meta name="theme-color" content="#0a0a0b"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="TBZ夏日游乐场"/>
+<link rel="apple-touch-icon" href="./icons/icon-180.png"/>
+<link rel="icon" type="image/png" href="./icons/icon-192.png"/>
+<title>玩法指南 · TBZ 夏日游乐场</title>
+<style>
+:root{
+  --bg:#0a0a0b; --panel:#111113; --ink:#e8e4dd; --muted:#8f8a84;
+  --line:rgba(255,255,255,.09); --warm:#c9955c; --crimson:#a5342a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px;line-height:1.95;-webkit-font-smoothing:antialiased}
+.page{max-width:640px;margin:0 auto;padding:40px 22px 96px}
+
+.doc-head{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:8px}
+.doc-head .kicker{font-size:11px;letter-spacing:.26em;color:rgba(232,228,221,.3)}
+.doc-head h1{font-size:22px;font-weight:600;margin:12px 0 10px;letter-spacing:.02em;line-height:1.5}
+.doc-head .meta{color:var(--muted);font-size:12.5px;letter-spacing:.02em;margin:0}
+.doc-head .meta i{font-style:normal;color:rgba(255,255,255,.22);margin:0 8px}
+
+section{margin:0}
+h2{font-size:15px;font-weight:600;color:var(--warm);margin:42px 0 6px;
+  letter-spacing:.04em;display:flex;align-items:baseline;gap:10px}
+h2 .n{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:rgba(201,149,92,.55);letter-spacing:.08em}
+h2::after{content:"";flex:1;height:1px;background:var(--line);transform:translateY(-4px)}
+
+h3{font-size:14px;font-weight:600;color:#fff;margin:24px 0 4px;letter-spacing:.02em}
+p{margin:10px 0;color:#cfc9c1}
+.g{color:var(--muted);font-size:14px}
+b{font-weight:600;color:#fff}
+.hl{color:var(--warm)}
+
+ul.doc{list-style:none;padding:0;margin:10px 0}
+ul.doc li{position:relative;padding-left:16px;margin:8px 0;color:#cfc9c1;font-size:14.8px}
+ul.doc li::before{content:"";position:absolute;left:0;top:.82em;width:5px;height:1px;background:rgba(201,149,92,.55)}
+
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:rgba(232,228,221,.45);font-weight:500;font-size:12px;letter-spacing:.1em;border-bottom-color:rgba(255,255,255,.14)}
+td:first-child{color:#fff;white-space:nowrap;padding-right:16px}
+
+.note{background:var(--panel);border:1px solid var(--line);border-radius:6px;
+  padding:13px 16px;margin:16px 0;font-size:14px;line-height:1.85;color:#c4beb6}
+.note .lab{display:block;font-size:11px;letter-spacing:.16em;color:rgba(201,149,92,.7);margin-bottom:5px}
+
+.steps{counter-reset:s;list-style:none;padding:0;margin:14px 0}
+.steps li{counter-increment:s;position:relative;padding-left:34px;margin:12px 0;font-size:14.8px;color:#cfc9c1}
+.steps li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:1px;
+  font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--crimson);letter-spacing:.04em}
+
+.back{display:inline-flex;align-items:center;gap:6px;text-decoration:none;
+  color:rgba(232,228,221,.55);font-size:12.5px;letter-spacing:.06em;
+  border:1px solid var(--line);border-radius:100px;padding:5px 13px 5px 11px;
+  margin-bottom:20px;transition:color .2s,border-color .2s}
+.back:hover{color:var(--warm);border-color:rgba(201,149,92,.4)}
+.back span{font-size:14px;line-height:1}
+footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--line);
+  color:rgba(232,228,221,.32);font-size:12px;line-height:1.9}
+footer .row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="page">
+
+    <a class="back" href="./"><span>←</span>返回游戏</a>
+<div class="doc-head">
+    <div class="kicker">THE BOYZ · THRILL-ING</div>
+    <h1>TBZ 夏日游乐场 · 玩法指南</h1>
+    <p class="meta">版本 1.0 <i>·</i> 适用于当前线上版本<i>·</i>建议首次游玩前阅读</p>
+  </div>
+
+  <p>本作是一款以“捡到一部未上锁的手机”为视角的互动叙事游戏。玩家在三日之内通过回复消息、查看相册、前往园区各地来推进剧情，最终抵达五种结局之一。</p>
+  <p class="g">以下说明仅介绍必要机制与操作方式，不涉及剧情内容。首次游玩建议通读第一节与第二节。</p>
+
+  <h2><span class="n">01</span>基本流程</h2>
+
+  <p>游戏以「天数」为单位推进，共三天。时间只在玩家做出选择或执行动作时前进，静置不会消耗资源。</p>
+
+  <table>
+    <tr><th>阶段</th><th>开放内容</th></tr>
+    <tr><td>第一天</td><td>聊天、陌生号码、园区地图、相册、备忘录、背包</td></tr>
+    <tr><td>第二天</td><td>开放删除层、小游戏、嫌疑板标注、区域深入线索</td></tr>
+    <tr><td>第三天</td><td>开放密码板、剩余区域与结局判定</td></tr>
+  </table>
+
+  <p>主页顶部设有「引导进度」卡片，列出五个必要动作并显示完成数量，全部完成后自动隐藏。玩家可随时中断引导自由探索，两者不冲突。</p>
+
+  <h2><span class="n">02</span>电量系统</h2>
+
+  <p>电量为本作唯一的失败条件。界面右上角显示当前电量百分比，每一项动作均会消耗电量。</p>
+
+  <table>
+    <tr><th>状态</th><th>表现</th></tr>
+    <tr><td>45% 以下</td><td>进入低电状态，界面出现异常显示，对话语气发生变化</td></tr>
+    <tr><td>20% 以下</td><td>高危区间，部分操作可能失败</td></tr>
+    <tr><td>0%</td><td>游戏立即结束，结局为「黑屏」</td></tr>
+  </table>
+
+  <p>恢复方式：前往<b>舞台、饮食区、后台、检票口</b>四个区域，于「🔌 在此充电」处充能；背包中的充电券亦可使用。</p>
+
+  <div class="note">
+    <span class="lab">建议</span>
+    首次游玩可不刻意节省电量。在熟悉操作与区域分布后，再规划路线更为有效。
+  </div>
+
+  <h2><span class="n">03</span>异常值</h2>
+
+  <p>玩家接触的异常内容越多，异常值越高。异常值不显示具体数值，仅通过界面表现反馈：灯光闪烁、文字错位、角色措辞异常等。异常值影响部分剧情分支与结局判定。</p>
+  <p>如对闪烁画面不适，可在设置中将「闪烁强度」调整为「已减弱」，不影响通关。</p>
+
+  <h2><span class="n">04</span>消息与对话</h2>
+
+  <ul class="doc">
+    <li><b>对话推进会消耗时间。</b>需要点击回复选项后，对话才会继续。</li>
+    <li><b>聊天列表按最新消息排序。</b>不会固定联系人位置。</li>
+    <li><b>部分消息会撤回。</b>在限定时间内未回复，对方可能撤回该条消息，撤回后以灰字提示保留记录。</li>
+    <li><b>回复方式影响关系。</b>不同回复会改变对方对玩家的态度与后续可获取的信息。</li>
+    <li><b>深夜时段存在专属内容。</b>在特定时间进入对话，可触发额外段落。</li>
+  </ul>
+
+  <h3>园区夜班群</h3>
+  <p>第一天开放。群内包含十二条历史消息，部分内容与主线线索相关，建议完整阅读。</p>
+
+  <h2><span class="n">05</span>功能说明</h2>
+
+  <table>
+    <tr><th>相册</th><td>照片上的虚线圆圈为可交互区域，点击后可查看细节。同一照片在第二、第三天会更新内容。</td></tr>
+    <tr><th>地图</th><td>共十个区域。可结识角色、接取支线、充能。其中四个区域支持充电。</td></tr>
+    <tr><th>相机</th><td>用于观察常规视角下不可见的内容。</td></tr>
+    <tr><th>背包</th><td>存放拾取道具，部分道具可在特定区域使用。</td></tr>
+    <tr><th>备忘录</th><td>每日自动新增一条记录，内容不保证完整。</td></tr>
+    <tr><th>嫌疑板</th><td>为角色标注「可信 / 可疑」，标注结果不即时反馈。</td></tr>
+    <tr><th>密码板</th><td>第三天开放，共两处四位密码锁。</td></tr>
+    <tr><th>存档</th><td>位于主页，提供三个独立存档位。</td></tr>
+  </table>
+
+  <div class="note">
+    <span class="lab">入口调整</span>
+    「假面独白」与「园丁的第一现场」已移至主页虚线卡片区，有新增内容时卡片会显示「新」标记。
+  </div>
+
+  <h2><span class="n">06</span>嫌疑板与对质</h2>
+
+  <p>在嫌疑板完成标注后，再次进入该角色的对话，将触发一段对质剧情。对方的反应依角色身份与前期互动而不同，可能提供线索，也可能给出错误信息。标注后建议返回对话确认结果。</p>
+
+  <h2><span class="n">07</span>隐藏机制</h2>
+
+  <p>以下机制在游戏内不做提示，不影响通关，供有需要的玩家参考。</p>
+
+  <ol class="steps">
+    <li><b>存档记录。</b>系统会记录玩家的存档操作（读取、删除、所处位置），并在特定剧情中被引用。</li>
+    <li><b>静止触发。</b>在单一页面停留超过约三十秒且无操作，界面会出现短暂变化（时间显示、按钮文字、列表条目）。任何操作都会使其复原。</li>
+    <li><b>现实时间。</b>于现实时间 00:00–05:00 进入游戏，会启用深夜模式，额外显示真实时间与专属内容。</li>
+    <li><b>回拨号码。</b>第二天起，可在陌生号码页面回拨。接通后仅有环境音，需根据声音判断所处区域；判断正确可获得线索。</li>
+  </ol>
+
+  <h2><span class="n">08</span>密码板</h2>
+
+  <p>第三天开放，两处锁各四位数字。密码线索分散于各区域与玩法中，角色可能会提供不实信息。</p>
+  <ul class="doc">
+    <li><b>空地闸机</b>：水与渍、灯牌静音位、夜巡拍子、擦拭角</li>
+    <li><b>删除第三层</b>：配对背面、滑片拼缝、后台工牌、名册页码</li>
+  </ul>
+  <p class="g">通关过一次后，二周目密码输入顺序将反转，原密码不可直接使用。</p>
+
+  <h2><span class="n">09</span>结局</h2>
+
+  <p>本作共五种结局，依通关方式与进程状态判定：</p>
+  <ul class="doc">
+    <li><b>离开</b>——早期离开园区</li>
+    <li><b>深入</b>——接触三项以上异常内容后离开</li>
+    <li><b>羁绊</b>——与特定角色关系达到上限</li>
+    <li><b>黑屏</b>——电量归零</li>
+    <li><b>？？？</b>——低电、深夜、高异常值、进入危险区域四项条件同时满足</li>
+  </ul>
+  <p class="g">同一结局在三种身份（工作人员 / 记者 / 路人）下显示的尾声不同。</p>
+
+  <h2><span class="n">10</span>存档与迁移</h2>
+
+  <p>游戏进度保存在本地浏览器，更换设备或清除缓存后将无法恢复。建议定期使用存档码。</p>
+  <ul class="doc">
+    <li>存档页 →「导出存档码」，生成以 <b>TBZ1.</b> 开头的字符串，请自行妥善保存。</li>
+    <li>新设备 →「导入存档码」，粘贴后即可恢复进度与结局图鉴。</li>
+  </ul>
+
+  <div class="note">
+    <span class="lab">内容提示</span>
+    本作含中度恐怖内容、突发音效与闪烁画面。不建议在驾驶、操作机械或睡前 solo 时游玩。如感到不适，请立即退出。
+  </div>
+
+  <footer>
+    <div class="row">
+      <span>TBZ 夏日游乐场 · 粉丝二次创作</span>
+      <span>情节均属虚构 · 本页随版本更新</span>
+    </div>
+  </footer>
+</div>
+</body>
+</html>

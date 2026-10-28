@@ -8215,8 +8215,17 @@ function renderMore(){
     <button class="btn" onclick="openMenu()">菜单 · 存档 · 音乐</button>
     <button class="btn" onclick="renderRules('more')">🪧 入园守则</button>
     <button class="btn" onclick="renderLoreBook()">📖 园区的规矩</button>
+    <button class="btn" onclick="openGuide()">📘 玩法指南</button>
     <button class="btn ghost" onclick="tryLeavePark()">🚪 离开园区</button>
   </div>`;
+}
+/* —— 玩法指南：独立页面 guide.html，游戏内开新窗口 —— */
+function openGuide(){
+  const u=new URL("guide.html", location.href).href;
+  try{
+    const w=window.open(u,"_blank");
+    if(!w) location.href=u;
+  }catch(e){ location.href=u; }
 }
 /* —— 新手指引：五步，按玩家实际行为自动推进 —— */
 function guideState(){

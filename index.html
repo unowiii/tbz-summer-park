@@ -151,6 +151,9 @@ h1,h2,h3{font-weight:700}
 .bubble.me{align-self:flex-end;background:rgba(93,173,226,.3);border-bottom-right-radius:4px}
 .bubble.voice{display:flex;align-items:center;gap:8px;cursor:pointer}
 .bubble.voice .wave{letter-spacing:1px;opacity:.7}
+.bubble.voice.playing .wave{opacity:1;animation:voiceWave .55s infinite alternate}
+.bubble.voice.playing{border-color:rgba(192,57,43,.55)}
+@keyframes voiceWave{from{transform:translateX(0);opacity:.55}to{transform:translateX(3px);opacity:1}}
 .bubble.img{padding:4px;cursor:pointer}
 .bubble .read{font-size:10px;color:var(--muted);margin-top:4px;text-align:right}
 .bubble .read.glitch{color:var(--danger)}
@@ -2133,6 +2136,89 @@ function deleteSlot(i){
   renderSaveApp();
   toast("已删除");
 }
+/* —— 存档码：把进度 + 图鉴压成一串文字，换设备/清缓存后可粘回来 —— */
+function saveCodeOf(){
+  try{
+    const payload={v:1, at:Date.now(), s:S, m:loadMeta()};
+    return "TBZ1."+btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  }catch(e){ return ""; }
+}
+function decodeSaveCode(txt){
+  const t=String(txt||"").trim().replace(/\s+/g,"");
+  if(!t) return null;
+  const body=t.indexOf("TBZ1.")===0?t.slice(5):t;
+  try{
+    const obj=JSON.parse(decodeURIComponent(escape(atob(body))));
+    if(!obj || !obj.s || !obj.s.playerName) return null;
+    return obj;
+  }catch(e){ return null; }
+}
+function mergeImportedMeta(m){
+  try{
+    const cur=loadMeta();
+    cur.clearCount=Math.max(cur.clearCount||0, m.clearCount||0);
+    cur.bestCollect=Math.max(cur.bestCollect||0, m.bestCollect||0);
+    cur.unlocked=Object.assign({}, m.unlocked||{}, cur.unlocked||{});
+    if(m.lastEnding && !cur.lastEnding) cur.lastEnding=m.lastEnding;
+    saveMeta(cur);
+  }catch(e){}
+}
+function openSaveCode(){
+  if(!S || !S.playerName){ toast("还没有进度可以导出"); return; }
+  const code=saveCodeOf();
+  if(!code){ toast("导出失败"); return; }
+  const wrap=document.createElement("div");
+  wrap.className="modal";
+  wrap.innerHTML=`<div class="sheet">
+    <h3>导出存档码</h3>
+    <p class="muted" style="font-size:12px;line-height:1.6">整段复制，粘到备忘录、微信收藏或发给自己的对话框。换手机、清了缓存、重装 App 之后，用「导入存档码」粘回来——进度和图鉴都会回来。</p>
+    <textarea id="saveCodeBox" readonly style="width:100%;height:130px;font-size:11px;line-height:1.4;background:#12100f;color:#e9e2d6;border-radius:8px;border:1px solid #3a2c2c;padding:8px;box-sizing:border-box">${esc(code)}</textarea>
+    <p class="muted" style="font-size:11px">共 ${code.length} 个字符 · 越长说明你收集得越多</p>
+    <button class="btn primary" onclick="copySaveCode()">复制整段</button>
+    <button class="btn ghost" onclick="this.closest('.modal').remove()">关闭</button>
+  </div>`;
+  wrap.addEventListener("click",e=>{ if(e.target===wrap) wrap.remove(); });
+  document.getElementById("phone").appendChild(wrap);
+  setTimeout(()=>{ const el=document.getElementById("saveCodeBox"); if(el){ el.focus(); el.setSelectionRange(0, el.value.length); } }, 120);
+}
+function copySaveCode(){
+  const el=document.getElementById("saveCodeBox");
+  if(!el) return;
+  el.focus(); el.setSelectionRange(0, el.value.length);
+  const done=()=>toast("已复制");
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(el.value).then(done).catch(()=>{
+      try{ document.execCommand("copy"); done(); }catch(e){ toast("请长按选中后手动复制"); }
+    });
+  }else{
+    try{ document.execCommand("copy"); done(); }catch(e){ toast("请长按选中后手动复制"); }
+  }
+}
+function openImportSaveCode(){
+  const wrap=document.createElement("div");
+  wrap.className="modal";
+  wrap.innerHTML=`<div class="sheet">
+    <h3>导入存档码</h3>
+    <p class="muted" style="font-size:12px;line-height:1.6">把之前导出的整段文字粘到这里。导入会覆盖当前进度——想保住现在的进度，先导出一次。</p>
+    <textarea id="saveCodeIn" placeholder="TBZ1...." style="width:100%;height:130px;font-size:11px;line-height:1.4;background:#12100f;color:#e9e2d6;border-radius:8px;border:1px solid #3a2c2c;padding:8px;box-sizing:border-box"></textarea>
+    <button class="btn primary" onclick="doImportSaveCode()">导入</button>
+    <button class="btn ghost" onclick="this.closest('.modal').remove()">取消</button>
+  </div>`;
+  wrap.addEventListener("click",e=>{ if(e.target===wrap) wrap.remove(); });
+  document.getElementById("phone").appendChild(wrap);
+}
+function doImportSaveCode(){
+  const el=document.getElementById("saveCodeIn");
+  const obj=decodeSaveCode(el?el.value:"");
+  if(!obj){ toast("这串码读不出来，检查有没有粘全"); return; }
+  if(!confirm("导入会覆盖当前进度，确定吗？")) return;
+  document.querySelectorAll(".modal").forEach(e=>e.remove());
+  mergeImportedMeta(obj.m||{});
+  if(applyLoadedState(obj.s)){
+    autoSaveNow();
+    toast("存档已恢复");
+  }
+}
 function renderSaveApp(){
   if(typeof playUiSfx==="function") playUiSfx("settings");
   const screen=document.getElementById("screen");
@@ -2176,6 +2262,14 @@ function renderSaveApp(){
       <div class="muted" style="font-size:13px;margin-top:2px">${esc(autoLine)}</div>
       <div class="muted" style="font-size:12px;margin-top:4px">聊天、换区、切日、切后台都会自动写入，不用手动管。</div>
       <button class="btn" style="margin-top:8px" onclick="if(confirm('回到最近一次自动存档？当前进度会被覆盖。')){loadGame();renderSaveApp()}">回到自动存档</button>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <b>换手机 / 怕清缓存</b>
+      <div class="muted" style="font-size:12px;margin-top:4px;line-height:1.6">存档码是一串文字，存到备忘录里就带得走。清缓存、换设备、重装 App 之后粘回来，进度和图鉴都还在。</div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn" style="flex:1;margin:0" onclick="openSaveCode()">导出存档码</button>
+        <button class="btn" style="flex:1;margin:0" onclick="openImportSaveCode()">导入存档码</button>
+      </div>
     </div>
   </div>`;
 }
@@ -4313,6 +4407,9 @@ function finishSwipe(win) {
 }
 
 /* —— Digit puzzle —— */
+/* 通关次数：二周目起换一套规矩（锁倒咬 + 旧号码残留记录） */
+function ngClearCount(){ try{ return (loadMeta().clearCount||0); }catch(e){ return 0; } }
+function pwIsMirror(){ return ngClearCount() >= 1; }
 function renderPuzzleBoard() {
   gpInit();
   const slots = S.puzzle.slots || ["", "", "", ""];
@@ -4336,7 +4433,7 @@ function renderPuzzleBoard() {
     <div class="card" style="margin-top:8px;font-size:12px;line-height:1.55"><b>场内拼法提示</b><br>
     空地闸机：按「水→灯牌静音位→夜巡拍子→擦拭角」的顺序收集四枚碎片。<br>
     删除第三层：按「配对背面→滑片拼缝→后台工牌→名册页码」四枚拼。<br>
-    具体数字要去对应地点/玩法自己认——备忘录与 NPC 会说谎或只说一半。</div>
+    具体数字要去对应地点/玩法自己认——备忘录与 NPC 会说谎或只说一半。${pwIsMirror()?`<br><span style="color:#c0392b"><b>这一次锁是倒着咬的。</b>最后拾到的那一枚，排在最前面。</span>`:""}</div>
   </div>`;
 }
 function puzzlePush(d) {
@@ -4358,7 +4455,9 @@ function puzzleClearSlot(i) {
 function puzzleSubmit() {
   gpInit();
   S.puzzle.attempt = (S.puzzle.attempt || 0) + 1;
-  const code = (S.puzzle.slots || []).join("");
+  const typed = (S.puzzle.slots || []).join("");
+  // 二周目起：锁是倒着咬的，输入顺序整串反转后再校验（记住上一轮的顺序没用）
+  const code = pwIsMirror() ? typed.split("").reverse().join("") : typed;
   drainBattery(2);
   // Exact only — red herrings 0/1/etc. sit in pool
   const lotCode = "2947";
@@ -4368,7 +4467,7 @@ function puzzleSubmit() {
     S.emptyUnlocked = true;
     S.puzzle.lastHint = "";
     toast("空地闸机打开");
-    addRecord("密码·空地", "闸机咬合：2-9-4-7。");
+    addRecord("密码·空地", "闸机咬合：2-9-4-7"+(pwIsMirror()?"——这一次，是倒着咬的。":"。"));
     gainAnomaly(1);
     renderPuzzleBoard();
     return;
@@ -4377,7 +4476,7 @@ function puzzleSubmit() {
     S.puzzle.unlockedL3 = true;
     S.puzzle.lastHint = "";
     toast("删除第三层解锁");
-    addRecord("密码·第三层", "锁芯承认 5-8-3-6。");
+    addRecord("密码·第三层", "锁芯承认 5-8-3-6"+(pwIsMirror()?"——同样反着来。":"。"));
     gainAnomaly(2);
     if (typeof maybeJumpFace === "function") maybeJumpFace("hidden");
     renderPuzzleBoard();
@@ -5551,6 +5650,18 @@ const UNK_PRO=[
 function unkStart(){
   S.unkStep=0;
   if(!S.chatLog.unknown) S.chatLog.unknown=[];
+  // 二周目：这个号码里还留着上一次的记录——不是发给你的
+  if(ngClearCount()>=1 && !S.flags.ngSeed){
+    S.flags.ngSeed=true;
+    const old=[
+      {from:"sys",text:"—— 三天前 ——",type:"sys",t:"三天前"},
+      {from:"them",text:"到了吗",type:"text",t:"三天前",read:true},
+      {from:"them",text:"别坐那个空着的座位。我说过很多次了。",type:"text",t:"三天前",read:true},
+      {from:"them",text:"……如果我没回，把手机留在寄存柜。第三格。别写名字。",type:"text",t:"三天前",read:true},
+      {from:"sys",text:"—— 以上不属于你 ——",type:"sys",t:""}
+    ];
+    old.forEach(m=>S.chatLog.unknown.push(m));
+  }
   unkPushLines();
 }
 function unkPushLines(){
@@ -7027,6 +7138,78 @@ function endingToneClass(kind){
   if(kind && kind.startsWith("char_")) return "ending settle char-end";
   return "ending settle";
 }
+/* —— 结局卡片：canvas 画一张竖版，长按存图就能发出去 —— */
+function canvasWrap(g, text, maxW){
+  const out=[]; let line="";
+  for(const ch of String(text)){
+    if(ch==="\n"){ out.push(line); line=""; continue; }
+    const t=line+ch;
+    if(g.measureText(t).width>maxW && line){ out.push(line); line=ch; }
+    else line=t;
+  }
+  if(line) out.push(line);
+  return out;
+}
+function makeEndingCard(){
+  try{
+    const kind=S.flags.ending||"safe";
+    let name="结局", accent="#e8a15c";
+    if(kind==="safe"){ name="安全向 · 清场离开"; accent="#c9b89a"; }
+    else if(kind==="deep"){ name="深入向 · 带着错位离开"; accent="#9fb6c9"; }
+    else if(kind==="battery"){ name="黑屏 · 电量归零"; accent="#8a8a92"; }
+    else if(kind==="hidden"){ name="？？？ · 删除失败"; accent="#c0392b"; }
+    else if(kind.startsWith("char_")){ const c=CHARS.find(x=>x.id===kind.slice(5)); name="角色专属 · "+(c?c.name:"？"); }
+    const idLabel=({staff:"工作人员",reporter:"记者",passerby:"路人"})[identityKey()]||"路人";
+    const col=getCollectionStats();
+    const body=String(pickEndingBody(kind)||"").replace(/\s+/g," ").trim();
+    const cv=document.createElement("canvas"); cv.width=720; cv.height=1200;
+    const g=cv.getContext("2d");
+    const FONT='"PingFang SC","Microsoft YaHei",sans-serif';
+    g.fillStyle="#0d0a0c"; g.fillRect(0,0,720,1200);
+    const rad=g.createRadialGradient(360,470,40,360,540,720);
+    rad.addColorStop(0,"rgba(140,26,30,.5)"); rad.addColorStop(.55,"rgba(60,16,20,.22)"); rad.addColorStop(1,"rgba(13,10,12,0)");
+    g.fillStyle=rad; g.fillRect(0,0,720,1200);
+    g.strokeStyle="rgba(192,57,43,.5)"; g.lineWidth=2; g.strokeRect(26,26,668,1148);
+    g.strokeStyle="rgba(192,57,43,.16)"; g.strokeRect(38,38,644,1124);
+    g.textAlign="center";
+    g.fillStyle="rgba(233,226,214,.55)";
+    g.font="17px "+FONT;
+    g.fillText("T H E   B O Y Z   ·   T H R I L L - I N G",360,110);
+    g.fillStyle="#e9e2d6";
+    g.font="bold 40px "+FONT;
+    g.fillText("夏日游乐场 · 捡手机",360,168);
+    g.strokeStyle="rgba(192,57,43,.6)"; g.beginPath(); g.moveTo(230,206); g.lineTo(490,206); g.stroke();
+    g.fillStyle=accent;
+    g.font="bold 46px "+FONT;
+    let y=300;
+    canvasWrap(g,name,600).forEach(l=>{ g.fillText(l,360,y); y+=58; });
+    g.fillStyle="rgba(233,226,214,.7)";
+    g.font="20px "+FONT;
+    g.fillText("身份 · "+idLabel+"　｜　收集度 "+col.percent+"%",360,y+14);
+    g.fillStyle="rgba(233,226,214,.86)";
+    g.font="23px "+FONT;
+    let by=y+90;
+    canvasWrap(g, body.slice(0,110)+(body.length>110?"……":""), 520).slice(0,6).forEach(l=>{ g.fillText(l,360,by); by+=40; });
+    g.fillStyle="rgba(192,57,43,.85)";
+    g.font="22px "+FONT;
+    g.fillText("手机不是丢的。",360,1000);
+    g.fillStyle="rgba(233,226,214,.45)";
+    g.font="16px "+FONT;
+    g.fillText("第 "+Math.min(3,S.day||1)+" 天 · 剩余电量 "+Math.ceil(S.battery)+"%",360,1046);
+    g.fillText("THE BOYZ 同人互动小说 · 粉丝二次创作",360,1110);
+    const data=cv.toDataURL("image/png");
+    const wrap=document.createElement("div");
+    wrap.className="modal";
+    wrap.innerHTML=`<div class="sheet">
+      <h3>本局卡片</h3>
+      <p class="muted" style="font-size:12px;margin-bottom:8px">长按图片存到相册，或者直接截图。</p>
+      <img src="${data}" style="width:100%;border-radius:10px;display:block" />
+      <button class="btn ghost" onclick="this.closest('.modal').remove()">关闭</button>
+    </div>`;
+    wrap.addEventListener("click",e=>{ if(e.target===wrap) wrap.remove(); });
+    document.getElementById("phone").appendChild(wrap);
+  }catch(e){ toast("卡片生成失败"); }
+}
 function renderEnding(kind){
   document.getElementById("dock").style.display="none";
   document.getElementById("menuBtn").style.display="none";
@@ -7088,6 +7271,7 @@ function renderEnding(kind){
     <p class="ending-kicker">THRILL-ING · 片尾结算</p>
     <h1>${esc(title)}</h1>
     <p class="ending-unlock">已解锁：${esc(endingDisplayName(kind))} · 身份：${esc(idLabel)}</p>
+    ${ngClearCount()>1?`<p class="muted" style="margin-top:2px">第 ${ngClearCount()} 次走进这个园区。它认得你。</p>`:""}
     <p class="muted" style="margin-bottom:8px">${esc(identityAttitudeHint())}</p>
     <div class="body">${bodyToHtml(body)}</div>
     ${(typeof endingRevealBlock==="function"?endingRevealBlock(kind).html:"")}
@@ -7111,6 +7295,7 @@ function renderEnding(kind){
       ${bars}
     </div>
     <button class="btn primary" onclick="renderEndingGallery()">结局图鉴</button>
+    <button class="btn" onclick="makeEndingCard()">📷 生成本局卡片</button>
     <button class="btn" onclick="afterEnd()">再玩一次</button>
     <button class="btn" onclick="saveGame();toast('已保存本局结局进度')">保存本局</button>
     <button class="btn ghost" onclick="loadGame()">读档</button>
@@ -7138,6 +7323,7 @@ function renderHiddenSettlement(){
     <p class="ending-kicker">THRILL-ING · 片尾结算</p>
     <h1>结局 · ？？？</h1>
     <p class="ending-unlock">已解锁：隐藏结局 · 身份：${esc(idLabel)}</p>
+    ${ngClearCount()>1?`<p class="muted" style="margin-top:2px">第 ${ngClearCount()} 次走进这个园区。它认得你。</p>`:""}
     <div class="body">${bodyToHtml(body)}</div>
     ${(typeof endingRevealBlock==="function"?endingRevealBlock("hidden").html:"")}
     ${typeof lastWordBox==="function"?lastWordBox():""}
@@ -7159,6 +7345,7 @@ function renderHiddenSettlement(){
       ${bars}
     </div>
     <button class="btn primary" onclick="renderEndingGallery()">结局图鉴</button>
+    <button class="btn" onclick="makeEndingCard()">📷 生成本局卡片</button>
     <button class="btn" onclick="afterEnd()">再玩一次</button>
     <button class="btn" onclick="saveGame()">保存本局</button>
   </div>`;
@@ -7674,7 +7861,7 @@ function renderChat(cid){
     if(m.from==="sys"){ bubbles+=`<div class="bubble sys">${esc(m.text)}</div>`; return; }
     const side=m.from==="me"?"me":"them";
     if(m.type==="voice"){
-      bubbles+=`<div class="bubble ${side} voice" onclick='toast(${JSON.stringify("（播放）"+m.text)});drainBattery(0.5)'>
+      bubbles+=`<div class="bubble ${side} voice" onclick='playVoiceNote(this,${JSON.stringify(m.text||"")})'>
         <span class="wave">🔊 ～～～</span><span style="font-size:12px">${esc(m.text)}</span></div>`;
     } else if(m.type==="image"){
       bubbles+=`<div class="bubble ${side} img"><div style="padding:20px;background:#111;border-radius:10px;font-size:12px;color:#666">${esc(m.text)}</div></div>`;
@@ -8241,6 +8428,54 @@ function renderRecorderApp(){
     ${html}
     <button class="btn ghost" onclick="toast('麦克风被占用：来源未知');drainBattery(1)">开始新录音</button>
   </div>`;
+}
+/* —— 语音消息：不加载音频文件，用 WebAudio 现场合成「贴着话筒的呼吸声」 —— */
+let __voiceAC=null;
+function voiceCtx(){
+  try{
+    if(!__voiceAC) __voiceAC=new (window.AudioContext||window.webkitAudioContext)();
+    if(__voiceAC.state==="suspended") __voiceAC.resume();
+    return __voiceAC;
+  }catch(e){ return null; }
+}
+function playVoiceNote(el, label){
+  const ac=voiceCtx();
+  drainBattery(0.6);
+  if(!ac){ toast("这台设备放不出这段声音"); return; }
+  const late=typeof isLateNight==="function" && isLateNight();
+  const dur=2.1+Math.min(2.6,(label||"").length*0.05)+(late?0.6:0);
+  const now=ac.currentTime;
+  // 呼吸：带通噪声
+  const buf=ac.createBuffer(1,Math.ceil(ac.sampleRate*dur),ac.sampleRate);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++){
+    const t=i/ac.sampleRate;
+    const env=Math.sin(Math.PI*(t/dur));
+    const breath=0.55+0.45*Math.sin(t*(late?2.2:3.4)+1.2);
+    d[i]=(Math.random()*2-1)*env*breath;
+  }
+  const src=ac.createBufferSource(); src.buffer=buf;
+  const bp=ac.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=late?320:430; bp.Q.value=0.8;
+  const lp=ac.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=1500;
+  const g=ac.createGain();
+  g.gain.setValueAtTime(0,now);
+  g.gain.linearRampToValueAtTime(0.2,now+0.22);
+  g.gain.setValueAtTime(0.2,now+dur-0.45);
+  g.gain.linearRampToValueAtTime(0,now+dur);
+  src.connect(bp); bp.connect(lp); lp.connect(g); g.connect(ac.destination);
+  // 人声底色 + 轻微颤动
+  const osc=ac.createOscillator(); osc.type="sine"; osc.frequency.value=late?102:126;
+  const og=ac.createGain();
+  og.gain.setValueAtTime(0,now); og.gain.linearRampToValueAtTime(0.05,now+0.35); og.gain.linearRampToValueAtTime(0,now+dur);
+  const lfo=ac.createOscillator(); lfo.frequency.value=late?4.2:5.6;
+  const lg=ac.createGain(); lg.gain.value=0.018;
+  lfo.connect(lg); lg.connect(og.gain); osc.connect(og); og.connect(ac.destination);
+  src.start(now); osc.start(now); lfo.start(now);
+  src.stop(now+dur+0.05); osc.stop(now+dur+0.05); lfo.stop(now+dur+0.05);
+  if(el){ el.classList.add("playing"); setTimeout(()=>el.classList.remove("playing"),Math.round(dur*1000)); }
+  if(late && Math.random()<0.35){
+    setTimeout(()=>{ try{ if(typeof ambienceScareSting==="function") ambienceScareSting(); }catch(e){} }, Math.round(dur*1000*0.82));
+  }
 }
 function playRecorderClip(i){
   drainBattery(2);

@@ -1442,7 +1442,7 @@ const ZONES = [
   {id:"back",name:"后台",hint:"员工通道 / 临时工休息处",unlock:true,safe:true,charge:true,staffPrefer:true},
   {id:"empty",name:"空地",hint:"？？？",unlock:false,danger:true,hidden:true}
 ];
-const TIME_MULT = 1.75; // slower clock (~1.75×); was 3
+const TIME_MULT = 1.2; // 时钟流速（越小一天越长）；1.75→1.2：第一天"傍晚到夜里"不再是十几个动作就烧完
 const DAY_INFO = {
   1:{
     title:"第1天",
@@ -1508,7 +1508,7 @@ function defaultState(){
       dayBriefed:{1:false,2:false,3:false}, disclaimerOk:false,
       refusedCharge:false, chargedCount:0, deadBattery:false,
       missedMsgWindow:false, jumpReduce:false, juyeonHeld:false, softScare:false, alignHints:0, npcMet:[],
-      flashSafe:false, tutorialSeen:false, autoSavedAt:0
+      flashSafe:false, tutorialSeen:false, autoSavedAt:0, anomFrac:0
     },
     milestones:[],
     view:"title", tab:"home", chatWith:null,
@@ -1527,6 +1527,23 @@ function identityMod(){
   if(S.identity==="staff") return {anomalyDelay:1, attitude:1, batDrain:0.9};
   if(S.identity==="reporter") return {anomalyDelay:0, attitude:0, batDrain:1.1};
   return {anomalyDelay:0.5, attitude:-0.5, batDrain:1.0}; // passerby
+}
+// —— 异常值获取：按天加权。第一天减半（零头攒着，凑满 1 才计入），第二天起全额。
+// 目的：让"正常的一天"先立住，错位感从第二天才密集起来。
+function gainAnomaly(n){
+  n = n || 0;
+  if(n <= 0) return 0;
+  if(!S.flags) S.flags = {};
+  if(S.day <= 1){
+    S.flags.anomFrac = (S.flags.anomFrac || 0) + n * 0.5;
+    if(S.flags.anomFrac < 1) return 0;
+    const whole = Math.floor(S.flags.anomFrac);
+    S.flags.anomFrac -= whole;
+    S.flags.anomaliesSeen = (S.flags.anomaliesSeen || 0) + whole;
+    return whole;
+  }
+  S.flags.anomaliesSeen = (S.flags.anomaliesSeen || 0) + n;
+  return n;
 }
 
 // —— Time / battery ——
@@ -2228,7 +2245,7 @@ function chargeAtSafeZone(zid){
     t:realTime()
   });
   if(isLateNight() || S.day>=2){
-    S.flags.anomaliesSeen += 1;
+    gainAnomaly(1);
     addKeyword("充电时的静默");
   }
   // identity line
@@ -2264,7 +2281,7 @@ function openMenu(){
     <h3 style="margin-bottom:12px">菜单</h3>
     <button class="btn primary" onclick="saveGame();this.closest('.modal').remove()">💾 存档</button>
     <button class="btn" onclick="loadGame();this.closest('.modal').remove()">📂 读档</button>
-    <button class="btn" onclick="advanceTime(25);drainBattery(2);this.closest('.modal').remove();render()">⏱ 等待约 1 小时（-2%电）</button>
+    <button class="btn" onclick="advanceTime(50);drainBattery(2);this.closest('.modal').remove();render()">⏱ 等待约 1 小时（-2%电）</button>
     <button class="btn" onclick="waitUntilNight();this.closest('.modal').remove()">🌙 等到深夜（-6%电）</button>
     <button class="btn" onclick="showDayCard(S.day,{instant:true});this.closest('.modal').remove()">📋 今日说明</button>
     <div class="vol-row">🎵 氛围音量 <input type="range" min="0" max="100" value="${window.__ambienceVol||48}" oninput="if(typeof ambienceSetVolume==='function')ambienceSetVolume(this.value);document.getElementById('volLab').textContent=this.value" /><span id="volLab">${window.__ambienceVol||48}</span></div>
@@ -3310,7 +3327,7 @@ function maybeOwnerPing(opts) {
   S.flags.ownerPingCount++;
   S.flags.lastOwnerPingAt = now;
   if (late && good) S.flags.alignHints = Math.min(4, (S.flags.alignHints || 0) + 1);
-  if (late && !good) S.flags.anomaliesSeen++;
+  if (late && !good) gainAnomaly(1);
   toast((CHARS.find((c) => c.id === cid) || {}).name + " 发来消息");
   if (typeof nextBeat === "function" && typeof injectBeat === "function") {
     const nb = nextBeat(cid);
@@ -3565,7 +3582,7 @@ function useItem(id, ctx) {
     }
     addKeyword("第二圈水渍");
     addRecord("湿纸巾", "擦开后露出更小一圈水渍——像另一部手机。");
-    S.flags.anomaliesSeen++;
+    gainAnomaly(1);
     giveDigit("7", "湿纸巾 · 柜台擦拭");
     if (typeof grantPasswordHintKeyword === "function") grantPasswordHintKeyword("wipe");
     if (!hasItem("blood_ticket")) giveItem("blood_ticket");
@@ -3584,13 +3601,13 @@ function useItem(id, ctx) {
         t: realTime(),
       });
       S.attention.kevin = (S.attention.kevin || 0) + 2;
-      S.flags.anomaliesSeen++;
+      gainAnomaly(1);
       drainBattery(2);
       toast("录音扰局 · Kevin 关注+");
       return true;
     }
     if (ctx && ctx.zone === "night") {
-      S.flags.anomaliesSeen++;
+      gainAnomaly(1);
       drainBattery(3);
       giveDigit("1");
       giveDigit("0");
@@ -3793,7 +3810,7 @@ function completeQuest(qid) {
     S.emptyUnlocked = true;
     toast("空地解锁提示已触发");
   }
-  S.flags.anomaliesSeen++;
+  gainAnomaly(1);
   toast("任务完成：" + q.title);
   if (typeof ambienceScareSting === "function" && Math.random() < 0.2) ambienceScareSting();
 }
@@ -3883,7 +3900,7 @@ function matchFlip(i) {
       if (typeof grantPasswordHintKeyword === "function") grantPasswordHintKeyword("match");
       giveItem("photo_scrap");
       if (!hasItem("lure_selfie") && Math.random() < 0.55) giveItem("lure_selfie");
-      S.flags.anomaliesSeen++;
+      gainAnomaly(1);
       if (S.ownerId) S.attention[S.ownerId] = (S.attention[S.ownerId] || 0) + 1;
       toast("配对成功 · 密码+5");
       addRecord("小游戏·配对", "四组线索对上了。边角碎片入手。");
@@ -3900,7 +3917,7 @@ function matchFlip(i) {
       _mg.lock = false;
       if (_mg.moves >= 12) {
         drainBattery(6);
-        S.flags.anomaliesSeen++;
+        gainAnomaly(1);
         toast("配对失败 · 电量-6%");
         S.tab = "home";
         render();
@@ -4110,7 +4127,7 @@ function finishSwipe(win) {
       }
     }
   } else {
-    S.flags.anomaliesSeen++;
+    gainAnomaly(1);
   }
   _mg = null;
   renderDeleted();
@@ -4173,7 +4190,7 @@ function puzzleSubmit() {
     S.puzzle.lastHint = "";
     toast("空地闸机打开");
     addRecord("密码·空地", "闸机咬合：2-9-4-7。");
-    S.flags.anomaliesSeen++;
+    gainAnomaly(1);
     renderPuzzleBoard();
     return;
   }
@@ -4182,7 +4199,7 @@ function puzzleSubmit() {
     S.puzzle.lastHint = "";
     toast("删除第三层解锁");
     addRecord("密码·第三层", "锁芯承认 5-8-3-6。");
-    S.flags.anomaliesSeen += 2;
+    gainAnomaly(2);
     if (typeof maybeJumpFace === "function") maybeJumpFace("hidden");
     renderPuzzleBoard();
     return;
@@ -4206,7 +4223,7 @@ function puzzleSubmit() {
   }
   S.puzzle.lastHint = hint;
   if (S.puzzle.attempt >= 4 && Math.random() < 0.55) {
-    S.flags.anomaliesSeen++;
+    gainAnomaly(1);
     if (typeof maybeJumpFace === "function") maybeJumpFace("status");
   }
   renderPuzzleBoard();
@@ -4274,7 +4291,7 @@ function resolveNightEvent(key, choice) {
     if (S.ownerAlign === "good" && S.ownerId) S.attention[S.ownerId] += 1;
   } else if (choice === "answer") {
     drainBattery(5);
-    S.flags.anomaliesSeen += 2;
+    gainAnomaly(2);
     S.flags.repliedAnomaly++;
     const n = S.playerName || "你";
     if (S.ownerId) {
@@ -4302,7 +4319,7 @@ function resolveNightEvent(key, choice) {
   } else {
     // timeout — bad
     drainBattery(10);
-    S.flags.anomaliesSeen += 3;
+    gainAnomaly(3);
     toast("你愣住了。什么东西已经站在光里。");
     if (typeof maybeJumpFace === "function") maybeJumpFace("map");
     S.flags.warningsIgnored++;
@@ -4347,7 +4364,7 @@ function spotPick(i) {
     if (S.ownerId) S.attention[S.ownerId] = (S.attention[S.ownerId] || 0) + 1;
     toast("找到了 · 密码+2");
     addRecord("小游戏·异常格", "九格里那一格不一样。像相册里多出来的影子。");
-    S.flags.anomaliesSeen++;
+    gainAnomaly(1);
     setTimeout(() => { S.tab = "home"; render(); }, 500);
   } else {
     _mg.tries++;
@@ -4355,7 +4372,7 @@ function spotPick(i) {
     if (_mg.tries >= 3) {
       _mg.done = true;
       drainBattery(4);
-      S.flags.anomaliesSeen++;
+      gainAnomaly(1);
       toast("没找到 · 电量-4%");
       S.tab = "home";
       render();
@@ -4411,7 +4428,7 @@ function lightTap(i) {
       _mg.done = true;
       drainBattery(5);
       toast("黑灯太多 · 电量-5%");
-      S.flags.anomaliesSeen++;
+      gainAnomaly(1);
       S.tab = "home";
       render();
       return;
@@ -4881,12 +4898,12 @@ window.runLateLoop = function (kind) {
   if (kind === "radio") {
     addRecord("循环·广播", "副歌又缺了一拍。灯牌微微偏了一格——像在提醒你某个「九点」方位。");
     showCluePopup("再听广播", "异常副歌又绕回来了。\n灯牌在某一格多停了一瞬。\n\n这是可重复的夜场循环：每次都能涨一点异常感知，并刷新你对数字碎片的印象。", { tag: "内容循环" });
-    S.flags.anomaliesSeen++;
+    gainAnomaly(1);
     if (typeof grantPasswordHintKeyword === "function") grantPasswordHintKeyword("radio", { silent: true });
   } else if (kind === "wipe") {
     addRecord("循环·擦屏", "血雾退开又覆上。角落刮痕仍在——像不肯被忘掉的笔画。");
     showCluePopup("再擦屏幕", "擦不干净。刮痕还在。\n你越擦，越觉得那像密码里的某一笔。", { tag: "内容循环" });
-    S.flags.anomaliesSeen++;
+    gainAnomaly(1);
   } else if (kind === "memo") {
     S.tab = "records";
     if (typeof injectDayEndMemo === "function") injectDayEndMemo(Math.min(S.day, 3));
@@ -5383,7 +5400,7 @@ function applyReply(cid, reply){
   if(cid==="jacob" && /水渍|柜台|饮食|手机/.test(reply.label||"")){ S.flags.toldJacobWater=true; if(typeof checkQuestProgress==="function") checkQuestProgress(); }
   S.attention[cid]=(S.attention[cid]||0)+(reply.att||0);
   if(reply.push) S.stage[cid]=Math.min(2,(S.stage[cid]||0)+reply.push);
-  if(reply.anomaly){ S.flags.anomaliesSeen+=reply.anomaly; S.flags.repliedAnomaly++; }
+  if(reply.anomaly){ gainAnomaly(reply.anomaly); S.flags.repliedAnomaly++; }
   if(reply.warnIgnore) S.flags.warningsIgnored+=reply.warnIgnore;
   if(reply.kw) addKeyword(reply.kw);
   if(reply.saveRec) addRecord(reply.saveRec[0], reply.saveRec[1]);
@@ -5398,7 +5415,7 @@ function applyReply(cid, reply){
     if(spoken && spoken.hold){
       S.chatLog[cid].push({from:"sys",text:"（已读 · 长时间未回复）",type:"sys",t:realTime()});
       tryChatJumpFace(cid);
-      if(S.flags.anomaliesSeen>=3 && S.deletedLayer>=1) S.emptyUnlocked=true;
+      if(S.day>=2 && S.flags.anomaliesSeen>=3 && S.deletedLayer>=1) S.emptyUnlocked=true;
       const nb=nextBeat(cid);
       if(nb && Math.random()<0.5) injectBeat(cid,nb);
       return;
@@ -5406,12 +5423,12 @@ function applyReply(cid, reply){
     if(spoken && spoken.text==null){
       S.chatLog[cid].push({from:"sys",text:"（没有新的回复。）",type:"sys",t:realTime()});
       tryChatJumpFace(cid);
-      if(S.flags.anomaliesSeen>=3 && S.deletedLayer>=1) S.emptyUnlocked=true;
+      if(S.day>=2 && S.flags.anomaliesSeen>=3 && S.deletedLayer>=1) S.emptyUnlocked=true;
       const nb=nextBeat(cid);
       if(nb && Math.random()<0.5) injectBeat(cid,nb);
       return;
     }
-    if(spoken && spoken.text){ follow=spoken.text; followType=spoken.kind||"text"; if(spoken.anomaly) S.flags.anomaliesSeen++; }
+    if(spoken && spoken.text){ follow=spoken.text; followType=spoken.kind||"text"; if(spoken.anomaly) gainAnomaly(1); }
   }
   if(!follow){
     if(ph>=2) follow = ({追问:"……你问太多了。",忽视:"……",安抚:"晚了。",质疑:"你以为质疑有用？"})[reply.type]||"……";
@@ -5427,7 +5444,7 @@ function applyReply(cid, reply){
   tryChatJumpFace(cid);
 
   // maybe unlock empty
-  if(S.flags.anomaliesSeen>=3 && S.deletedLayer>=1) S.emptyUnlocked=true;
+  if(S.day>=2 && S.flags.anomaliesSeen>=3 && S.deletedLayer>=1) S.emptyUnlocked=true;
   // next beat chance
   const nb=nextBeat(cid);
   if(nb && Math.random()<0.5) injectBeat(cid,nb);
@@ -5456,7 +5473,7 @@ function openChat(cid){
       if(!last.mutated){
         last.text = last.text + "｜……你又打开了。";
         last.mutated=true;
-        S.flags.anomaliesSeen++;
+        gainAnomaly(1);
         addKeyword("重读变异");
       }
     }
@@ -5510,7 +5527,7 @@ function recoverDeleted(layer, confirmed){
   drainBattery(cost);
   advanceTime(10*layer);
   S.deletedLayer=layer;
-  S.flags.anomaliesSeen+=layer;
+  gainAnomaly(layer);
   if(layer>=3) S.flags.deepRecovery=true;
   const texts=[
     "",
@@ -5523,7 +5540,7 @@ function recoverDeleted(layer, confirmed){
   if(layer>=2) S.emptyUnlocked=true;
   if(layer>=3 && isLateNight() && isLowBat()){
     // faceless prep
-    S.flags.anomaliesSeen+=2;
+    gainAnomaly(2);
   }
   toast("恢复完成 · 电量-"+cost+"%");
   if(typeof explainDeletedLayer==="function") explainDeletedLayer(layer);
@@ -5552,12 +5569,12 @@ function travelTo(zid, confirmed){
   if(S.flags.deadBattery || S.flags.ended) return;
   advanceTime(12);
   S.currentZone=zid;
-  if(compFear) S.flags.anomaliesSeen=(S.flags.anomaliesSeen||0)+1;
+  if(compFear) gainAnomaly(1);
   markZoneVisited(zid);
   if(zid==="night") S.flags.visitedNight=true;
   if(zid==="empty"){
     S.flags.visitedEmpty=true;
-    S.flags.anomaliesSeen+=2;
+    gainAnomaly(2);
     if(isLowBat()||isLateNight()||S.day>=2){
       if(isLowBat()&&isLateNight()) drainBattery(8);
       addKeyword(S.playerName||"名字");
@@ -5566,11 +5583,11 @@ function travelTo(zid, confirmed){
     }
   }
   if(zid==="night" && (isLateNight()||S.day>=2||isLowBat())){
-    S.flags.anomaliesSeen++;
+    gainAnomaly(1);
     maybeJumpFace("map");
   }
   if(zid==="photo" && S.day>=2){
-    S.flags.anomaliesSeen++;
+    gainAnomaly(1);
     addKeyword("长椅凹陷");
     S.flags.day2PhotoVisit = true;
   }
@@ -6068,7 +6085,7 @@ function npcCloseReveal(npcId){
   if(txt) txt.innerHTML = `<b>${esc(a.close.detail)}</b><br><span class="npc-note">${esc(a.close.note)}</span>`;
   if(btn) btn.textContent = "记下这一眼";
   if(btn) btn.setAttribute("onclick","npcCloseRecord('"+npcId+"')");
-  S.flags.anomaliesSeen = (S.flags.anomaliesSeen||0)+1;
+  gainAnomaly(1);
   if(typeof playScareSting==="function"){ try{ playScareSting(); }catch(e){} }
 }
 
@@ -6198,7 +6215,7 @@ function pickCompanion(cid, zid){
     const c = CHARS.find(function(x){return x.id===cid;});
     const kind = compKind(zidSafe);
     if(kind==="fear"){
-      S.flags.anomaliesSeen = (S.flags.anomaliesSeen||0) + 1;
+      gainAnomaly(1);
       toast(c.name+" 跟了过来，但一路没说话");
     } else {
       toast(c.name+" 跟在你侧后方");
@@ -6331,11 +6348,11 @@ function tapHotspot(pid){
       setTimeout(()=>showCluePopup("照片里的数字痕迹", dh.line+"\n\n这不是完整密码，只是碎片。去任务与小游戏里找其余位。", {tag:"密码暗示"}), 400);
     }
   }
-  if(h.anomaly) S.flags.anomaliesSeen++;
+  if(h.anomaly) gainAnomaly(1);
   if((h.face || h.scare || (h.anomaly && S.day>=2)) && !S.jumpUsed.album){
     if(maybeJumpFace("album")){
       S.flags.faceAlbumDone=true;
-      S.flags.anomaliesSeen++;
+      gainAnomaly(1);
     }
   }
   if(h.chain && h.chainText){
@@ -7383,7 +7400,7 @@ function gardInspect(i){
   if(!S.flags.gardenSeen) S.flags.gardenSeen=[];
   if(S.flags.gardenSeen.indexOf(e.id)<0){
     S.flags.gardenSeen.push(e.id);
-    S.flags.anomaliesSeen=(S.flags.anomaliesSeen||0)+1;
+    gainAnomaly(1);
     addRecord("第一现场 · "+e.t, e.b);
   }
   showCluePopup(e.t, e.b, { tag: "第一现场" });
@@ -7401,7 +7418,7 @@ function gardClimax(){
     return;
   }
   drainBattery(1);
-  S.flags.anomaliesSeen=(S.flags.anomaliesSeen||0)+2;
+  gainAnomaly(2);
   S.flags.gardenerMet=true;
   addRecord("园丁的第一现场", "四件东西看全了：断口朝里、叶子摆成人形、剪子是温的、壶里不是水。\n你转身的时候，身后那排灌木里有一株的姿势，和你现在站着的一模一样。");
   screen.innerHTML=`<div class="area-view">
@@ -7506,7 +7523,7 @@ function shootGhost(zid,i){
   S.camShots++;
   addRecord("相机·"+g.title,g.body);
   addKeyword("相机·"+g.title);
-  if(g.scare) S.flags.anomaliesSeen++;
+  if(g.scare) gainAnomaly(1);
   if(g.digit){
     addRecord("相机·数字痕迹",g.title+"：「"+g.digit+"」。取景框里才是正的。");
     addKeyword("密码"+g.digit);
@@ -7645,7 +7662,7 @@ function renderBrowserApp(){
     <h3>浏览器</h3>
     <p class="muted">历史记录残页 · 无法联网刷新</p>
     ${html}
-    <button class="btn" onclick="drainBattery(2);S.flags.anomaliesSeen++;toast('刷新失败 · 电量-2%');addKeyword('404');renderBrowserApp()">尝试刷新</button>
+    <button class="btn" onclick="drainBattery(2);gainAnomaly(1);toast('刷新失败 · 电量-2%');addKeyword('404');renderBrowserApp()">尝试刷新</button>
   </div>`;
   drainBattery(1); advanceTime(2);
 }
@@ -7671,7 +7688,7 @@ function playRecorderClip(i){
   drainBattery(2);
   advanceTime(1);
   if(i===1 && S.day>=2){
-    S.flags.anomaliesSeen++;
+    gainAnomaly(1);
     addKeyword("无声口型");
     toast("……什么也没听见。电量却掉了。");
     if(typeof ambienceScareSting==="function") ambienceScareSting();
@@ -7679,7 +7696,7 @@ function playRecorderClip(i){
     toast("风声。像喷泉停了一拍。");
   } else {
     toast("空白。录音灯却亮过。");
-    S.flags.anomaliesSeen++;
+    gainAnomaly(1);
   }
 }
 

@@ -1447,8 +1447,8 @@ const DAY_INFO = {
   1:{
     title:"第1天",
     short:"第1天 · 傍晚到夜里",
-    tone:"第一天晚上，园区还开着。先回男主，再看两个人。",
-    goal:"回男主一条，再听两个人说话，看一张照片，走一个区。",
+    tone:"第一天晚上，园区还开着。先回那个未知号码，再看别人。",
+    goal:"回未知号码，等失主出现；然后听两个人说话，看一张照片，走一个区。",
     tip:"今天异常还不明显。看完主页上的那一件就够。"
   },
   2:{
@@ -1745,7 +1745,7 @@ function nextStep(){
   const p=routeSnapshot();
   const day=S.day||1;
   if(day<=1){
-    if(!p.lead) return {title:"先回男主",sub:"点开你选的那个人，回一句。其他人先不用全看。",go:"chat",label:"去聊天"};
+    if(!p.lead) return {title:S.ownerId?"先回男主":"先回那个号码",sub:S.ownerId?"点开你选的那个人，回一句。其他人先不用全看。":"聊天里只有一条未知号码。点开，看看它想说什么。",go:"chat",label:"去聊天"};
     if(p.replied.length<3) return {title:"再回两个人",sub:"已经回了 "+p.replied.length+" 人。挑说话习惯不一样的。",go:"chat",label:"继续回"};
     if(p.hot<1) return {title:"相册点一个圈",sub:"拍照区或舞台，点一次虚线圆就行。",go:"album",label:"打开相册"};
     if(!p.sawPlace) return {title:"去一个地方",sub:"饮食区或拍照区，走一处。电量低就顺便充电。",go:"map",label:"打开地图"};
@@ -5351,7 +5351,59 @@ function injectBeat(cid, beat){
   });
   S.unread[cid]=(S.unread[cid]||0)+1;
 }
+// —— 未知号码 · 开场匿名线（好坏不明；点完随机解锁男主）——
+const UNK_META={id:"unknown",name:"未知号码",color:"#26262b",emoji:"❓"};
+const UNK_PRO=[
+ {lines:["手机在你手上？","它从下午亮到现在。没有一个人打电话来找。"],replies:[
+   {label:"你是谁",type:"追问"},
+   {label:"我在找失主",type:"安抚"},
+   {label:"……",type:"忽视"}]},
+ {lines:["我是谁不重要。先记住两件事。","灯灭之前，回到有人的地方。别走灯少的那条路。"],replies:[
+   {label:"为什么告诉我这些",type:"追问"},
+   {label:"好，我记住了",type:"安抚"},
+   {label:"关你什么事",type:"质疑"}]},
+ {lines:["因为上一个没听。","现在，它轮到你了。它的主人快到了——他出现的时候，你就知道该跟着谁走了。"],replies:[
+   {label:"失主是谁",type:"追问"},
+   {label:"然后呢",type:"忽视"},
+   {label:"我不跟任何人走",type:"质疑"}]}
+];
+function unkStart(){
+  S.unkStep=0;
+  if(!S.chatLog.unknown) S.chatLog.unknown=[];
+  unkPushLines();
+}
+function unkPushLines(){
+  const step=UNK_PRO[S.unkStep];
+  if(!step) return;
+  step.lines.forEach(t=>S.chatLog.unknown.push({from:"them",text:t,type:"text",t:realTime(),read:true}));
+  S.unread.unknown=(S.unread.unknown||0)+1;
+}
+function unkReply(idx){
+  const step=UNK_PRO[S.unkStep];
+  if(!step){ renderChat("unknown"); return; }
+  const r=step.replies[idx]||step.replies[0];
+  S.chatLog.unknown.push({from:"me",text:r.label,type:"text",t:realTime()});
+  drainBattery(1); advanceTime(4);
+  S.unkStep++;
+  if(S.unkStep<UNK_PRO.length){
+    unkPushLines();
+  } else {
+    S.chatLog.unknown.push({from:"them",text:"手机在响。",type:"text",t:realTime(),read:true});
+    S.chatLog.unknown.push({from:"sys",text:"—— 该号码已注销 ——",type:"sys",t:realTime()});
+    const pool=CHARS.map(c=>c.id);
+    const leadId=pool[Math.floor(Math.random()*pool.length)];
+    if(typeof assignMaleLead==="function") assignMaleLead(leadId);
+    ensureSeedChats();
+    S.unread[S.ownerId]=(S.unread[S.ownerId]||0)+1;
+    addKeyword("未知号码");
+    const fr=typeof fakeRoleOf==="function"?fakeRoleOf(leadId):null;
+    toast(fr&&fr.title?("手机的主人到了——跟着「"+fr.title+"」走"):"手机的主人到了");
+  }
+  renderChat("unknown");
+  autoSave({now:true});
+}
 function chatUnlockedIds(){
+  if(!S.ownerId) return [];
   const order=[];
   if(S.ownerId) order.push(S.ownerId);
   CHARS.forEach(c=>{ if(c.id!==S.ownerId) order.push(c.id); });
@@ -6987,7 +7039,7 @@ function renderSetup(){
         <div class="desc">偶遇失物。标准节奏。</div>
       </button>
     </div>
-    <button class="btn primary" onclick="goLeadPick()">下一步 · 选男主</button>
+    <button class="btn primary" onclick="goLeadPick()">进入园区 · 捡起手机</button>
     <button class="btn ghost" onclick="S.view='title';renderSetup()">返回</button>
   </div>`;
 }
@@ -6997,25 +7049,22 @@ function goLeadPick(){
   if(!v){ toast("请输入名字"); return; }
   if(!S.identity){ toast("请选择身份"); return; }
   S.playerName=v;
-  S.view="setupLead";
-  renderSetup();
+  confirmSetup();
 }
 function confirmSetup(){
   if(typeof ambienceUnlock==="function") ambienceUnlock();
   if(!S.playerName){ toast("请输入名字"); return; }
   if(!S.identity){ toast("请选择身份"); return; }
-  if(!S.ownerId){ toast("请选择男主（手机失主）"); return; }
-  if(typeof assignMaleLead==="function") assignMaleLead(S.ownerId);
-  else { S.ownerAlign = Math.random()<0.45?"bad":"good"; }
   S.view="phone"; S.tab="home";
   S.day=1; S.hour=18; S.minute=30; S.battery=100;
   S.visitedZones=["stage"]; S.hotspotsFound=[];
   ensureSeedChats();
   if(typeof gpInit==="function") gpInit();
   if(S.identity==="staff"){ addKeyword("临时工通行证"); addKeyword("工牌"); if(typeof giveItem==="function") giveItem("badge"); }
+  unkStart();
   showPhone();
   render();
-  toast((typeof fakeRoleOf==="function"&&fakeRoleOf(S.ownerId)?("跟着「"+fakeRoleOf(S.ownerId).title+"」入场"):"手机已解锁")+" · 真名结局揭晓");
+  toast("捡到一部手机。有一个号码发来了消息。");
   setTimeout(()=>showDayCard(1), 400);
 }
 
@@ -7047,7 +7096,7 @@ function renderHome(){
   const screen=document.getElementById("screen");
   const info=dayBrief();
   const step=nextStep();
-  const unreadTotal=CHARS.reduce((a,c)=>a+(S.unread[c.id]||0),0);
+  const unreadTotal=CHARS.reduce((a,c)=>a+(S.unread[c.id]||0),0)+((!S.ownerId&&(S.unread.unknown||0))?1:0);
   let alert="";
   if(isCritBat()) alert=`<div class="alert-banner">电量极低。先去饮食区或舞台充电，别开新内容。</div>`;
   else if(S.day>=2 && isLateNight()) alert=`<div class="alert-banner">过了 22:00。一次只做卡片上的那一件。</div>`;
@@ -7088,7 +7137,23 @@ function renderHome(){
 function renderChatList(){
   ensureSeedChats();
   const screen=document.getElementById("screen");
-  let html=`<h3 style="margin-bottom:8px">聊天</h3><p class="muted" style="margin-bottom:8px">灰掉的还没说话。过了凌晨，他会在聊天里给你写一段很长的话。</p>`;
+  let html=`<h3 style="margin-bottom:8px">聊天</h3><p class="muted" style="margin-bottom:8px">${S.ownerId?"灰掉的还没说话。过了凌晨，他会在聊天里给你写一段很长的话。":"只有一个号码。别的，还没有出现。"}</p>`;
+  // 未知号码（开场匿名线；解锁男主后保留为灰色）
+  const ulog=S.chatLog.unknown||[];
+  if(ulog.length){
+    const last=ulog[ulog.length-1];
+    const uPrev=last?(last.type==="sys"?last.text:(last.text||"")):"";
+    const uUnread=!S.ownerId&&(S.unread.unknown||0);
+    html+=`<button class="chat-row" style="${S.ownerId?'opacity:.42':''}" onclick="openChat('unknown')">
+      <div class="avatar" style="background:#26262b"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:22px;color:#8a8a92">❓</div></div>
+      <div class="chat-meta">
+        <div class="top"><span class="name">未知号码${uUnread?`<span class="unread">${uUnread}</span>`:""}</span>
+        <span class="time">${last?last.t:""}</span></div>
+        <div class="prev">${esc(uPrev)}</div>
+      </div>
+    </button>`;
+  }
+  if(!S.ownerId){ screen.innerHTML=html; return; }
   const open=new Set(chatUnlockedIds());
   CHARS.forEach(c=>{
     const log=S.chatLog[c.id]||[];
@@ -7116,10 +7181,11 @@ function renderChatList(){
 }
 
 function renderChat(cid){
-  const c=CHARS.find(x=>x.id===cid);
+  const c=CHARS.find(x=>x.id===cid)||(cid==="unknown"?UNK_META:null);
+  if(!c){ S.chatWith=null; S.tab="chat"; render(); return; }
   const log=S.chatLog[cid]||[];
-  const replies=pendingReplies(cid);
-  const ph=charPhase(cid);
+  const replies=(cid==="unknown")?[]:pendingReplies(cid);
+  const ph=(cid==="unknown")?0:charPhase(cid);
   let bubbles="";
   log.forEach(m=>{
     if(m.from==="sys"){ bubbles+=`<div class="bubble sys">${esc(m.text)}</div>`; return; }
@@ -7143,8 +7209,15 @@ function renderChat(cid){
     });
     choiceHtml+=`</div>`;
   }
-  let proHtml = (S.day>=2) ? `<details class="proactive"><summary>想多说一句（第二天起）</summary>` : "";
-  if(S.day>=2){
+  if(cid==="unknown" && (S.unkStep||0)<UNK_PRO.length){
+    choiceHtml=`<div class="choices"><p class="muted">好坏不明。但它知道你在看。</p>`;
+    UNK_PRO[S.unkStep].replies.forEach((r,i)=>{
+      choiceHtml+=`<button class="choice-btn" onclick="chooseReply('unknown',${i})">［${r.type}］${esc(r.label)}</button>`;
+    });
+    choiceHtml+=`</div>`;
+  }
+  let proHtml = (S.day>=2 && cid!=="unknown") ? `<details class="proactive"><summary>想多说一句（第二天起）</summary>` : "";
+  if(S.day>=2 && cid!=="unknown"){
     PROACTIVE.forEach(pr=>{
       if(pr.needPhase && charPhase(cid)<pr.needPhase) return;
       proHtml+=`<button class="choice-btn" style="margin:4px 0" onclick="sendProactive('${cid}',PROACTIVE.find(x=>x.id==='${pr.id}'))">${esc(pr.label)}</button>`;
@@ -7161,7 +7234,7 @@ function renderChat(cid){
     <div class="chat-header">
       <button class="back-btn" onclick="S.chatWith=null;S.tab='chat';render()">←</button>
       <div class="avatar" style="background:${c.color};width:36px;height:36px">${avatarHTML(c.id,36)}</div>
-      <div><b>${c.name}</b><div class="muted">阶段 ${["前期","中期","后期"][ph]} · 关注 ${S.attention[cid]||0}</div></div>
+      <div><b>${c.name}</b><div class="muted">${cid==="unknown"?"号码不存在 · 好坏不明":"阶段 "+["前期","中期","后期"][ph]+" · 关注 "+(S.attention[cid]||0)}</div></div>
     </div>
     <div class="bubbles">${bubbles}</div>
     ${choiceHtml}${proHtml}`;
@@ -7169,6 +7242,7 @@ function renderChat(cid){
   const sc=document.getElementById("screen"); sc.scrollTop=sc.scrollHeight;
 }
 function chooseReply(cid, idx){
+  if(cid==="unknown"){ return unkReply(idx); }
   const replies=pendingReplies(cid);
   const r=replies[idx];
   if(!r) return;

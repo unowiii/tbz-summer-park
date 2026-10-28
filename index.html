@@ -3407,6 +3407,17 @@ const ITEM_DEFS = {
   mirror_shard: { id: "mirror_shard", name: "哈哈镜碎片", desc: "镜面刻着半句「别信最先发来的邀请」。反面数字像 6，又像 9——要对照其它来源。", evidence: true, lean: "neutral", points: ["eric","sunwoo","kevin"] },
   sticky_pass: { id: "sticky_pass", name: "过期通行证", desc: "日期被涂改。备注栏：值夜员签字有两种笔迹——一种劝你充电，一种劝你下空地。", evidence: true, lean: "neutral", points: ["sangyeon","jacob"] },
   lost_form: { id: "lost_form", name: "旧失物登记表", desc: "你亲手翻的。失主一栏空着。上一行的登记日期是去年活动闭幕那天：物品栏写着「手机（一部）」，已领回。领回人的名字被划掉了，划痕很新，剩下的开头是一个「金」字。", evidence: true, lean: "neutral", points: ["sunwoo","jacob","sangyeon"] },
+  // 纪念品 · 不是线索，只是有人想让你带走的东西（心动彩蛋获得）
+  keep_sunwoo: { id:"keep_sunwoo", name:"背面写了字的门票根", desc:"善旴给的。「明天也，先回我。」——字被划掉过一次，重写得很用力。", keep:true, who:"sunwoo" },
+  keep_q: { id:"keep_q", name:"拆开会跳出来的惊喜盒挂饰", desc:"Q 塞给你的。打开是一张小纸条：「不开心就拉两下绳，我这边会响。」", keep:true, who:"q" },
+  keep_eric: { id:"keep_eric", name:"没撒气的黄气球", desc:"Eric 把绳在你手腕上绕了两圈就跑了。气球上画着一个歪歪扭扭的笑脸。", keep:true, who:"eric" },
+  keep_new: { id:"keep_new", name:"一包全新的湿纸巾", desc:"New 递给你的时候只说了两个字：「备着」。后来你才发现，他把自己那包给了你。", keep:true, who:"new" },
+  keep_sangyeon: { id:"keep_sangyeon", name:"写着「先吃饭」的便签", desc:"上渊的字，笔画很稳。背面还有一行小的：「不想一个人吃的话，来找我。」", keep:true, who:"sangyeon" },
+  keep_jacob: { id:"keep_jacob", name:"小熊形状的曲奇", desc:"透明袋装着，系了个小蝴蝶结。Jacob 说烤的时候想着「要给谁」，就做成了好带走的形状。", keep:true, who:"jacob" },
+  keep_juyeon: { id:"keep_juyeon", name:"折成方块的排练表", desc:"背面写着三个字：「到了说。」折痕很深，像被折了又拆开过很多次。是柱延的。", keep:true, who:"juyeon" },
+  keep_younghoon: { id:"keep_younghoon", name:"只拍到半边肩膀的拍立得", desc:"泳勋说这张构图才是最好的。你没看懂，他也不打算解释。", keep:true, who:"younghoon" },
+  keep_hyunjae: { id:"keep_hyunjae", name:"边缘发亮的游戏代币", desc:"贤在说不玩这个了，随手给你。代币是限量的——他攒了很久。", keep:true, who:"hyunjae" },
+  keep_kevin: { id:"keep_kevin", name:"手写的旋律残页", desc:"副歌空着两小节。页脚一行小字：「等想清楚写给谁，再填。」是 Kevin 的笔迹。", keep:true, who:"kevin" },
 };
 
 const QUEST_DEFS = [
@@ -3667,7 +3678,9 @@ function giveDigit(d, src) {
 function renderInventory() {
   gpInit();
   const screen = document.getElementById("screen");
-  let body = (S.inv || []).map((id) => {
+  const keeps = (S.inv || []).filter((id) => (ITEM_DEFS[id] || {}).keep);
+  const rest = (S.inv || []).filter((id) => !(ITEM_DEFS[id] || {}).keep);
+  let body = rest.map((id) => {
     const d = ITEM_DEFS[id] || { name: id, desc: "" };
     const ev = d.evidence ? `<span class="mark mark-${d.lean==="good"?"good":d.lean==="bad"?"bad":"unk"}">证据·${d.lean==="good"?"偏保护":d.lean==="bad"?"偏引诱":"中性"}</span>` : "";
     const act = d.evidence
@@ -3675,11 +3688,43 @@ function renderInventory() {
       : `useItemFromInv('${id}')`;
     return `<button class="choice-btn" onclick="${act}"><b>${d.name}</b> ${ev}<br><span class="muted">${d.desc}</span></button>`;
   }).join("");
-  if (!body) body = `<p class="muted">背包空空。做任务、小游戏、擦柜台、逛地图可拾取证据。</p>`;
-  screen.innerHTML = `<div><h3>背包 · 证据</h3><p class="muted">普通物品点按使用；证据可检视并标记嫌疑。也可打开「嫌疑板」。</p>${body}
-    <button class="btn primary" onclick="renderSuspectBoard()">🔎 打开嫌疑板</button>
+  if (!rest.length) body = `<p class="muted">背包空空。做任务、小游戏、擦柜台、逛地图可拾取证据。</p>`;
+  const keepRows = keeps.map((id) => {
+    const d = ITEM_DEFS[id];
+    const c = CHARS.find((x) => x.id === d.who);
+    return `<button class="choice-btn" onclick="inspectKeep('${id}')">
+      <span style="display:inline-flex;align-items:center;gap:8px">${c ? avatarHTML(c.id, 34) : ""}<b>${d.name}</b></span><br><span class="muted">${d.desc}</span></button>`;
+  }).join("");
+  const all = keeps.length >= 10;
+  screen.innerHTML = `<div><h3>背包</h3><p class="muted">证据可检视并标记嫌疑；普通物品点按使用。也可打开「嫌疑板」。</p>${body}
+    <h3 style="margin-top:14px">♡ 纪念品 · ${keeps.length}/10</h3>
+    <p class="muted">不是线索。是有人想让你带走的东西。聊着聊着会到你手里。</p>
+    ${keepRows || '<p class="muted">还没有。白天聊天时，有人可能会顺手塞给你。</p>'}
+    ${all && !S.flags.keepAllSeen ? `<button class="btn primary" style="margin-top:10px" onclick="keepAllPopup()">十件都在了</button>` : ""}
+    <button class="btn primary" style="margin-top:10px" onclick="renderSuspectBoard()">🔎 打开嫌疑板</button>
     <button class="btn" onclick="renderPuzzleBoard()">打开密码板</button>
     <button class="btn ghost" onclick="S.tab='home';render()">返回主页</button></div>`;
+}
+function inspectKeep(id) {
+  const d = ITEM_DEFS[id];
+  if (!d) { renderInventory(); return; }
+  const c = CHARS.find((x) => x.id === d.who);
+  const screen = document.getElementById("screen");
+  screen.innerHTML = `<div class="mg-wrap"><h3>♡ ${esc(d.name)}</h3>
+    <div style="display:flex;gap:12px;align-items:center;margin:10px 0">
+      ${c ? `<div style="border:1px solid rgba(232,161,92,.4);border-radius:10px;padding:4px">${avatarHTML(c.id, 84)}</div>` : ""}
+      <p style="line-height:1.75;margin:0;font-size:13px">${esc(d.desc)}</p>
+    </div>
+    <p class="muted">不是线索。检视它不会改变任何判定——只是可以再看一遍。</p>
+    <button class="btn ghost" onclick="renderInventory()">返回背包</button></div>`;
+  if (typeof addRecord === "function") addRecord("纪念品 · " + d.name, d.desc);
+}
+function keepAllPopup() {
+  S.flags.keepAllSeen = true;
+  showCluePopup("♡ 十件都在了", "没有一件是线索。它们只是——有人希望你能带出门，带回家。\n\n备忘录上多了一行没有署名的字：\n「今年的夏天，有人替你记着。」", { tag: "纪念品" });
+  addRecord("纪念品 · 十件都在", "没有一件是线索。有人希望你能带出门，带回家。备忘录多了一行字：今年的夏天，有人替你记着。");
+  renderInventory();
+  autoSave({now:true});
 }
 
 function inspectEvidence(id) {
@@ -5498,6 +5543,7 @@ function applyReply(cid, reply){
   // next beat chance
   const nb=nextBeat(cid);
   if(nb && Math.random()<0.5) injectBeat(cid,nb);
+  if(typeof maybeHeart==="function") maybeHeart(cid, reply);
 }
 
 function sendProactive(cid, pr){
@@ -5762,6 +5808,227 @@ const COMP_ZONES = {
   hyunjae:{home:["back","night"],fear:["fountain"]},
   kevin:{home:["night","carousel"],fear:["empty"]}
 };
+
+/* —— 心动彩蛋池：白天聊天小概率触发，第 3 条赠纪念品；深夜不触发，留给惊悚 —— */
+const HEART_BEATS = {
+  sunwoo:[
+    {text:"刚翻相册，翻到你今天在木马前的样子。不是我拍的——大概是你自己按到的。挺好。"},
+    {text:"你在灯牌下面停了一下。我看见了。没叫你，是想看看你能站多久ㅋㅋ"},
+    {text:"给你的。门票根我没扔，背面写了字。写的时候有点不好意思，你拿到再看。", item:"keep_sunwoo"}
+  ],
+  q:[
+    {text:"你猜我手里有什么！！——猜不到吧。两根烟花棒。一根给你。"},
+    {text:"我刚才躲在气球墙后面，数你走过来的步数ㅋㅋ 十七步！下次让你走十六步。"},
+    {text:"挂饰挂你包上了！！不许摘。里面有什么，你自己拆。", item:"keep_q"}
+  ],
+  eric:[
+    {text:"接着！！——接住了吗？没接住也没事，糖纸是防摔的ㅋㅋ"},
+    {text:"我刚才跑赢了旋转杯。你要是看见了肯定笑。你笑的话我就再跑一次。"},
+    {text:"气球给你！！我先跑为敬——别问我为什么画的是笑脸，问就是灵感。", item:"keep_eric"}
+  ],
+  new:[
+    {text:"你手上有糖渍。……喏，湿纸巾。别问我为什么随身带这么多。"},
+    {text:"你刚才拍照的构图不行。……我重拍了。这张给你，就这张。"},
+    {text:"备着。……不是我自己要用。给你，就是给你。", item:"keep_new"}
+  ],
+  sangyeon:[
+    {text:"你多久没吃东西了。……别答「不饿」。走，饮食区。"},
+    {text:"排队的时候你打了个哈欠。等会儿你先眯十分钟，我看着时间，到点叫你。"},
+    {text:"便签压在你手机底下了。……看背面。看完先吃饭。", item:"keep_sangyeon"}
+  ],
+  jacob:[
+    {text:"饮食区今天多做了一个甜品……做多了。你帮我吃掉好不好，别浪费。"},
+    {text:"你说话的时候我会不自觉跟着笑，刚才被看见了ㅋㅋ 有点不好意思。"},
+    {text:"曲奇装袋里了，绳结别拆太急。……对了，是熊的形状，不是别的，别多想ㅋㅋ", item:"keep_jacob"}
+  ],
+  juyeon:[
+    {text:"你走得很慢。……不是坏事。今天适合慢。"},
+    {text:"刚才那个笑话不好笑。但我笑了。……你别记下来。"},
+    {text:"这个给你。……折法是排练间隙练的。背面有字，看完折回去。", item:"keep_juyeon"}
+  ],
+  younghoon:[
+    {text:"别动。……好，拍完了。你不知道自己看灯牌的时候，是什么表情。"},
+    {text:"冲洗店今天关门了。这张先放你那儿。……别弄丢。"},
+    {text:"拍立得给你。……只有半边肩膀是对的。另一半，下次再拍。", item:"keep_younghoon"}
+  ],
+  hyunjae:[
+    {text:"游戏厅那台机子我今天连过七关。……你想学？行，手放上来。"},
+    {text:"刚才你差点被台阶绊倒。我没笑。……我憋得很辛苦，这算给你面子。"},
+    {text:"代币拿去。……不是不玩了，是攒够了想送的人。现在送出去了。", item:"keep_hyunjae"}
+  ],
+  kevin:[
+    {text:"给你听一段。……还不完整。听到空白的时候别说话，就想事情。"},
+    {text:"你哼歌会跑调ㅋㅋ 但奇怪，我居然记得住你跑的那一版。"},
+    {text:"残页放你包里了。……副歌空着两小节。什么时候填，看你想给谁。", item:"keep_kevin"}
+  ]
+};
+function heartName(cid){ const c=CHARS.find(x=>x.id===cid); return c?c.name:"他"; }
+function maybeHeart(cid, reply){
+  if(cid==="unknown" || !reply || reply.noHeart) return;
+  if(!CHARS.some(c=>c.id===cid)) return;
+  if(S.flags.ended) return;
+  if(typeof charPhase!=="function" || charPhase(cid)>=2) return;   // 后期交给惊悚
+  if(typeof isLateNight==="function" && isLateNight()) return;      // 深夜是惊悚的地盘
+  if(!S.heartSeen) S.heartSeen={};
+  if(!S.heartDay) S.heartDay={};
+  if(S.heartDay[cid]===S.day) return;                               // 每人每天至多一次
+  if((S.heartSeen[cid]||0)>=3) return;
+  if(Math.random()>=0.16) return;
+  const idx=S.heartSeen[cid]||0;
+  const beat=(HEART_BEATS[cid]||[])[idx];
+  if(!beat) return;
+  S.heartDay[cid]=S.day;
+  S.heartSeen[cid]=idx+1;
+  if(!S.chatLog[cid]) S.chatLog[cid]=[];
+  S.chatLog[cid].push({from:"them",text:beat.text,type:"text",t:realTime(),heart:true,read:true});
+  S.attention[cid]=(S.attention[cid]||0)+1;
+  S.unread[cid]=(S.unread[cid]||0)+1;
+  if(beat.item && typeof giveItem==="function" && !hasItem(beat.item)) giveItem(beat.item);
+  toast("♡ "+heartName(cid)+" 顺手发来了一点小心动");
+}
+
+/* —— 同行时的反应池：贴区域、贴状态、不重复 —— */
+const COMP_ZONE_REACT = {
+  sunwoo:{
+    stage:"你刚才跟着灯牌的词默念了。……我都看见了ㅋㅋ 念错了一个字。",
+    food:"柠檬水是真的酸，我提醒过你。表情别管理了，挺好笑的。",
+    photo:"你在长椅前站了一下。……走，别站那儿。我陪你换个机位。",
+    game:"那个夹子是坏的，我试过三次。你不信？行，那你试第四次。",
+    carousel:"你看了那个空座三秒。……看我。这儿，我在。",
+    fountain:"别许愿。这儿的愿……算了，你许吧。我在旁边听着。",
+    night:"你声音变小了。……嗯，我也觉得这儿不对。走快一点，别跑。",
+    back:"后台的灯是声控的。……所以你别突然说话，我怕灯。",
+    late:"十点过了。你今天说的每句话我都记得，所以走亮的那边，我押着你。",
+    low:"你这电量撑不到下一个充电点。……行，把你手机给我，我看着，你走。"
+  },
+  q:{
+    stage:"我跟你讲！！灯牌那个字去年是好的，我见过它亮着的时候ㅋㅋ",
+    food:"糖葫芦分你一半！……别嫌我口水，我咬的另一半。",
+    photo:"帮我拍一张！！要那种……拍出来我还活着的样子ㅋㅋ",
+    game:"我刚才连赢三局！！你夸我！快点！",
+    carousel:"木马为什么不转了ㅠㅠ 我们下次白天来，我带你骑那匹白的。",
+    fountain:"我扔了一枚硬币。愿望不能说。……跟你不一样的愿望。",
+    night:"这里灯是紫色的，你的脸也紫紫的ㅋㅋ ……好笑归好笑，抓住我袖子。",
+    back:"后台有热水的味道。真好……像有人在里面活着。",
+    late:"你听到没有ㅠㅠ 刚才那声。……算了不说了。拉着我。",
+    low:"你手机只剩这点电还敢乱走！！罚你跟我去充电ㅠㅠ"
+  },
+  eric:{
+    stage:"我上去跑过一圈！灯特别亮，像被很多人看着一样——好爽！",
+    food:"这个好吃！！我买了两个。一个现在吃，一个……现在吃。",
+    photo:"给我拍！跳起来的那种！拍糊了也行，糊的更像我的风格。",
+    game:"输了一局。……再来！这次你帮我盯着那个爪子！",
+    carousel:"等它修好，我们骑最快的那匹。约好了，你不许赖。",
+    fountain:"我刚才把鞋跑掉了一只ㅋㅋ 没人看见吧？……你都看见了？！",
+    night:"哥。……有点安静。你说句话，随便说，我听着。",
+    back:"后台不让进吧？……诶你都进来了，那我也进。",
+    late:"该回去了吧。……我陪你走绕远的那条，慢一点的那种。",
+    low:"没电了怎么办ㅠㅠ 我手机也……啊不对，先救你的！"
+  },
+  new:{
+    stage:"灯上的灰三个月没擦了。……你怎么知道是三个月？我就是知道。",
+    food:"糖渍，今天第三次了。……手。（递纸巾）",
+    photo:"你刚才那个角度逆光。……让开，我拍一张对的给你。",
+    game:"柜台上全是指纹。……别碰。我帮你拿。",
+    carousel:"木马的漆掉了一块，有人用手指擦出一条干净的。……谁擦的？",
+    fountain:"水溅到你袖子了。……站着别动。（擦掉，退开，别看我）",
+    night:"这里的灯反光不对。……你走我左边，影子别重叠。",
+    back:"后台比前台干净。……奇怪。这里的怪，是整齐的。",
+    late:"晚了。……你的影子一截，我的也一截。很好，对上了。",
+    low:"关机吧。……不用怕。你看不清的时候，我替你看。"
+  },
+  sangyeon:{
+    stage:"灯架第三根是松的，我上去看过。……走，别在那儿站。",
+    food:"先吃饭。……吃完了？好。现在开始你说，我听。",
+    photo:"你拍照不看镜头，全靠偷。……行，我配合你，装不知道。",
+    game:"点子你出，钱我付。……别争，这不是商量。",
+    carousel:"那匹木马的缰绳松了，我修过一次。……别摸，划手。",
+    fountain:"硬币我带了两个。……一枚你扔。愿望搁心里，别说。",
+    night:"十点后的夜场，规则不变：我在你前面半步，你在我声音里。",
+    back:"后台点名。……你也在。好，人齐了。",
+    late:"回去。明天也是这个点，我还在。……这句是承诺，不重复第二遍。",
+    low:"充电，现在。……充上了？好。你休息，我守着。"
+  },
+  jacob:{
+    stage:"侧幕后面风大。……喏，外套。不用还ㅋㅋ",
+    food:"柜台的甜品是今天新出的……我先尝过了，没毒ㅋㅋ 你放心吃。",
+    photo:"你要拍我？……好。那我要拍回来，公平。",
+    game:"抓娃娃我其实不擅长ㅋㅋ 但你想要的话，失败十次我也可以。",
+    carousel:"小时候以为木马半夜会自己跑。……你笑什么，真的会吧？",
+    fountain:"这里适合说秘密。……不急。你想说的时候，我都在。",
+    night:"괜찮아，我在。……你抓多紧都行，我手够稳。",
+    back:"后台的味道像面粉混着电线。……我家烤箱坏了，听着就想修。",
+    late:"잘 자之前……不对，你还没睡。那再陪你一会儿。",
+    low:"省着用。……不是不让你看消息，是让你留着电，看我发。"
+  },
+  juyeon:{
+    stage:"灯牌第二行的字歪了。……每次来都歪。每次都……算了。",
+    food:"你咬第一口的速度比昨天快。……嗯，饿了。",
+    photo:"你拍风景，我拍你拍风景。……可以吗。",
+    game:"那个机台我修好过一次。没人知道。……现在你知道了。",
+    carousel:"木马停着的时候，像在等。……等什么，我没想好。",
+    fountain:"水声大。……你要说什么，可以现在说。我听得见。",
+    night:"跟紧。……黑暗里我认人靠心跳。你的最吵。",
+    back:"后台的日程板被擦过。……你也看见了？嗯。",
+    late:"到了说。……不对，现在就到了。那就现在说：到家没有。",
+    low:"电。……不重要。你人在就行。"
+  },
+  younghoon:{
+    stage:"灯牌亮一半的时候最好看。……你抬头了。嗯，就是那个角度。",
+    food:"面包。……这个好吃。你一半。",
+    photo:"你举手机的手势不对。……来，手给我。……记住这个角度了？",
+    game:"夹娃娃的爪子偏两毫米，我量过。……你往左一点。",
+    carousel:"木马转起来的时候人拍不出来。……所以我拍停着的。停着的才有真话。",
+    fountain:"硬币落水前的那一下声音最好。……你刚才差点许愿了。别许。",
+    night:"夜里的照片全是噪点。……但噪点里那个影子，不是我拍出来的。",
+    back:"后台的相册柜换了新锁。……谁换的？",
+    late:"……别开闪光灯。今晚的它，不喜欢。",
+    low:"相册存多了会卡。……删吧。删不下去的话，传给我。"
+  },
+  hyunjae:{
+    stage:"这舞台我偷偷上去过。……嘘，哥的秘密，只告诉你一份。",
+    food:"烤串我包了。……别数我吃了几串，数了咱俩都尴尬。",
+    photo:"你连拍了我三张？……删两张。留最好的那张。",
+    game:"这台机器我第一天就通关了。……想学？手放上来，哥教你。",
+    carousel:"转太快会晕。……你要晕就抓我袖子，抓歪了也行。",
+    fountain:"许愿要收费的，一枚硬币。……穷人的愿望都攒着。我也是。",
+    night:"夜场这地方……白天说它坏话的，晚上都来了。走里面点。",
+    back:"后台的排班表我会看。……谁晚上值夜，哥都替你筛过一遍。",
+    late:"十点了。哥不是你妈。……但你手机再不省电，明天谁叫你起床。",
+    low:"省电模式。……不，关了我一个就行。看哥的。"
+  },
+  kevin:{
+    stage:"灯牌闪的频率是 4/4 拍。……你看，整个园区都有节拍。",
+    food:"吃的先放你那边。……我等你吃完，这段刚好想两句旋律。",
+    photo:"你拍的照片有声音你信吗。……这张，是快门长一点的那个音。",
+    game:"音游我来。……诶，输了。你刚才看见什么了，别记下来ㅋㅋ",
+    carousel:"木马的音乐是三拍子。……但它少了一拍。你听到了吗。",
+    fountain:"水声是白噪音，好用的。……我写不出词的时候，就来这儿坐。",
+    night:"这里太静了。……我哼一段吧。别评价，就当走夜的灯。",
+    back:"后台有台旧钢琴，走音了。……走音也好看。东西和人一样。",
+    late:"晚了。……我把今天的旋律收尾了。结尾是安静的，跟你一样。",
+    low:"电量像延音踏板，会掉的。……没事。掉之前，我先记住你。"
+  }
+};
+function pickCompReact(cid, zid){
+  const R = COMP_ZONE_REACT[cid] || {};
+  const z = ZONES.find(x=>x.id===zid);
+  const keys=[];
+  if(R[zid]) keys.push(zid);
+  if(R.late && isLateNight()) keys.push("late");
+  if(R.low && isCritBat()) keys.push("low");
+  let pool;
+  if(keys.length && Math.random()<0.78) pool = keys;
+  else pool = Object.keys(R);
+  if(!S.compSaid) S.compSaid={};
+  const bag = S.compSaid[cid] || (S.compSaid[cid]=[]);
+  const fresh = pool.filter(k=>bag.indexOf(k)<0);
+  const use = fresh.length ? fresh : pool;
+  const key = use[Math.floor(Math.random()*use.length)];
+  bag.push(key);
+  if(bag.length>5) bag.shift();
+  return R[key] || (COMPANION_LINES[cid] && (COMPANION_LINES[cid].enter||[])[0]) || "";
+}
 
 const COMPANION_LINES = {
   sunwoo:{
@@ -6179,7 +6446,7 @@ function companionDockHTML(zid){
   const a = COMP_ART[c.id] || {mask:""};
   const kind = compKind(zid);
   const eerie = compIsEerie();
-  const line = compLine(c.id, kind);
+  const line = kind==="fear" ? compLine(c.id, kind) : pickCompReact(c.id, zid);
   const extra = eerie ? `<br><i class="comp-glitch">${esc(compGlitchLine())}</i>` : "";
   return `<div class="comp-dock ${eerie?"eerie":""} ${kind==="fear"?"fear":""}">
     <div class="comp-art" onclick="companionSay('${zid}')">${companionSVG(c.id)}</div>
@@ -6202,7 +6469,7 @@ function companionSay(zid){
   const el = document.getElementById("compLine");
   if(!el) return;
   const kind = compKind(zid||S.currentZone);
-  let html = esc(compLine(c.id, kind));
+  let html = esc(kind==="fear" ? compLine(c.id,"fear") : pickCompReact(c.id, zid||S.currentZone));
   if(compIsEerie() && Math.random()<0.35) html += `<br><i class="comp-glitch">${esc(compGlitchLine())}</i>`;
   el.style.opacity = "0";
   setTimeout(function(){ el.innerHTML = html; el.style.opacity = "1"; },120);
@@ -7198,7 +7465,8 @@ function renderChat(cid){
     } else {
       const glitch = m.from==="me" && ph>=2 && isLowBat();
       const read = m.from==="me" ? `<div class="read ${glitch?"glitch":""}">${glitch?"已读 · ？？:？？":"已读"}</div>` : "";
-      bubbles+=`<div class="bubble ${side}">${esc(m.text)}${read}</div>`;
+      const heartStyle = m.heart ? ' style="border-color:rgba(232,161,92,.55);background:rgba(232,161,92,.07)"' : "";
+      bubbles+=`<div class="bubble ${side}"${heartStyle}>${m.heart?"<span style=\"color:#e8a15c;font-size:11px\">♡</span> ":""}${esc(m.text)}${read}</div>`;
     }
   });
   let choiceHtml="";

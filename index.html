@@ -158,6 +158,14 @@ h1,h2,h3{font-weight:700}
 .bubble .read{font-size:10px;color:var(--muted);margin-top:4px;text-align:right}
 .bubble .read.glitch{color:var(--danger)}
 .bubble.sys{align-self:center;background:transparent;color:var(--muted);font-size:11px;max-width:90%;text-align:center}
+/* 撤回的消息：只有一行灰字，点它也没用 */
+.bubble.recalled{align-self:flex-start;background:transparent!important;border:1px dashed rgba(255,255,255,.13);color:#75757f;font-size:11px;font-style:italic;cursor:pointer}
+.bubble.recalled::before{content:"↺ ";opacity:.55}
+/* 群聊：左侧头像 + 名字 + 气泡，时间贴右边 */
+.g-row{display:flex;gap:7px;margin:8px 0;align-items:flex-start;width:100%}
+.g-row .g-name{font-size:10px;color:#9a9aa4;margin:0 0 2px 3px;letter-spacing:.03em}
+.g-row .g-time{font-size:9px;color:#5b5b64;padding-top:13px;white-space:nowrap;flex:0 0 auto}
+.g-row .bubble{max-width:100%;word-break:break-word}
 .choices{display:flex;flex-direction:column;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06)}
 .choice-btn{background:rgba(93,173,226,.12);border:1px solid rgba(93,173,226,.3);border-radius:12px;
   padding:10px 12px;text-align:left;font-size:13px;color:var(--ink);cursor:pointer}
@@ -3439,6 +3447,14 @@ function markSuspect(cid, mark) {
   if (mark !== "good" && mark !== "bad" && mark !== "clear") return;
   if (mark === "clear") delete S.suspectMark[cid];
   else S.suspectMark[cid] = mark;
+  // 标成坏人：他会察觉（下次打开他的聊天时触发对质）
+  if (mark === "bad") {
+    if (!S.flags.accused) S.flags.accused = {};
+    S.flags.accused[cid] = absMin();
+    if (S.flags.confrontDone) delete S.flags.confrontDone[cid];
+  } else if (mark === "clear" && S.flags.accused) {
+    delete S.flags.accused[cid];
+  }
   const nm = (CHARS.find((c) => c.id === cid) || {}).name || cid;
   toast(mark === "clear" ? "已清除标记：" + nm : nm + " · 疑似" + (mark === "good" ? "好人" : "坏人"));
   if (typeof renderSuspectBoard === "function") renderSuspectBoard();
@@ -5624,7 +5640,7 @@ function injectBeat(cid, beat){
       if(cid==="q") text = String(text).replace(/[！!哈]/g,"");
       else if(cid==="eric") text = String(text).replace(/！/g,"。");
     }
-    const msg={from:ln.from,text,type:ln.type||"text",t:realTime(),beatId:beat.id,read:true};
+    const msg={from:ln.from,text,type:ln.type||"text",t:realTime(),at:absMin(),beatId:beat.id,read:true};
     // read glitch late
     if(ph>=2 && Math.random()<0.4){ msg.readGlitch=true; S.flags.readGlitch=true; }
     S.chatLog[cid].push(msg);
@@ -5802,13 +5818,16 @@ function sendProactive(cid, pr){
 }
 
 function openChat(cid){
+  if(cid===GROUP_ID){ openGroupChat(); return; }
   if(typeof playUiSfx==="function") playUiSfx("chat");
   S.chatWith=cid;
   S.tab="chat";
   S.reread[cid]=(S.reread[cid]||0)+1;
   S.unread[cid]=0;
+  // 他等太久的话，会先把话收回去——所以要在补新消息之前判
+  const recalledNow = (cid==="unknown") ? false : maybeRecall(cid);
   // reread mutation
-  if(S.reread[cid]>=3 && charPhase(cid)>=1){
+  if(!recalledNow && S.reread[cid]>=3 && charPhase(cid)>=1){
     const log=S.chatLog[cid];
     const them=log.filter(m=>m.from==="them"&&m.type==="text");
     if(them.length && Math.random()<0.5){
@@ -5822,10 +5841,15 @@ function openChat(cid){
     }
   }
   // ensure content
-  if(S.chatLog[cid].length===0){ const b=nextBeat(cid); if(b) injectBeat(cid,b); }
-  else {
-    const b=nextBeat(cid);
-    if(b && Math.random()<0.4) injectBeat(cid,b);
+  if(!recalledNow){
+    if(S.chatLog[cid].length===0){ const b=nextBeat(cid); if(b) injectBeat(cid,b); }
+    else {
+      const b=nextBeat(cid);
+      if(b && Math.random()<0.4) injectBeat(cid,b);
+    }
+    maybeConfront(cid);
+  }else{
+    toast("他把话收回去了");
   }
   drainBattery(0.8);
   advanceTime(2);
@@ -5843,6 +5867,8 @@ function pendingReplies(cid){
     if(log[i].beatId){ lastBeatId=log[i].beatId; break; }
   }
   if(!lastBeatId) return [];
+  // 这条已经被撤回：他没在等你回了
+  if(S.flags.recalledBeat && S.flags.recalledBeat[cid]===lastBeatId) return [];
   // if last messages include a me after that beat, no replies
   let beatIdx=-1;
   for(let i=0;i<log.length;i++){ if(log[i].beatId===lastBeatId) beatIdx=i; }
@@ -7804,6 +7830,406 @@ function renderHome(){
   </div>`;
 }
 
+/* ============================================================
+   园区夜班群 · 消息撤回 · 嫌疑对质 · 回拨
+   ============================================================ */
+
+/* 园内绝对分钟：跨天单调递增，用来算“他等了你多久” */
+function absMin(){ return ((S.day||1)-1)*1440 + (S.hour||0)*60 + (S.minute||0); }
+
+/* ---------- 群聊 ---------- */
+const GROUP_ID="group";
+const GROUP_GHOST="ghost";     // 手机主人：名字被打码的那个成员
+const GROUP_ADMIN="admin";     // 园区管理机器人
+
+const GROUP_SEED=[
+  {who:"kevin",   text:"今天副歌那段谁改的。我没同意。", t:"17:12"},
+  {who:"sunwoo",  text:"不是我", t:"17:14"},
+  {who:"eric",    text:"也不是我！！", t:"17:14"},
+  {who:"new",     text:"彩排表在群里。自己看。", t:"17:16"},
+  {who:"q",       text:"现在群里这版不是制作组发的。我核过时间戳。", t:"17:18"},
+  {who:"juyeon",  text:"那是谁发的。", t:"17:19"},
+  {who:"ghost",   text:"我发的。手滑。对不起。", t:"17:20"},
+  {who:"sys",     text:"「…」撤回了一条消息", t:"17:21"},
+  {who:"hyunjae", text:"……手滑能滑出一整张表？", t:"17:22"},
+  {who:"jacob",   text:"先别吵。喷泉那边的灯又坏了，晚上别往那边走。", t:"17:26"},
+  {who:"admin",   text:"【通知】今夜 22:00 后仅保留东侧照明。请勿进入未照明区域。", t:"17:30"},
+  {who:"kevin",   text:"这通知谁发的。我今天没收到工单。", t:"17:31"}
+];
+
+const GROUP_DAILY={
+  1:[
+    {who:"younghoon",text:"有人看见我的工牌吗。蓝色的，背面有划痕。"},
+    {who:"juyeon",   text:"后台前台都问过。没有。"},
+    {who:"eric",     text:"我下午在长椅那边捡到过一张卡！！但不是工牌！！"},
+    {who:"sangyeon", text:"哪张长椅。"},
+    {who:"jacob",    text:"……别问了。今天大家早点回去。"}
+  ],
+  2:[
+    {who:"kevin", text:"群里是不是少了一个人。"},
+    {who:"new",   text:"没有。一直就这些人。"},
+    {who:"kevin", text:"少了。头像顺序变过。我记性没那么差。"},
+    {who:"sys",   text:"「…」已被移出群聊"},
+    {who:"hyunjae",text:"谁移的"},
+    {who:"q",     text:"不是我。"},
+    {who:"admin", text:"【通知】群成员如有异常，请及时上报，不要自行处理。"}
+  ],
+  3:[
+    {who:"admin", text:"【闭园通知】今夜 23:00 清场。临时人员请于 22:30 前离园。"},
+    {who:"ghost", text:"别忘了东西。"},
+    {who:"sys",   text:"「…」发来一条消息。该成员已被移出群聊。"},
+    {who:"sys",   text:"群内只剩你一个人在线"}
+  ]
+};
+
+const GROUP_REACT={
+  say:[
+    {who:"eric",    text:"？？？"},
+    {who:"eric",    text:"你不是说不来了吗"},
+    {who:"kevin",   text:"谁在用他的号。"},
+    {who:"jacob",   text:"……是本人吗。"},
+    {who:"admin",   text:"【提醒】请勿冒用他人账号发言。"}
+  ],
+  ask:[
+    {who:"new",     text:"后台今天没人。值班表空着。"},
+    {who:"juyeon",  text:"空着？那楼上谁在走。"},
+    {who:"jacob",   text:"别上楼。"}
+  ]
+};
+
+function groupSender(id){
+  if(id===GROUP_GHOST) return {name:"…",color:"#191920",emoji:"▢",ghost:true};
+  if(id===GROUP_ADMIN) return {name:"园区管理 02",color:"#23303a",emoji:"📢"};
+  const c=CHARS.find(x=>x.id===id);
+  return c?{name:c.name,color:c.color,emoji:c.emoji}:{name:"？",color:"#333",emoji:"？"};
+}
+function groupMemberCount(){
+  return (S.flags.groupGhostGone?10:11);
+}
+function pushGroup(who,text,type){
+  if(!S.chatLog) S.chatLog={};
+  if(!S.chatLog[GROUP_ID]) S.chatLog[GROUP_ID]=[];
+  const isSys = who==="sys" || type==="sys";
+  const msg={
+    from: isSys?"sys":(who==="me"?"me":"them"),
+    who: who,
+    text: text,
+    type: isSys?"sys":(type||"text"),
+    t: realTime(),
+    at: absMin(),
+    read: true
+  };
+  S.chatLog[GROUP_ID].push(msg);
+  if(!isSys && who!=="me") S.unread[GROUP_ID]=(S.unread[GROUP_ID]||0)+1;
+  return msg;
+}
+function ensureGroupSeed(){
+  if(!S.chatLog) S.chatLog={};
+  if(!S.chatLog[GROUP_ID]) S.chatLog[GROUP_ID]=[];
+  if(S.flags.groupSeeded) return;
+  S.flags.groupSeeded=true;
+  GROUP_SEED.forEach(x=>{
+    S.chatLog[GROUP_ID].push({from:x.who==="sys"?"sys":(x.who===GROUP_ADMIN?"them":"them"),who:x.who,text:x.text,type:x.type||(x.who==="sys"?"sys":"text"),t:x.t,read:true});
+  });
+  S.unread[GROUP_ID]=3;
+}
+/* 每次进群推进一小段当天的新消息 */
+function groupTick(){
+  const day=Math.min(3, S.day||1);
+  if(S.flags.groupDay!==day){ S.flags.groupDay=day; S.flags.groupStep=0; }
+  const pool=GROUP_DAILY[day]||[];
+  let step=S.flags.groupStep||0;
+  if(step>=pool.length) return;
+  const n=Math.min(pool.length-step, 1+(Math.random()<0.4?1:0));
+  for(let i=0;i<n;i++){
+    const it=pool[step+i];
+    if(!it) break;
+    pushGroup(it.who,it.text,it.who==="sys"?"sys":null);
+    if(it.who===GROUP_GHOST && /移出群聊/.test(it.text||"")) S.flags.groupGhostGone=true;
+    if(/已被移出群聊/.test(it.text||"")) S.flags.groupGhostGone=true;
+  }
+  S.flags.groupStep=Math.min(pool.length, step+n);
+}
+function openGroupChat(){
+  if(typeof playUiSfx==="function") playUiSfx("chat");
+  ensureGroupSeed();
+  S.chatWith=GROUP_ID;
+  S.tab="chat";
+  S.unread[GROUP_ID]=0;
+  groupTick();
+  drainBattery(0.5);
+  advanceTime(2);
+  render();
+}
+function groupSay(kind){
+  const day=Math.min(3, S.day||1);
+  if(S.flags.groupSaid===day){ toast("今天已经说过话了"); return; }
+  S.flags.groupSaid=day;
+  const text = kind==="say" ? "我到了。" : "今天谁在后台值班？";
+  pushGroup("me",text);
+  const pool=GROUP_REACT[kind]||[];
+  pool.forEach(r=>pushGroup(r.who,r.text));
+  if(S.flags.groupGhostGone){
+    pushGroup(GROUP_GHOST, kind==="say" ? "是我。别问了。" : "别问值班表。问你自己怎么还在园里。");
+  }
+  gainAnomaly(1);
+  S.flags.groupSpoke=(S.flags.groupSpoke||0)+1;
+  addRecord("园区夜班群", "你用了他的号在群里说话。有人问「是本人吗」。没有人认出你不是他。");
+  addKeyword("冒用身份");
+  advanceTime(6);
+  drainBattery(1);
+  renderGroupChat();
+}
+function renderGroupChat(){
+  const log=S.chatLog[GROUP_ID]||[];
+  let bubbles="";
+  log.forEach(m=>{
+    if(m.from==="sys"||m.type==="sys"){ bubbles+=`<div class="bubble sys">${esc(m.text)}</div>`; return; }
+    if(m.from==="me"){ bubbles+=`<div class="bubble me">${esc(m.text)}</div>`; return; }
+    const s=groupSender(m.who);
+    bubbles+=`<div class="g-row">
+      <div class="avatar" style="background:${s.color};width:26px;height:26px;font-size:12px;flex:0 0 26px">${s.ghost?"▢":esc(s.emoji||"")}</div>
+      <div style="flex:1;min-width:0">
+        <div class="g-name" ${s.ghost?'style="opacity:.55"':""}>${esc(s.name)}</div>
+        <div class="bubble them" style="margin-top:2px">${esc(m.text)}</div>
+      </div>
+      <div class="g-time">${esc(m.t||"")}</div>
+    </div>`;
+  });
+  const day=Math.min(3, S.day||1);
+  const said=S.flags.groupSaid===day;
+  let actions="";
+  if(!said){
+    actions=`<div class="choices">
+      <p class="muted">你在用他的号。群里没有人知道手机现在在谁手上。</p>
+      <button class="choice-btn" onclick="groupSay('say')">［发言］我到了。</button>
+      <button class="choice-btn" onclick="groupSay('ask')">［发言］今天谁在后台值班？</button>
+    </div>`;
+  }else{
+    actions=`<div class="choices"><p class="muted">你今天已经说过话了。再说下去，会有人开始核对。</p></div>`;
+  }
+  document.getElementById("screen").innerHTML=`
+    <div class="chat-header">
+      <button class="back-btn" onclick="S.chatWith=null;S.tab='chat';render()">←</button>
+      <div class="avatar" style="background:#2a2f3a;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px">🎡</div>
+      <div><b>园区夜班群</b><div class="muted">${groupMemberCount()} 人 · 你用的是他的号</div></div>
+    </div>
+    <div class="bubbles">${bubbles}</div>
+    ${actions}`;
+  const sc=document.getElementById("screen"); sc.scrollTop=sc.scrollHeight;
+}
+
+/* ---------- 消息撤回：他等你回，等到不耐烦就把话收回去 ---------- */
+function recallWindow(){
+  const d=S.day||1;
+  return d>=3?85:d>=2?130:150;   // 园内分钟；越到后面越没有耐心
+}
+function maybeRecall(cid){
+  if(cid===GROUP_ID || cid==="unknown") return false;
+  const log=S.chatLog[cid];
+  if(!log||!log.length) return false;
+  let idx=-1;
+  for(let i=log.length-1;i>=0;i--){
+    if(log[i].from==="me") return false;      // 你已经回过了
+    if(log[i].from==="them"){ idx=i; break; }
+  }
+  if(idx<0) return false;
+  const m=log[idx];
+  if(m.recalled || m.type==="voice" || m.type==="image") return false;
+  if(m.at==null) return false;
+  if(absMin()-m.at <= recallWindow()) return false;
+  m.recalled=true;
+  m.recalledText=m.text;
+  m.text="撤回了一条消息";
+  m.type="recalled";
+  if(m.beatId){
+    S.flags.recalledBeat=S.flags.recalledBeat||{};
+    S.flags.recalledBeat[cid]=m.beatId;
+  }
+  S.flags.recallCount=(S.flags.recallCount||0)+1;
+  S.flags.lastRecallAt=absMin();
+  return true;
+}
+
+/* ---------- 嫌疑对质：你标了他，他会察觉 ---------- */
+function maybeConfront(cid){
+  if(cid===GROUP_ID || cid==="unknown") return false;
+  if(S.day<2) return false;                          // 第一天还没那么敏感
+  const acc=S.flags.accused;
+  if(!acc || acc[cid]==null) return false;
+  if((S.flags.confrontDone||{})[cid]) return false;
+  if(absMin()-acc[cid]<8) return false;              // 刚标完不会立刻被察觉
+  S.flags.confrontDone=S.flags.confrontDone||{};
+  S.flags.confrontDone[cid]=true;
+  const isOwner=(cid===S.ownerId);
+  const align=S.ownerAlign||"base";
+  let lines=[], gain=0, rec=null;
+  if(isOwner && align==="keep"){
+    lines=["你刚才在我背后站了很久。",
+           "那个板子上，你把我放到坏的那一边了。",
+           "没关系。你放得对。",
+           "……所以你更要跟紧我。坏的那一边，至少是真的。"];
+    gain=3; rec=["对质·他","你标了他。他没有否认，反而靠得更近。"];
+    addMemo&&addMemo(cid,"对质","我把他标成了坏人。他说：你放得对。");
+  }else if(isOwner){
+    lines=["……你把我也划进去了？",
+           "我不问为什么。",
+           "但如果你要查，从我自己开始查。这样公平。",
+           "前台抽屉里有一本登记簿，最后几页是空的。去翻吧。"];
+    gain=1; rec=["对质·他","你标了他。他退开半步，然后自己把路让开了。"];
+  }else{
+    const fake=FAKE_PARK_ROLES&&FAKE_PARK_ROLES[cid];
+    if(fake){
+      lines=["听说你在查我们。","为什么是我。",
+             "……行。那我告诉你一件真的：喷泉底下有东西，是那台机器不敢让人看的。",
+             "信不信随你。反正你已经标了。"];
+      rec=["对质·"+cid,"你标了他。他给了一条听起来很真的线索——真假未验证。"];
+      addKeyword("未验证线索");
+    }else{
+      lines=["……为什么是我。","我什么都不知道。","我只想在这待到闭园。"];
+      rec=["对质·"+cid,"你标了他。他慌了。不像装的。"];
+      gain=0;
+    }
+  }
+  lines.forEach(t=>S.chatLog[cid].push({from:"them",text:t,type:"text",t:realTime(),at:absMin(),read:true}));
+  S.attention[cid]=(S.attention[cid]||0)+gain;
+  if(isOwner && align==="keep") gainAnomaly(1);
+  if(rec) addRecord(rec[0],rec[1]);
+  addKeyword("被察觉");
+  return true;
+}
+
+/* ---------- 回拨未知号码：接通后只有环境声，靠听辨位置 ---------- */
+const CALLBACK_ZONES=[
+  {id:"fountain",name:"喷泉广场",hint:"水声很密，一下一下，像有人在里面搅。"},
+  {id:"carousel",name:"旋转木马",hint:"音乐盒卡在同一个音上，反复，不往前走。"},
+  {id:"back",    name:"后台",    hint:"风扇在转。有人拖着什么走过铁皮。"},
+  {id:"night",   name:"夜场",    hint:"电流嗡鸣。很远的地方有掌声，但没有人在。"}
+];
+const CALLBACK_CORRECT=[
+  "接通了七秒。水声。水声里有人在数数——数到四就停了。",
+  "木马的音乐盒。它转到第三匹就卡住，然后再从头。",
+  "风扇、铁皮、脚步声在往上走。他在上楼。",
+  "掌声。很近，但你身后没有人。"
+];
+function callbackUsed(){ return S.flags.callDay===S.day; }
+function startCallback(){
+  if(callbackUsed()){ toast("今天已经打过了。他不会再接。"); return; }
+  if(S.battery<12){ toast("电量太低，拨不出去"); return; }
+  if((S.day||1)<2){ toast("没信号。屏幕上只有一格，还在闪。"); return; }
+  const pool=CALLBACK_ZONES.slice();
+  const ans=pool[Math.floor(Math.random()*pool.length)];
+  S.flags.callAnswer=ans.id;
+  S.flags.callDay=S.day;
+  drainBattery(4);
+  advanceTime(4);
+  playAmbienceScene(ans.id);
+  const screen=document.getElementById("screen");
+  screen.innerHTML=`<div>
+    <h3>回拨 · 未知号码</h3>
+    <p class="muted" style="margin:6px 0 10px;line-height:1.6">接通了。没有人说话，只有背景声。你听了几秒。</p>
+    <div class="card" style="margin-bottom:10px;font-size:13px;line-height:1.65">
+      <b>你听到的</b><br>${esc(ans.hint)}
+    </div>
+    <div class="play-hub">
+      ${CALLBACK_ZONES.map(z=>`<button class="btn" onclick="answerCallback('${z.id}')">📍 他在${esc(z.name)}</button>`).join("")}
+    </div>
+    <button class="btn ghost" style="margin-top:10px" onclick="S.chatWith='unknown';render()">挂断</button>
+  </div>`;
+}
+function answerCallback(zid){
+  const ans=S.flags.callAnswer;
+  const z=CALLBACK_ZONES.find(x=>x.id===zid);
+  const right=zid===ans;
+  const okCount=(S.flags.callCorrect||0);
+  if(right){
+    S.flags.callCorrect=okCount+1;
+    const idx=Math.min(CALLBACK_CORRECT.length-1, okCount);
+    const body=CALLBACK_CORRECT[idx];
+    addRecord("回拨·接通", body);
+    addKeyword("回拨");
+    gainAnomaly(1);
+    if(typeof showCluePopup==="function"){
+      showCluePopup("回拨 · 接通了", body+"\n\n他不知道你听出来了。他没有挂断。", {tag:"听声辨位"});
+    }
+    if(S.flags.callCorrect>=2) S.flags.callbackKnows=true;
+  }else{
+    gainAnomaly(1);
+    toast("对面挂了。");
+    if(typeof ambienceScareSting==="function") ambienceScareSting();
+  }
+  advanceTime(3);
+  renderChat("unknown");
+}
+
+/* 四种园区环境声，现场合成，不加载音频文件 */
+function playAmbienceScene(kind){
+  const ac=voiceCtx();
+  if(!ac) return;
+  const now=ac.currentTime;
+  const dur=3.4;
+  const master=ac.createGain();
+  master.gain.setValueAtTime(0,now);
+  master.gain.linearRampToValueAtTime(0.22,now+0.3);
+  master.gain.setValueAtTime(0.22,now+dur-0.5);
+  master.gain.linearRampToValueAtTime(0,now+dur);
+  master.connect(ac.destination);
+
+  if(kind==="fountain"){
+    const buf=ac.createBuffer(1,Math.ceil(ac.sampleRate*dur),ac.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++){
+      const t=i/ac.sampleRate;
+      d[i]=(Math.random()*2-1)*(0.5+0.5*Math.sin(t*2.1));
+    }
+    const src=ac.createBufferSource(); src.buffer=buf;
+    const bp=ac.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=900; bp.Q.value=0.6;
+    src.connect(bp); bp.connect(master); src.start(now); src.stop(now+dur);
+  }else if(kind==="carousel"){
+    const notes=[880,784,659,659,659,587];
+    notes.forEach((f,i)=>{
+      const o=ac.createOscillator(); o.type="triangle"; o.frequency.value=f;
+      const g=ac.createGain();
+      const st=now+0.15+i*0.42;
+      g.gain.setValueAtTime(0,st);
+      g.gain.linearRampToValueAtTime(0.16,st+0.04);
+      g.gain.exponentialRampToValueAtTime(0.001,st+0.4);
+      o.connect(g); g.connect(master); o.start(st); o.stop(st+0.42);
+    });
+  }else if(kind==="back"){
+    const o=ac.createOscillator(); o.type="sawtooth"; o.frequency.value=58;
+    const lp=ac.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=260;
+    const g=ac.createGain(); g.gain.value=0.5;
+    o.connect(lp); lp.connect(g); g.connect(master); o.start(now); o.stop(now+dur);
+    // 铁皮上的脚步
+    [1.1,1.9,2.6].forEach(t=>{
+      const b=ac.createBuffer(1,Math.ceil(ac.sampleRate*0.09),ac.sampleRate);
+      const dd=b.getChannelData(0);
+      for(let i=0;i<dd.length;i++){ dd[i]=(Math.random()*2-1)*(1-i/dd.length); }
+      const s=ac.createBufferSource(); s.buffer=b;
+      const hp=ac.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=1400;
+      const gg=ac.createGain(); gg.gain.value=0.5;
+      s.connect(hp); hp.connect(gg); gg.connect(master);
+      s.start(now+t); s.stop(now+t+0.09);
+    });
+  }else{
+    const o=ac.createOscillator(); o.type="sine"; o.frequency.value=112;
+    const g=ac.createGain(); g.gain.value=0.18;
+    o.connect(g); g.connect(master); o.start(now); o.stop(now+dur);
+    // 很远的掌声
+    [0.9,1.7,2.4,2.9].forEach((t,i)=>{
+      const b=ac.createBuffer(1,Math.ceil(ac.sampleRate*0.12),ac.sampleRate);
+      const dd=b.getChannelData(0);
+      for(let j=0;j<dd.length;j++){ dd[j]=(Math.random()*2-1)*Math.exp(-j/900); }
+      const s=ac.createBufferSource(); s.buffer=b;
+      const bp2=ac.createBiquadFilter(); bp2.type="bandpass"; bp2.frequency.value=2200; bp2.Q.value=0.9;
+      const gg=ac.createGain(); gg.gain.value=0.28-i*0.05;
+      s.connect(bp2); bp2.connect(gg); gg.connect(master);
+      s.start(now+t); s.stop(now+t+0.12);
+    });
+  }
+}
+
 /* 聊天列表排序：谁最近有动静谁在上面。不按成员顺序固定，避免看位置就猜到是谁。 */
 function chatSortKey(id){
   const log=S.chatLog[id]||[];
@@ -7822,11 +8248,13 @@ function chatSortKey(id){
 }
 function renderChatList(){
   ensureSeedChats();
+  ensureGroupSeed();
   const screen=document.getElementById("screen");
   let html=`<h3 style="margin-bottom:8px">聊天</h3><p class="muted" style="margin-bottom:8px">${S.ownerId?"没说话的在下面。过了凌晨，他会在聊天里给你写一段很长的话。":"只有一个号码。别的，还没有出现。"}</p>`;
   // 未知号码和所有成员一起排队：按最后一条消息的时间倒序，没消息的沉底
   const rows=[];
   if((S.chatLog.unknown||[]).length) rows.push({id:"unknown", key:chatSortKey("unknown")});
+  rows.push({id:GROUP_ID, key:chatSortKey(GROUP_ID)});
   if(S.ownerId) CHARS.forEach(c=>rows.push({id:c.id, key:chatSortKey(c.id)}));
   rows.sort((a,b)=>{
     if(a.key && b.key) return (b.key.mins-a.key.mins) || (b.key.n-a.key.n);
@@ -7846,6 +8274,26 @@ function renderChatList(){
           <div class="top"><span class="name">未知号码${uUnread?`<span class="unread">${uUnread}</span>`:""}</span>
           <span class="time">${last?last.t:""}</span></div>
           <div class="prev">${esc(uPrev)}</div>
+        </div>
+      </button>`;
+      return;
+    }
+    if(r.id===GROUP_ID){
+      const glog=S.chatLog[GROUP_ID]||[];
+      const last=glog[glog.length-1];
+      let gPrev="";
+      if(last){
+        if(last.from==="sys"||last.type==="sys") gPrev=last.text||"";
+        else if(last.from==="me") gPrev="你："+(last.text||"");
+        else gPrev=groupSender(last.who).name+"："+(last.text||"");
+      }
+      const gUnread=S.unread[GROUP_ID]||0;
+      html+=`<button class="chat-row" onclick="openChat('${GROUP_ID}')">
+        <div class="avatar" style="background:#2a2f3a;display:flex;align-items:center;justify-content:center;font-size:20px">🎡</div>
+        <div class="chat-meta">
+          <div class="top"><span class="name">园区夜班群${gUnread?`<span class="unread">${gUnread}</span>`:""}</span>
+          <span class="time">${last?esc(last.t||""):""}</span></div>
+          <div class="prev">${esc(gPrev)}</div>
         </div>
       </button>`;
       return;
@@ -7877,6 +8325,7 @@ function renderChatList(){
 }
 
 function renderChat(cid){
+  if(cid===GROUP_ID){ renderGroupChat(); return; }
   const c=CHARS.find(x=>x.id===cid)||(cid==="unknown"?UNK_META:null);
   if(!c){ S.chatWith=null; S.tab="chat"; render(); return; }
   const log=S.chatLog[cid]||[];
@@ -7886,6 +8335,10 @@ function renderChat(cid){
   log.forEach(m=>{
     if(m.from==="sys"){ bubbles+=`<div class="bubble sys">${esc(m.text)}</div>`; return; }
     const side=m.from==="me"?"me":"them";
+    if(m.type==="recalled"){
+      bubbles+=`<div class="bubble ${side} recalled" onclick="toast('晚了')">撤回了一条消息</div>`;
+      return;
+    }
     if(m.type==="voice"){
       bubbles+=`<div class="bubble ${side} voice" onclick='playVoiceNote(this,${JSON.stringify(m.text||"")})'>
         <span class="wave">🔊 ～～～</span><span style="font-size:12px">${esc(m.text)}</span></div>`;
@@ -7906,9 +8359,9 @@ function renderChat(cid){
     });
     choiceHtml+=`</div>`;
   }
-  if(cid==="unknown" && (S.unkStep||0)<UNK_PRO.length){
+  if(cid==="unknown" && (S.unkStep||0)<UNK_PRO.length && UNK_PRO[S.unkStep||0]){
     choiceHtml=`<div class="choices"><p class="muted">好坏不明。但它知道你在看。</p>`;
-    UNK_PRO[S.unkStep].replies.forEach((r,i)=>{
+    UNK_PRO[S.unkStep||0].replies.forEach((r,i)=>{
       choiceHtml+=`<button class="choice-btn" onclick="chooseReply('unknown',${i})">［${r.type}］${esc(r.label)}</button>`;
     });
     choiceHtml+=`</div>`;
@@ -7926,6 +8379,20 @@ function renderChat(cid){
   }
   if(cid==="kevin" && typeof hasItem==="function" && hasItem("tape")){
     proHtml+=`<button class="choice-btn" onclick="useItem('tape',{cid:'kevin'});renderChat('kevin')">［物品］播放录音碎片</button>`;
+  }
+  // 撤回累积到一定次数，指向删除层
+  if((S.flags.recallCount||0)>=3 && (S.deletedLayer||0)>=1 && !S.flags.recallHintShown){
+    proHtml+=`<div class="bubble sys" style="margin-top:8px">你数了一下——他这已经是第三次把话收回去。收回去的话不会消失，只是不在这一页。</div>`;
+    S.flags.recallHintShown=true;
+  }
+  // 回拨未知号码
+  if(cid==="unknown"){
+    const used=callbackUsed();
+    const lock=(S.day||1)<2;
+    proHtml+=`<div class="choices" style="margin-top:10px">
+      <p class="muted">${lock?"信号只有一格。还拨不出去。":used?"今天已经打过了。他不会再接。":"打过去，他不说话。但背景声会告诉你他在哪。"}</p>
+      <button class="choice-btn" ${(used||lock)?"disabled style=\"opacity:.45\"":""} onclick="${(used||lock)?`toast('${lock?"没信号":"他不会再接"}')`:"startCallback()"}">📞 回拨这个号码</button>
+    </div>`;
   }
   document.getElementById("screen").innerHTML=`
     <div class="chat-header">

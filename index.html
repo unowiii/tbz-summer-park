@@ -1742,15 +1742,20 @@ function routeSnapshot(){
   const logs=S.chatLog||{};
   const replied=CHARS.filter(c=>(logs[c.id]||[]).some(m=>m.from==="me")).map(c=>c.id);
   const zones=new Set(S.visitedZones||[]);
+  const keeps=(S.inv||[]).filter(function(x){return typeof x==="string"&&x.indexOf("keep_")===0;}).length;
   return {
     replied,
     lead:!!(S.ownerId && replied.includes(S.ownerId)),
     hot:(S.hotspotsFound||[]).length,
     sawPlace:zones.has("food")||zones.has("photo"),
     night:zones.has("night"),
+    empty:zones.has("empty"),
     del:S.deletedLayer||0,
     spot:((S.gp||{}).spotWins)||0,
-    marked:Object.keys(S.suspectMark||{}).length
+    marked:Object.keys(S.suspectMark||{}).length,
+    digits:(S.digits||[]).length,
+    lotUnlocked:!!(S.puzzle&&S.puzzle.unlockedLot)||!!S.emptyUnlocked,
+    keeps
   };
 }
 function nextStep(){
@@ -1765,10 +1770,21 @@ function nextStep(){
   }
   if(day===2){
     if(p.del<1) return {title:"看删除的第一层",sub:"更多里打开已删除。只恢复一层。",go:"deleted",label:"去看"};
+    if(p.replied.length<5) return {title:"今晚话多的人不少",sub:"第二天解锁的人都在等。已经回了 "+p.replied.length+" 人。",go:"chat",label:"继续回"};
     if(!p.night) return {title:"去一趟夜场",sub:"看完就回饮食区或舞台充电。",go:"map",label:"打开地图"};
     if(p.spot<1) return {title:"找出不一样的那一格",sub:"今晚只玩这一局。",go:"play",label:"开始"};
     if(p.marked<1) return {title:"标一个嫌疑",sub:"凭今天的对话，标一个你觉得不对、或觉得没事的人。",go:"suspect",label:"去标"};
+    if(p.hot<3) return {title:"相册再找两处",sub:"虚线圆里今天多了新东西。已找到 "+p.hot+" 处。",go:"album",label:"打开相册"};
+    if(p.keeps<2) return {title:"带一个人去走走",sub:"同行时他有时会把小东西塞给你——纪念品就是这么来的。",go:"map",label:"打开地图"};
     return {title:"第二天结束前",sub:"过了凌晨，他会给你写一段很长的话。也可以现在离开。",go:"leave",label:"离开园区"};
+  }
+  if(day===3){
+    if(p.digits>=4 && !p.lotUnlocked) return {title:"试试密码板",sub:"四个数字都齐了。背包里打开密码板，拼一次顺序。",go:"puzzle",label:"去试"};
+    if(p.lotUnlocked && !p.empty) return {title:"去一趟空地",sub:"闸机开了。灯照不到的地方，白天和夜里不一样。",go:"map",label:"打开地图"};
+    if(p.del<2) return {title:"删除的第二层",sub:"还能再恢复一层。第三层要密码。",go:"deleted",label:"去看"};
+    if(p.replied.length<8) return {title:"最后几段对话",sub:"还有人在等你说最后一句。已回 "+p.replied.length+" 人。",go:"chat",label:"去回"};
+    if(p.keeps<4) return {title:"再带他走走",sub:"有些纪念品要同行才拿得到。也差不多是时候收尾了。",go:"map",label:"打开地图"};
+    return {title:"怎么离开",sub:"放回长椅，带着看到的走，或顺着聊得最多的人。",go:"leave",label:"去结局"};
   }
   return {title:"怎么离开",sub:"放回长椅，带着看到的走，或顺着聊得最多的人。",go:"leave",label:"去结局"};
 }
@@ -1780,6 +1796,7 @@ function doNextStep(){
   else if(s.go==="deleted") renderDeleted();
   else if(s.go==="play"){ S.tab="play"; startMinigame("spot"); }
   else if(s.go==="suspect") renderSuspectBoard();
+  else if(s.go==="puzzle") renderPuzzleBoard();
   else tryLeavePark();
 }
 function isLowBat(){ return S.battery<45; }
@@ -3689,6 +3706,7 @@ function giveDigit(d, src) {
 
 function renderInventory() {
   gpInit();
+  if(S.flags) S.flags.openedInv=true;
   const screen = document.getElementById("screen");
   const keeps = (S.inv || []).filter((id) => (ITEM_DEFS[id] || {}).keep);
   const rest = (S.inv || []).filter((id) => !(ITEM_DEFS[id] || {}).keep);
@@ -5889,9 +5907,13 @@ function maybeHeart(cid, reply){
   if(typeof isLateNight==="function" && isLateNight()) return;      // 深夜是惊悚的地盘
   if(!S.heartSeen) S.heartSeen={};
   if(!S.heartDay) S.heartDay={};
+  if(!S.replyCount) S.replyCount={};
+  S.replyCount[cid]=(S.replyCount[cid]||0)+1;
   if(S.heartDay[cid]===S.day) return;                               // 每人每天至多一次
   if((S.heartSeen[cid]||0)>=3) return;
-  if(Math.random()>=0.16) return;
+  // 保底：每第 3 次回复必定触发一条心动；其余 16% 概率
+  const guaranteed=(S.replyCount[cid]%3===0);
+  if(!guaranteed && Math.random()>=0.16) return;
   const idx=S.heartSeen[cid]||0;
   const beat=(HEART_BEATS[cid]||[])[idx];
   if(!beat) return;
@@ -6484,6 +6506,7 @@ function companionDockHTML(zid){
 function companionSay(zid){
   const c = companionChar();
   if(!c) return;
+  compMaybeSouvenir(c.id);
   const el = document.getElementById("compLine");
   if(!el) return;
   const kind = compKind(zid||S.currentZone);
@@ -6492,6 +6515,21 @@ function companionSay(zid){
   el.style.opacity = "0";
   setTimeout(function(){ el.innerHTML = html; el.style.opacity = "1"; },120);
   if(typeof playUiSfx==="function") playUiSfx("tap");
+}
+
+/* —— 同行送的纪念品：同行时点他说话，每人限一次，两三个区基本能拿到 —— */
+function compMaybeSouvenir(cid){
+  if(!cid || cid==="unknown") return;
+  if(!S.compKeep) S.compKeep={};
+  if(S.compKeep[cid]) return;
+  const item="keep_"+cid;
+  if(typeof hasItem==="function" && hasItem(item)){ S.compKeep[cid]=1; return; }
+  if(Math.random()>=0.34) return;
+  S.compKeep[cid]=1;
+  if(typeof giveItem==="function") giveItem(item);
+  const c=CHARS.find(function(x){return x.id===cid;});
+  if(typeof addRecord==="function") addRecord("♡ 同行的小心意", (c?c.name:"他")+"把一样小东西塞给了你。纪念品 +1（背包可见）。");
+  toast("♡ "+(c?c.name:"他")+"把一样小东西塞给了你（背包可见）");
 }
 
 function dismissCompanion(){
@@ -7359,7 +7397,7 @@ function renderMore(){
   const lock=day<2;
   screen.innerHTML=`<div>
     <h3>更多</h3>
-    <p class="muted" style="margin-bottom:8px">用不到的先别点。主页那一张卡片才是今晚的事。</p>
+    <p class="muted" style="margin-bottom:8px">背包和备忘录在主页就能点。这里放的是更深的入口。</p>
     <button class="btn" onclick="renderInventory()">🎒 背包</button>
     <button class="btn" onclick="gotoTab('records')">📎 记录</button>
     <button class="btn" onclick="gotoTab('notes')">📝 笔记</button>
@@ -7377,11 +7415,55 @@ function renderMore(){
     <button class="btn ghost" onclick="tryLeavePark()">🚪 离开园区</button>
   </div>`;
 }
+/* —— 新手指引：五步，按玩家实际行为自动推进 —— */
+function guideState(){
+  const p=routeSnapshot();
+  const f=S.flags;
+  if(f.guideDone) return {done:true,step:5};
+  let step=0;
+  if(p.replied.length>=1) step=1;
+  if(step===1&&(S.visitedZones||[]).length>=2) step=2;
+  if(step===2&&p.hot>=1) step=3;
+  if(step===3&&f.openedInv&&f.openedMemo) step=4;
+  if(step===4&&S.day>=2) step=5;
+  if(step>=5){ f.guideDone=true; return {done:true,step:5}; }
+  return {done:false,step};
+}
+const GUIDE_STEPS=[
+  {t:"回一条消息",d:"点开「聊天」，选一个回复选项。选了才算推进，不选聊天不会动。",go:"chat",label:"去聊天"},
+  {t:"去一个地方",d:"打开「地图」，选一个区域走进去。灯亮的地方先去，电量低就顺便充电。",go:"map",label:"打开地图"},
+  {t:"相册找一个圈",d:"打开「相册」，点一个虚线圆——那就是可以走近看的地方。",go:"album",label:"去相册"},
+  {t:"认识你的工具",d:"主页下方两排按钮：背包装线索和纪念品，备忘录只记「他」。各打开一次。",go:"",label:""},
+  {t:"撑到第二天",d:"把时间过到夜里，再熬过凌晨。第二天会解锁更多人和更多东西。",go:"leave",label:"我知道了"}
+];
+function guideHtml(){
+  const g=guideState();
+  if(g.done) return "";
+  const s=GUIDE_STEPS[g.step]||GUIDE_STEPS[0];
+  return `<div class="card" style="border:1px solid rgba(93,173,226,.4)">
+    <div class="sk">新手指引 · 第 ${g.step+1}/5 步</div>
+    <h3>${esc(s.t)}</h3>
+    <p class="muted" style="margin:6px 0">${esc(s.d)}</p>
+    <div style="display:flex;gap:8px;align-items:center">
+      ${s.go?`<button class="btn primary" onclick="goGuideStep(${g.step})">${esc(s.label)}</button>`:""}
+      <button class="btn ghost" style="margin-left:auto" onclick="S.flags.guideDone=true;autoSaveNow();render()">跳过指引</button>
+    </div>
+  </div>`;
+}
+function goGuideStep(i){
+  if(i===0){ gotoTab("chat"); return; }
+  if(i===1){ gotoTab("map"); return; }
+  if(i===2){ gotoTab("album"); return; }
+  if(i===3){ S.flags.guideDone=true; renderInventory(); return; }
+  S.flags.guideDone=true; render();
+}
+
 function renderHome(){
   const screen=document.getElementById("screen");
   const info=dayBrief();
   const step=nextStep();
   const unreadTotal=CHARS.reduce((a,c)=>a+(S.unread[c.id]||0),0)+((!S.ownerId&&(S.unread.unknown||0))?1:0);
+  const keeps=(S.inv||[]).filter(x=>typeof x==="string"&&x.indexOf("keep_")===0).length;
   let alert="";
   if(isCritBat()) alert=`<div class="alert-banner">电量极低。先去饮食区或舞台充电，别开新内容。</div>`;
   else if(S.day>=2 && isLateNight()) alert=`<div class="alert-banner">过了 22:00。一次只做卡片上的那一件。</div>`;
@@ -7399,15 +7481,7 @@ function renderHome(){
       <p>${esc(step.sub)}</p>
       <button class="btn primary" onclick="doNextStep()">${esc(step.label)}</button>
     </div>
-    ${!S.flags.tutorialSeen?`<div class="card" style="border:1px solid rgba(93,173,226,.35)">
-      <b>第一次捡到手机 · 三条</b>
-      <div class="muted" style="font-size:12px;line-height:1.75;margin-top:6px">
-        ① 聊天里每条消息下面都有回复选项，选一个才算推进。<br>
-        ② 电量归零就是黑屏结局。舞台、饮食区、检票口、后台都能充电。<br>
-        ③ 异常值越高，他看见你的部分越多——日终信也会跟着变。
-      </div>
-      <button class="btn" style="margin-top:8px" onclick="S.flags.tutorialSeen=true;autoSaveNow();render()">知道了</button>
-    </div>`:""}
+    ${guideHtml()}
     ${alert}
     <div class="today-tip"><div class="tt">${esc(dayLabel())}</div>${esc(info.tone)}</div>
     <div class="home-apps">
@@ -7415,6 +7489,12 @@ function renderHome(){
       <button class="app-icon" onclick="gotoTab('album')"><span class="ico">🖼</span><span class="lab">相册</span></button>
       <button class="app-icon" onclick="gotoTab('map')"><span class="ico">🗺</span><span class="lab">地图</span></button>
       <button class="app-icon" onclick="gotoTab('more')"><span class="ico">＋</span><span class="lab">更多</span></button>
+    </div>
+    <div class="home-apps" style="margin-top:6px">
+      <button class="app-icon" onclick="renderInventory()"><span class="ico">🎒</span><span class="lab">背包${keeps?` ♡${keeps}/10`:""}</span></button>
+      <button class="app-icon" onclick="renderMemoApp()"><span class="ico">🗒</span><span class="lab">备忘录</span></button>
+      <button class="app-icon" ${S.day<2?"disabled style='opacity:.4'":""} onclick="${S.day<2?"toast('先把第一晚走完')":"renderSuspectBoard()"}"><span class="ico">🔎</span><span class="lab">嫌疑板${S.day<2?" · 明天":""}</span></button>
+      <button class="app-icon" onclick="renderPuzzleBoard()"><span class="ico">🔢</span><span class="lab">密码板</span></button>
     </div>
   </div>`;
 }
@@ -7604,6 +7684,7 @@ function addMemo(cid, kind, text){
   toast("备忘录 +1");
 }
 function renderMemoApp(){
+  if(S.flags) S.flags.openedMemo=true;
   if(typeof playUiSfx==="function") playUiSfx("notes");
   const screen=document.getElementById("screen");
   if(!S.memos) S.memos=[];

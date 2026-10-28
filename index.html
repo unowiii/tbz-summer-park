@@ -3756,8 +3756,7 @@ function assignMaleLead(leadId) {
   if (!S.suspectMark) S.suspectMark = {};
   addKeyword("失主未明");
   addKeyword("假面入场");
-  const fr = fakeRoleOf(leadId);
-  addRecord("入场假面", fr.title + "——真名与阵营结局揭晓。" + fr.blurb);
+  addRecord("失主未明", "手机的主人有名字，但一直没报。真名与阵营，结局揭晓。");
   return true;
 }
 
@@ -3953,8 +3952,7 @@ function renderSuspectBoard() {
   screen.innerHTML = `<div>
     <button class="back-btn" onclick="S.tab='home';render()">← 主页</button>
     <h3>嫌疑板 · 证据推演</h3>
-    <p class="muted">根据背包证据、聊天矛盾、NPC 闲话标记。大结局揭晓真名 / 真实园内角色 / 阵营，对照你的猜测。</p>
-    ${fake ? `<div class="quest-card"><div class="qh">当前假面</div><b>${esc(fake.title)}</b><br>${esc(fake.blurb)}</div>` : ""}
+    <p class="muted">根据背包证据、聊天矛盾、NPC 闲话标记。结局会告诉你他是谁，对照你的猜测。</p>
     <div class="suspect-board">${rows}</div>
     <button class="btn" onclick="renderInventory()">打开背包证据</button>
   </div>`;
@@ -5712,7 +5710,7 @@ new:[{id:"nw1",phase:0,minDay:1,lines:[{from:"them",text:"……谢谢。屏幕�
 sangyeon:[{id:"sy1",phase:0,minDay:1,lines:[{from:"them",text:"收到。谢谢你。"},{from:"them",text:"先去吃点东西。手机别给别人看。——不是凶你，是我习惯把人点齐。"}],replies:[{label:"明白",type:"安抚",att:1,push:0},{label:"有什么不能看的？",type:"追问",att:2,push:1},{label:"好",type:"忽视",att:0,push:0}]},{id:"sy2",phase:0,minDay:1,lines:[{from:"them",text:"行程表在后台。"},{from:"them",text:"不是工作人员就别进。进了也先出来找我。"}],replies:[{label:"我随便看看",type:"质疑",att:1,push:0,warnIgnore:1,zoneHint:"back"},{label:"不会乱进",type:"安抚",att:1,push:0},{label:"里面有什么",type:"追问",att:2,push:1,kw:"后台"}],reqAtt:1},{id:"sy2b",phase:0,minDay:1,lines:[{from:"them",text:"彩排时间不变。人都到了再开始。"},{from:"them",text:"就这样。饿了说。"}],replies:[{label:"收到",type:"安抚",att:1,push:0},{label:"还有别的吗",type:"追问",att:1,push:0},{label:"嗯",type:"忽视",att:0,push:0}],reqAtt:2},{id:"sy3",phase:1,minDay:2,lines:[{from:"them",text:"别看了。"},{from:"them",text:"到此为止。"}],replies:[{label:"为什么？",type:"追问",att:2,push:1,anomaly:1,kw:"别看了"},{label:"……好",type:"安抚",att:1,push:0},{label:"我有权知道",type:"质疑",att:2,push:1,warnIgnore:1}]},{id:"sy4",phase:1,minDay:2,lines:[{from:"them",text:"我说了。"},{from:"them",text:"别看了。"}],replies:[{label:"我还是想弄清",type:"质疑",att:3,push:1,warnIgnore:1,anomaly:1},{label:"我会停手",type:"安抚",att:1,push:0},{label:"（沉默）",type:"忽视",att:0,push:0}],reqNight:true},{id:"sy5",phase:2,minDay:3,lines:[{from:"sys",text:"（对方已读，但很久没有回复）"},{from:"them",text:"……"}],replies:[{label:"还在吗",type:"追问",att:1,push:0},{label:"（离开）",type:"忽视",att:0,push:0}]},
 {id:"sy3b",phase:1,minDay:2,lines:[{from:"them",text:"位置汇报。"},{from:"them",text:"不方便就说「亮处」。够了。"}],replies:[{label:"我在亮处",type:"安抚",att:2,push:0},{label:"为什么要汇报",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}],reqAtt:4},
 {id:"sy5b",phase:2,minDay:3,lines:[{from:"them",text:"收工指令重申。"},{from:"them",text:"别看了。离开。"}],replies:[{label:"收到",type:"安抚",att:2,push:0},{label:"还有别的吗",type:"追问",att:1,push:0},{label:"……",type:"忽视",att:0,push:0}],reqNight:true}],
-jacob:[{id:"jb1",phase:0,minDay:1,lines:[{from:"them",text:"嗨。谢谢你捡到它ㅋㅋ真的，谢谢。"},{from:"them",text:"天黑了就多穿一点。别感冒了。哈哈，我怎么说话像爸爸。"}],replies:[{label:"谢谢，我会注意",type:"安抚",att:1,push:0},{label:"你很关心陌生人呢",type:"追问",att:2,push:0},{label:"嗯嗯",type:"忽视",att:0,push:0}]},{id:"jb2",phase:0,minDay:1,lines:[{from:"them",text:"饮食区有热饮。如果你累了……"},{from:"them",text:"先歇一歇，好吗？"}],replies:[{label:"好，我去歇歇",type:"安抚",att:1,push:0,zoneHint:"food"},{label:"你在看着我的位置吗",type:"质疑",att:2,push:1},{label:"还好",type:"忽视",att:0,push:0}],reqAtt:1},{id:"jb2b",phase:0,minDay:1,lines:[{from:"them",text:"有什么事，随时给我发消息。고마워, 真的。"},{from:"them",text:"不用客气。真的。……刚才这个回法，好像对谁也用过。想不起来了。"}],replies:[{label:"谢谢关心",type:"安抚",att:2,push:0},{label:"对谁用过？",type:"追问",att:2,push:1,anomaly:1,kw:"上一个失主"},{label:"好",type:"忽视",att:0,push:0}],reqAtt:2},{id:"jb3",phase:1,minDay:2,lines:[{from:"them",text:"你是不是……打开了不该打开的东西？"},{from:"them",text:"我不是在怪你。只是问一下。"}],replies:[{label:"你指什么",type:"追问",att:2,push:1,anomaly:1,kw:"不该打开"},{label:"也许吧",type:"安抚",att:1,push:0},{label:"关你什么事",type:"质疑",att:1,push:0,warnIgnore:1}]},{id:"jb4",phase:1,minDay:2,lines:[{from:"them",text:"如果你听到不该出现的音乐……"},{from:"them",text:"走开。求你。"}],replies:[{label:"什么音乐？",type:"追问",att:3,push:1,anomaly:1,kw:"不该有的音乐"},{label:"我会小心",type:"安抚",att:1,push:0},{label:"想太多了",type:"忽视",att:0,push:0,warnIgnore:1}],reqNight:true},{id:"jb5",phase:2,minDay:3,lines:[{from:"them",text:"……保重。"},{from:"them",text:"我说不了更多了。"},{from:"them",text:"求你。"}],replies:[{label:"告诉我更多",type:"追问",att:2,push:1,anomaly:1},{label:"保重",type:"安抚",att:1,push:0},{label:"……",type:"忽视",att:0,push:0}]},
+jacob:[{id:"jb1",phase:0,minDay:1,lines:[{from:"them",text:"嗨。谢谢你捡到它ㅋㅋ真的，谢谢。"},{from:"them",text:"天黑了就多穿一点。别感冒了。"}],replies:[{label:"谢谢，我会注意",type:"安抚",att:1,push:0},{label:"你很关心陌生人呢",type:"追问",att:2,push:0},{label:"嗯嗯",type:"忽视",att:0,push:0}]},{id:"jb2",phase:0,minDay:1,lines:[{from:"them",text:"饮食区有热饮。如果你累了……"},{from:"them",text:"先歇一歇，好吗？"}],replies:[{label:"好，我去歇歇",type:"安抚",att:1,push:0,zoneHint:"food"},{label:"你在看着我的位置吗",type:"质疑",att:2,push:1},{label:"还好",type:"忽视",att:0,push:0}],reqAtt:1},{id:"jb2b",phase:0,minDay:1,lines:[{from:"them",text:"有什么事，随时给我发消息。고마워, 真的。"},{from:"them",text:"不用客气。真的。……刚才这个回法，好像对谁也用过。想不起来了。"}],replies:[{label:"谢谢关心",type:"安抚",att:2,push:0},{label:"对谁用过？",type:"追问",att:2,push:1,anomaly:1,kw:"上一个失主"},{label:"好",type:"忽视",att:0,push:0}],reqAtt:2},{id:"jb3",phase:1,minDay:2,lines:[{from:"them",text:"你是不是……打开了不该打开的东西？"},{from:"them",text:"我不是在怪你。只是问一下。"}],replies:[{label:"你指什么",type:"追问",att:2,push:1,anomaly:1,kw:"不该打开"},{label:"也许吧",type:"安抚",att:1,push:0},{label:"关你什么事",type:"质疑",att:1,push:0,warnIgnore:1}]},{id:"jb4",phase:1,minDay:2,lines:[{from:"them",text:"如果你听到不该出现的音乐……"},{from:"them",text:"走开。求你。"}],replies:[{label:"什么音乐？",type:"追问",att:3,push:1,anomaly:1,kw:"不该有的音乐"},{label:"我会小心",type:"安抚",att:1,push:0},{label:"想太多了",type:"忽视",att:0,push:0,warnIgnore:1}],reqNight:true},{id:"jb5",phase:2,minDay:3,lines:[{from:"them",text:"……保重。"},{from:"them",text:"我说不了更多了。"},{from:"them",text:"求你。"}],replies:[{label:"告诉我更多",type:"追问",att:2,push:1,anomaly:1},{label:"保重",type:"安抚",att:1,push:0},{label:"……",type:"忽视",att:0,push:0}]},
 {id:"jb3b",phase:1,minDay:2,lines:[{from:"them",text:"嘿。吃了口热的吗？"},{from:"them",text:"我说真的。先照顾好你自己。"}],replies:[{label:"吃了，谢谢",type:"安抚",att:2,push:0},{label:"你一直在看着吗",type:"追问",att:2,push:1},{label:"嗯",type:"忽视",att:0,push:0}],reqAtt:4},
 {id:"jb5b",phase:2,minDay:3,lines:[{from:"them",text:"Please. One more time—leave the dark parts."},{from:"them",text:"I'll still be here in the bright ones."}],replies:[{label:"I will",type:"安抚",att:3,push:0},{label:"Tell me more",type:"追问",att:2,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}],reqNight:true}],
 juyeon:[
@@ -6178,8 +6176,7 @@ function unkReply(idx){
     ensureSeedChats();
     S.unread[S.ownerId]=(S.unread[S.ownerId]||0)+1;
     addKeyword("未知号码");
-    const fr=typeof fakeRoleOf==="function"?fakeRoleOf(leadId):null;
-    toast(fr&&fr.title?("手机的主人到了——跟着「"+fr.title+"」走"):"手机的主人到了");
+    toast("手机的主人到了");
   }
   renderChat("unknown");
   autoSave({now:true});
@@ -8269,17 +8266,16 @@ function renderSetup(){
       const hint=(typeof LEAD_HINTS!=="undefined"&&LEAD_HINTS[c.id])||c.style||"";
       const fake=(typeof fakeRoleOf==="function"?fakeRoleOf(c.id):null)||{};
       cards+=`<button class="lead-card ${S.ownerId===c.id?'selected':''}" onclick="S.ownerId='${c.id}';renderSetup()">
-        <div class="nm">${c.emoji} ${esc(fake.title||c.name)}</div>
-        <div class="fake-role">「${esc(fake.tag||"园内角色")}」</div>
-        <div class="hint">${esc(fake.blurb||hint)}</div>
+        <div class="nm">${c.emoji} ${esc(c.name)}</div>
+        <div class="hint">${esc(hint)}</div>
         <div class="muted" style="margin-top:6px;font-size:10px">真名结局揭晓 · 人设痕迹：${esc(hint)}</div>
       </button>`;
     });
     screen.innerHTML=`<div class="setup">
-      <h2 class="glitch-text">选择男主 · 暗黑童话入场</h2>
-      <p class="muted">每位男主以暗黑童话里的身份出现（牧羊人、好心的猎人、沉默的守卫……）。<br>那不是名字，是他们的假面。真名、岗，与好人／坏人——只在大结局揭晓。其余九人仍在聊天里。</p>
+      <h2 class="glitch-text">选择男主</h2>
+      <p class="muted">他今晚话很少，说话方式你未必受得了。<br>真名与好人／坏人——只在大结局揭晓。其余九人仍在聊天里。</p>
       <div class="lead-grid">${cards}</div>
-      <button class="btn primary" onclick="confirmSetup()">跟着他的假面进入</button>
+      <button class="btn primary" onclick="confirmSetup()">进入园区</button>
       <button class="btn ghost" onclick="S.view='setup';renderSetup()">返回身份</button>
     </div>`;
     return;
@@ -9165,11 +9161,10 @@ function renderMemoApp(){
     <h3 style="margin:10px 0 4px">备忘录</h3>
     <p class="muted">只记他一个人的事：他写来的、你问出来的、前后对不上的。他写的时候你不在场，所以没法核对。</p>`;
   if(lead){
-    const fr=(typeof fakeRoleOf==="function")?fakeRoleOf(lead.id):{};
     html+=`<div class="memo-lead">
       <span style="font-size:22px">${lead.emoji||"📱"}</span>
-      <div><div style="font-weight:600;font-size:13.5px">${esc(fr.title||lead.name)}</div>
-      <div class="muted" style="font-size:11px;margin-top:2px">假面「${esc(fr.tag||"童话")}」 · 真名待揭晓</div></div></div>`;
+      <div><div style="font-weight:600;font-size:13.5px">${esc(lead.name)}</div>
+      <div class="muted" style="font-size:11px;margin-top:2px">真名待揭晓</div></div></div>`;
   }
   if(!S.memos.length){
     html+=`<div class="card muted">还没有。每天结束他会自己写进来一条——不管你想不想看。<br>你问他"哪句不对"的时候，也会记下来。</div>`;
@@ -9487,7 +9482,6 @@ function discCardHtml(){
       <button class="btn" style="flex:1" onclick="renderMonologueApp()">🎭 假面独白${monoNew?' <span style="color:#e8b84b">新</span>':""}<br><small style="color:var(--muted);font-weight:400">${monoHint}</small></button>
       <button class="btn" style="flex:1" onclick="renderGardenerScene()">🌿 园丁的第一现场${gNew?' <span style="color:#e8b84b">新</span>':""}<br><small style="color:var(--muted);font-weight:400">${gHint}</small></button>
     </div>
-    <button class="btn" style="width:100%;margin-top:8px" onclick="renderCastBook()">🎭 十个人的童话身份<br><small style="color:var(--muted);font-weight:400">认出 '+seenCast+'/10 · 他们为什么用这种方式帮你</small></button>
     ${ pwIsMirror() ? '<button class="btn" style="width:100%;margin-top:8px" onclick="renderSecondPlay()">🩹 二周目 · 残页（通关后才浮上来）</button>' : "" }
   </div>`;
 }
@@ -9709,21 +9703,17 @@ function renderCastBook(){
   const screen=document.getElementById("screen");
   const seen=castSeenList();
   const rows=CHARS.map(function(c){
-    const f=fakeRoleOf(c.id)||{};
     const got=seen.indexOf(c.id)>=0;
     return `<div class="cast-row${got?" got":""}">
-      <div class="cast-h"><span class="cast-e">${c.emoji}</span>
-        <b>${esc(c.name)}</b><span class="cast-r">${esc(f.title||"")}</span></div>
-      <div class="cast-b">${esc(f.blurb||"")}</div>
-      ${got
-        ? `<div class="cast-deed">${esc(f.deed||"")}</div><div class="cast-wish">${esc(f.wish||"")}</div>`
-        : `<button class="btn ghost" style="margin-top:6px;font-size:12px" onclick="castMark('${c.id}');renderCastBook()">我已经在聊天/相册里认出他了</button>`}
+      <div class="cast-h"><span class="cast-e">${c.emoji}</span><b>${esc(c.name)}</b></div>
+      <div class="cast-b">${got?"你在他身上认出过不对的地方。":"还没看出什么。"}</div>
+      ${got?"":`<button class="btn ghost" style="margin-top:6px;font-size:12px" onclick="castMark('${c.id}');renderCastBook()">我看出他不对了</button>`}
     </div>`;
   }).join("");
   screen.innerHTML=`<div class="lore-screen">
-    <div class="lore-h">CAST · 他们的假面</div>
-    <h2 class="glitch-text">十个人的童话身份</h2>
-    <p class="lore-lead">他们不直接报名字。你先看见的永远是一个童话角色。角色决定他们只能用哪种方式接近你——所以他们的话总是绕的。</p>
+    <div class="lore-h">CAST · 你认出过谁</div>
+    <h2 class="glitch-text">十个人</h2>
+    <p class="lore-lead">这里不写他们是谁。只记你在谁身上看见过不对的地方。</p>
     <p class="lore-lead" style="color:var(--muted);font-size:12px">已认出 ${seen.length}/10。认出方式：相册里的空支架、聊天里突然说错的话、删除记录里的残片、夜场断掉的那一拍。</p>
     ${rows}
     <button class="btn primary" onclick="render()">合上</button>

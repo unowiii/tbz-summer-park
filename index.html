@@ -165,6 +165,8 @@ h1,h2,h3{font-weight:700}
 .gallery-row.ghost-row{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;border:1px dashed rgba(200,200,200,.32);opacity:.78}
 .gallery-row.ghost-row .gb{opacity:.6}
 .gallery-row.ghost-tap{opacity:.45;transition:opacity .3s}
+.foot-chip{display:inline-block;font-size:11px;color:var(--muted);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:2px 9px;margin:3px 4px 0 0}
+.foot-row{margin-top:10px}
 .real-late-card{border-left:3px solid rgba(190,80,80,.55);background:rgba(120,40,40,.07)}
 .real-late-card p{color:#cfb9b4}
 .erode-ghost{opacity:.62}
@@ -7558,6 +7560,78 @@ function canvasWrap(g, text, maxW){
   if(line) out.push(line);
   return out;
 }
+/* —— 结局卡片精华句 + 结算页补充面板 —— */
+const ENDING_ESSENCE={
+  safe:"你什么都没碰。门在你身后合上，像从来没开过。",
+  deep:"你看了不该看的三样，然后还是走了。它们记住你了。",
+  battery:"屏幕黑下去的时候，那边还在打字。",
+  hidden:"删除失败。你还在看。",
+  sunwoo:"「你走吧。我站这儿看。」——你回头的时候，他也没走。",
+  q:"「我提前撕掉的那几页日程，全是写着你会出事的那几页。」",
+  eric:"「你猜是哪一个。别猜错。」",
+  new:"「你照得越久，我越像你。所以别照了。」",
+  sangyeon:"「名单每晚都短一点。我从来没念错过一个名字。」",
+  jacob:"「外面更冷。里面……里面也没有出口。」",
+  juyeon:"「空着的那个座，是我留给你的。我没坐，是因为我坐不上。」",
+  younghoon:"「照片别放大。就当我拍得差。」",
+  hyunjae:"「我最擅长把真话讲成笑话。你笑完了，就当没听过。」",
+  kevin:"「副歌停在最高的那一句。剩下的，有人替你唱完了。」"
+};
+function endingEssence(kind){
+  if(kind && kind.startsWith("char_")){
+    const cid=kind.slice(5);
+    return [ENDING_ESSENCE[cid]||"这一局，只有你和他知道。"];
+  }
+  return [ENDING_ESSENCE[kind]||"手机不是丢的。"];
+}
+function endingCardFacts(){
+  let topName="没人";
+  try{
+    const top=Object.entries(S.attention||{}).sort((a,b)=>b[1]-a[1])[0];
+    if(top && top[1]>0) topName=(CHARS.find(c=>c.id===top[0])||{}).name||"没人";
+  }catch(e){}
+  return [
+    "最常找的人 · "+topName,
+    "删除层 "+Math.min(3,S.deletedLayer||0)+"/3 · 异常感知 "+((S.flags&&S.flags.anomaliesSeen)||0)+" · 突脸 "+Math.min(5,(S.jumpFaceCount||0))+"/5",
+    "第 "+Math.min(3,S.day||1)+" 天 · 剩余电量 "+Math.ceil(S.battery)+"%"
+  ];
+}
+/* 结算页：只有你知道的事 */
+function endingExtraPanels(){
+  try{
+    /* 最常找的人 top3 */
+    const tops=Object.entries(S.attention||{}).filter(x=>x[1]>0)
+      .sort((a,b)=>b[1]-a[1]).slice(0,3);
+    const maxA=tops.length?tops[0][1]:1;
+    const topHtml=tops.length?tops.map(x=>{
+      const c=CHARS.find(cc=>cc.id===x[0])||{name:x[0],color:"#555"};
+      const pct=Math.round(x[1]/maxA*100);
+      return `<div class="collect-row"><div class="collect-lab">${esc(c.emoji||"")} ${esc(c.name)} <span>关注 ${x[1]}</span></div>
+        <div class="collect-bar"><i style="width:${pct}%"></i></div></div>`;
+    }).join(""):`<p class="muted" style="margin:4px 0">这一局，谁都没能真正靠近你。</p>`;
+    /* 没说完的话 */
+    const rc=(S.flags&&S.flags.recallCount)||0;
+    const mm=(S.flags&&S.flags.missedMsgWindow)||0;
+    const unsaid=(rc||mm)?`<p style="margin:6px 0 0;line-height:1.7;font-size:13px">被撤回的话 <b>${rc}</b> 句 · 你没赶上回的窗口 <b>${mm}</b> 次。<span class="muted">那些话不是消失了，只是不在这一页。</span></p>`
+      :`<p class="muted" style="margin:6px 0 0">没有一句话被撤回。他把想说的都说完了——这比撤回更少见。</p>`;
+    /* 足迹 */
+    const zNames=(S.visitedZones||[]).map(id=>{
+      const z=(typeof ZONES!=="undefined")?ZONES.find(z=>z.id===id):null;
+      return z?z.name:"";
+    }).filter(Boolean);
+    const chipHtml=zNames.length
+      ? zNames.map(n=>`<span class="foot-chip">${esc(n)}</span>`).join("")
+      : `<span class="foot-chip">哪儿都没去</span>`;
+    return `<div class="settle-panel">
+      <div class="settle-title">只有你知道的事</div>
+      <p class="muted" style="margin:2px 0 8px;font-size:11px">关注值不会告诉你谁在等你；撤回的话不会留在屏幕上。这里记的是没被记下的部分。</p>
+      ${topHtml}
+      <div style="margin-top:10px">${unsaid}</div>
+      <div class="foot-row">${chipHtml}</div>
+    </div>`;
+  }catch(e){ return ""; }
+}
+
 function makeEndingCard(){
   try{
     const kind=S.flags.ending||"safe";
@@ -7594,10 +7668,18 @@ function makeEndingCard(){
     g.fillStyle="rgba(233,226,214,.7)";
     g.font="20px "+FONT;
     g.fillText("身份 · "+idLabel+"　｜　收集度 "+col.percent+"%",360,y+14);
-    g.fillStyle="rgba(233,226,214,.86)";
-    g.font="23px "+FONT;
-    let by=y+90;
-    canvasWrap(g, body.slice(0,110)+(body.length>110?"……":""), 520).slice(0,6).forEach(l=>{ g.fillText(l,360,by); by+=40; });
+    g.fillStyle="#efe7d9";
+    g.font="italic 25px "+FONT;
+    let by=y+92;
+    endingEssence(kind).forEach(t=>{
+      canvasWrap(g, t, 560).forEach(l=>{ g.fillText(l,360,by); by+=42; });
+      by+=12;
+    });
+    g.strokeStyle="rgba(192,57,43,.35)"; g.beginPath(); g.moveTo(252,by); g.lineTo(468,by); g.stroke();
+    g.fillStyle="rgba(233,226,214,.62)";
+    g.font="17px "+FONT;
+    let sy=by+42;
+    endingCardFacts().forEach(t=>{ g.fillText(t,360,sy); sy+=30; });
     g.fillStyle="rgba(192,57,43,.85)";
     g.font="22px "+FONT;
     g.fillText("手机不是丢的。",360,1000);
@@ -7698,6 +7780,7 @@ function renderEnding(kind){
       </div>
       <p class="settle-note">危险区域：${esc(dangerStr)} · 身份：${esc(({staff:"工作人员",reporter:"记者",passerby:"路人"})[S.identity]||"—")}</p>
     </div>
+    ${endingExtraPanels()}
     <div class="settle-panel">
       <div class="settle-title">收集度 · ${col.percent}%</div>
       <div class="collect-total"><div class="collect-bar big"><i style="width:${col.percent}%"></i></div></div>
@@ -7749,6 +7832,7 @@ function renderHiddenSettlement(){
       </div>
       <p class="settle-note">危险区域：${esc(dangerBits.length?dangerBits.join("、"):"未踏入")} · ${esc(identityAttitudeHint())}</p>
     </div>
+    ${endingExtraPanels()}
     <div class="settle-panel">
       <div class="settle-title">收集度 · ${col.percent}%</div>
       <div class="collect-total"><div class="collect-bar big"><i style="width:${col.percent}%"></i></div></div>

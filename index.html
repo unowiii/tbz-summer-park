@@ -2050,7 +2050,13 @@ function loadGame(){
   try{
     const raw=localStorage.getItem(SAVE_KEY);
     if(!raw){ toast("无存档"); return false; }
-    const loaded=JSON.parse(raw);
+    return applyLoadedState(JSON.parse(raw));
+  }catch(e){ toast("读档失败"); return false; }
+}
+/* 把一份存档对象套回当前游戏（自动存档 / 手动格子共用同一套修复逻辑） */
+function applyLoadedState(loaded){
+  try{
+    if(!loaded || !loaded.playerName){ toast("这份存档读不出来"); return false; }
     const base=defaultState();
     S=Object.assign(base, loaded);
     S.flags=Object.assign(base.flags, loaded.flags||{});
@@ -2084,6 +2090,94 @@ function loadGame(){
     else render();
     return true;
   }catch(e){ toast("读档失败"); return false; }
+}
+
+/* —— 手动存档格子：三格，点空格=存，点满格=读/盖/删 —— */
+const SLOT_KEYS=["tbz_thrilling_slot1","tbz_thrilling_slot2","tbz_thrilling_slot3"];
+function slotLabelOf(d){
+  if(!d || !d.playerName) return "";
+  const dd=Math.min(3, d.day||1);
+  const hh=String(d.hour==null?18:d.hour).padStart(2,"0");
+  const mm=String(d.minute==null?0:d.minute).padStart(2,"0");
+  const nm=(CHARS.find(c=>c.id===d.ownerId)||{}).name||"";
+  return "第"+dd+"天 "+hh+":"+mm+(nm?" · "+nm:"");
+}
+function readSlotRaw(i){
+  try{
+    const raw=localStorage.getItem(SLOT_KEYS[i]);
+    if(!raw) return null;
+    const rec=JSON.parse(raw);
+    if(!rec || !rec.state || !rec.state.playerName) return null;
+    return rec;
+  }catch(e){ return null; }
+}
+function writeSlot(i){
+  if(!S || !S.playerName){ toast("还没有进度可以存"); return; }
+  if(S.flags && (S.flags.ended || S.flags.deadBattery)){ toast("这一局已经结束了，存不了"); return; }
+  try{
+    localStorage.setItem(SLOT_KEYS[i], JSON.stringify({at:Date.now(), state:JSON.parse(JSON.stringify(S))}));
+    toast("已存入格子 "+(i+1));
+  }catch(e){ toast("存档失败"); }
+  if(document.getElementById("saveAppRoot")) renderSaveApp();
+}
+function loadSlot(i){
+  const rec=readSlotRaw(i);
+  if(!rec){ toast("这个格子是空的"); return; }
+  if(!confirm("读取格子 "+(i+1)+" 会覆盖当前进度，确定吗？")) return;
+  if(applyLoadedState(JSON.parse(JSON.stringify(rec.state)))) renderSaveApp();
+}
+function deleteSlot(i){
+  if(!readSlotRaw(i)){ toast("这个格子是空的"); return; }
+  if(!confirm("删除格子 "+(i+1)+" 的存档？删掉就找不回来了。")) return;
+  try{ localStorage.removeItem(SLOT_KEYS[i]); }catch(e){}
+  renderSaveApp();
+  toast("已删除");
+}
+function renderSaveApp(){
+  if(typeof playUiSfx==="function") playUiSfx("settings");
+  const screen=document.getElementById("screen");
+  let rows="";
+  for(let i=0;i<3;i++){
+    const rec=readSlotRaw(i);
+    if(rec){
+      const at=new Date(rec.at||0);
+      const atStr=(at.getMonth()+1)+"月"+at.getDate()+"日 "+String(at.getHours()).padStart(2,"0")+":"+String(at.getMinutes()).padStart(2,"0");
+      rows+=`<div class="card" style="margin-top:8px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+          <b>格子 ${i+1}</b><span class="muted" style="font-size:11px">存于 ${atStr}</span>
+        </div>
+        <div class="muted" style="font-size:13px;margin-top:2px">${esc(slotLabelOf(rec.state))}</div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn primary" style="flex:1;margin:0" onclick="loadSlot(${i})">读档</button>
+          <button class="btn" style="flex:1;margin:0" onclick="writeSlot(${i})">覆盖</button>
+          <button class="btn ghost" style="flex:1;margin:0" onclick="deleteSlot(${i})">删除</button>
+        </div>
+      </div>`;
+    }else{
+      rows+=`<button class="card" style="width:100%;text-align:left;margin-top:8px;cursor:pointer" onclick="writeSlot(${i})">
+        <b>格子 ${i+1}</b>
+        <div class="muted" style="font-size:12px;margin-top:2px">空 · 点这里把现在的进度存进来</div>
+      </button>`;
+    }
+  }
+  let autoLine="还没有自动存档";
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    const d=raw?JSON.parse(raw):null;
+    if(d && d.playerName) autoLine=slotLabelOf(d)+(savedAtLabel()?(" · 最近 "+savedAtLabel()):"");
+  }catch(e){}
+  screen.innerHTML=`<div id="saveAppRoot">
+    <button class="back-btn" onclick="S.tab='home';render()">← 主页</button>
+    <h3>存档</h3>
+    <p class="muted" style="margin-bottom:4px">三个手动格子。空格子点了就存；有内容的格子可以读档、覆盖或删除。</p>
+    ${rows}
+    <div class="card" style="margin-top:12px">
+      <b>自动存档</b>
+      <div class="muted" style="font-size:13px;margin-top:2px">${esc(autoLine)}</div>
+      <div class="muted" style="font-size:12px;margin-top:4px">聊天、换区、切日、切后台都会自动写入，不用手动管。</div>
+      <button class="btn" style="margin-top:8px" onclick="if(confirm('回到最近一次自动存档？当前进度会被覆盖。')){loadGame();renderSaveApp()}">回到自动存档</button>
+    </div>
+  </div>`;
 }
 function resetGame(){
   localStorage.removeItem(SAVE_KEY);
@@ -2306,8 +2400,8 @@ function openMenu(){
   wrap.className="modal";
   wrap.innerHTML=`<div class="sheet">
     <h3 style="margin-bottom:12px">菜单</h3>
-    <button class="btn primary" onclick="saveGame();this.closest('.modal').remove()">💾 存档</button>
-    <button class="btn" onclick="loadGame();this.closest('.modal').remove()">📂 读档</button>
+    <button class="btn primary" onclick="this.closest('.modal').remove();renderSaveApp()">🗂 存档 · 读档（三个格子）</button>
+    <button class="btn" onclick="saveGame();this.closest('.modal').remove()">💾 快速存档</button>
     <button class="btn" onclick="advanceTime(50);drainBattery(2);this.closest('.modal').remove();render()">⏱ 等待约 1 小时（-2%电）</button>
     <button class="btn" onclick="waitUntilNight();this.closest('.modal').remove()">🌙 等到深夜（-6%电）</button>
     <button class="btn" onclick="showDayCard(S.day,{instant:true});this.closest('.modal').remove()">📋 今日说明</button>
@@ -7513,11 +7607,12 @@ function renderHome(){
       <button class="app-icon" onclick="gotoTab('map')"><span class="ico">🗺</span><span class="lab">地图</span></button>
       <button class="app-icon" onclick="gotoTab('more')"><span class="ico">＋</span><span class="lab">更多</span></button>
     </div>
-    <div class="home-apps" style="margin-top:6px">
+    <div class="home-apps" style="margin-top:6px;grid-template-columns:repeat(5,1fr)">
       <button class="app-icon" onclick="renderInventory()"><span class="ico">🎒</span><span class="lab">背包${keeps?` ♡${keeps}/10`:""}</span></button>
       <button class="app-icon" onclick="renderMemoApp()"><span class="ico">🗒</span><span class="lab">备忘录</span></button>
       <button class="app-icon" ${S.day<2?"disabled style='opacity:.4'":""} onclick="${S.day<2?"toast('先把第一晚走完')":"renderSuspectBoard()"}"><span class="ico">🔎</span><span class="lab">嫌疑板${S.day<2?" · 明天":""}</span></button>
       <button class="app-icon" onclick="renderPuzzleBoard()"><span class="ico">🔢</span><span class="lab">密码板</span></button>
+      <button class="app-icon" onclick="renderSaveApp()"><span class="ico">🗂</span><span class="lab">存档</span></button>
     </div>
   </div>`;
 }
@@ -8101,6 +8196,7 @@ function renderSettingsApp(){
       <button class="btn" style="margin-top:8px" onclick="if(typeof ambienceToggle==='function'){ambienceToggle();renderSettingsApp()}">氛围音：${mute?"关":"开"}</button>
       <button class="btn" onclick="S.flags.jumpReduce=!S.flags.jumpReduce;S.flags.softScare=S.flags.jumpReduce;if(typeof ambienceSetSoft==='function')ambienceSetSoft(S.flags.jumpReduce);toast(S.flags.jumpReduce?'突脸/氛围：减弱':'突脸/氛围：默认');renderSettingsApp()">突脸强度：${S.flags.jumpReduce?"减弱":"默认"}</button>
       <button class="btn" onclick="S.flags.flashSafe=!S.flags.flashSafe;applyFlashSafe();autoSaveNow();toast(S.flags.flashSafe?'闪烁：已减弱':'闪烁：默认');renderSettingsApp()">闪烁强度：${S.flags.flashSafe?"已减弱（光敏感友好）":"默认"}</button>
+      <button class="btn" onclick="renderSaveApp()">🗂 存档 · 读档</button>
     </div>
     <div class="card muted" style="font-size:12px;margin-top:8px">
       亮度：自动（无法关闭）<br>

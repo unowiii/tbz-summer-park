@@ -1119,6 +1119,20 @@ const TBZ_PLAYLIST = [
   { id:"lot", title:"空地 · 风停了", vibe:"只在你点开它时变冷。默认别放这首。", bpm:58, root:174.61, mode:"lot" },
 ];
 
+/* 官方歌曲入口：只跳官方音源，不内嵌、不下载、不二次分发 */
+const TBZ_OFFICIAL = [
+  "THRILL RIDE", "MAVERICK", "The Stealer", "REVEAL", "ROAR",
+  "LIP GLOSS", "WATCH IT", "No Air", "Bloom Bloom", "Echo",
+];
+window.tbzOpenOfficial = function (title, where) {
+  const q = encodeURIComponent("THE BOYZ " + title);
+  const url = where === "spotify"
+    ? "https://open.spotify.com/search/" + q
+    : "https://www.youtube.com/results?search_query=" + q;
+  const w = window.open(url, "_blank", "noopener");
+  if (!w) toast("浏览器拦住了新窗口，请允许弹出窗口再试");
+};
+
 (function () {
   let ctx = null;
   let master = null;
@@ -1333,10 +1347,20 @@ const TBZ_PLAYLIST = [
         "</button></div>"
       );
     }).join("");
+    const officialRows = TBZ_OFFICIAL.map(function (t) {
+      return (
+        '<div class="mo-row" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;border:1px solid rgba(120,90,80,.22);border-radius:10px;margin-bottom:6px">' +
+        '<span style="font-size:13px">' + esc(t) + "</span>" +
+        '<span style="display:flex;gap:6px;flex-shrink:0">' +
+        '<button class="chip" onclick="tbzOpenOfficial(\'' + t + "','youtube')\">▶ 官方 MV</button>" +
+        '<button class="chip" onclick="tbzOpenOfficial(\'' + t + "','spotify')\">♫ 音源</button>" +
+        "</span></div>"
+      );
+    }).join("");
     screen.innerHTML =
       '<div><button class="back-btn" onclick="S.tab=\'home\';render()">← 主页</button>' +
       '<h3 class="glitch-text">音乐 · 夏夜游乐场</h3>' +
-      '<div class="alert-banner" style="font-size:12px;line-height:1.55">原创音盒，不是官方曲，也不是警报。白天明亮，入夜才会少拍、走调。默认先听「闭园前」。</div>' +
+      '<div class="alert-banner" style="font-size:12px;line-height:1.55">默认是原创音盒，不是官方录音，白天明亮、入夜会走调。想听他们的歌，往下跳到官方音源。</div>' +
       '<div class="vol-row">🎶 音乐音量 <input type="range" min="0" max="100" value="' +
       (window.__tbzMusicVol || 58) +
       "\" oninput=\"tbzMusicSetVol(this.value);document.getElementById('mVolLab').textContent=this.value\"/><span id=\"mVolLab\">" +
@@ -1344,6 +1368,9 @@ const TBZ_PLAYLIST = [
       "</span></div>" +
       rows +
       '<button class="btn" onclick="tbzMusicStop();openMusicMenu()">全部停止</button>' +
+      '<div style="margin:18px 0 8px;font-weight:700;font-size:14px">THE BOYZ 官方歌曲</div>' +
+      '<p class="muted" style="font-size:11px;line-height:1.5;margin:0 0 10px">点开会在新窗口跳到官方频道或音源，边听边玩也行。本作不内嵌、不下载、不再分发任何官方音频，版权归官方与原版权方所有。</p>' +
+      officialRows +
       '<button class="btn ghost" onclick="openMenu()">返回菜单</button></div>';
   };
 
@@ -6556,10 +6583,10 @@ function renderDisclaimerGate(){
     <div class="gate-card">
       <h3>阅读须知 · Fan IF</h3>
       <ul class="gate-rules">
-        <li>本作是粉丝创作的互动小说（Fan IF），向 <b>THE BOYZ</b> 致敬，非官方作品。</li>
-        <li>请保持善意：不发布仇恨言论，不编造谣言，不恶意曲解成员性格，也不要去打扰真人。</li>
+        <li>本作是粉丝二创的互动小说（Fan IF），向 <b>THE BOYZ</b> 致敬，非官方作品；所有情节均为虚构，与成员本人无关。</li>
+        <li>请勿辱骂、造谣或恶意揣测成员，也不要拿真人玩梗、开恶意玩笑。喜欢他们，是我们写这个故事的唯一理由。</li>
         <li>请勿擅自转载，或将本游戏的完整文件上传到未经授权的平台牟利。</li>
-        <li>游戏内音乐均为原创「<strong>夏夜音盒</strong>」（木马华尔兹、灯牌、空地），不是官方录音，也不是惊吓音效；想听原曲请走官方渠道。</li>
+        <li>游戏内默认播放的是原创「<strong>夏夜音盒</strong>」；想听他们的歌，可以在「音乐」页跳到官方音源，边听边玩。</li>
         <li>作品含中度恐怖、闪烁画面与心理暗示，如感不适请立即退出。</li>
       </ul>
       <p class="gate-cd" id="gateCd">${ready?"可以确认了":("请阅读 · "+left+" 秒后可勾选")}</p>

@@ -810,6 +810,16 @@ body.flash-safe .anom-stream .bubble,body.flash-safe .missed-dot{animation:none!
 .gard-item.on{border-color:rgba(200,90,70,.6);box-shadow:inset 0 0 14px rgba(150,40,30,.25)}
 .gard-climax{font-size:13.5px;line-height:2.05;padding:14px;border-radius:12px;margin:10px 0;
  background:rgba(18,12,14,.72);border:1px solid rgba(190,90,70,.25)}
+.cast-row{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:11px 13px;margin:9px 0}
+.cast-row.got{border-color:rgba(201,149,92,.42);background:rgba(201,149,92,.07)}
+.cast-h{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+.cast-e{font-size:14px}
+.cast-h b{font-size:14px;color:#fff;font-weight:600}
+.cast-r{font-size:12px;color:#e0b982;margin-left:auto}
+.cast-b{font-size:12.8px;line-height:1.75;color:#a9a29a;margin-top:5px}
+.cast-deed{font-size:12.8px;line-height:1.8;color:#cfc6bb;margin-top:8px;padding-left:9px;border-left:2px solid rgba(201,149,92,.5)}
+.cast-wish{font-size:12.8px;line-height:1.8;color:#e8b84b;margin-top:6px;padding-left:9px;border-left:2px solid rgba(232,184,75,.55)}
+
 </style>
 </style>
 </head>
@@ -1494,23 +1504,23 @@ const DAY_INFO = {
   1:{
     title:"第1天",
     short:"第1天 · 傍晚到夜里",
-    tone:"第一天晚上，园区还开着。先回那个未知号码，再看别人。",
-    goal:"回未知号码，等失主出现；然后听两个人说话，看一张照片，走一个区。",
-    tip:"今天异常还不明显。看完主页上的那一件就够。"
+    tone:"第一天晚上，园区还开着。他们都记得你，你却想不起他们。",
+    goal:"回未知号码；然后听两个人说话，看一张照片，走一个区。留意谁说的话不太像临时认识的你。",
+    tip:"今天没人会说破。但他们聊天的方式，已经像认识了很久。"
   },
   2:{
     title:"第2天",
     short:"第2天 · 白天到深夜",
-    tone:"第二天。晚上十点以后，消息会变奇怪。",
-    goal:"看删除记录的第一层，去一次夜场，玩一局异常格，标一个嫌疑。",
-    tip:"觉得不对就先去充电，再决定要不要继续看。"
+    tone:"第二天。他们开始演，也开始拦。",
+    goal:"看删除记录的第一层（上一次的对话残片），去一次夜场，玩一局异常格，标一个嫌疑。",
+    tip:"有人会说错话再改口。前后矛盾的地方，记到备忘录里对照。"
   },
   3:{
     title:"第3天",
     short:"第3天 · 收束",
-    tone:"第三天。可以现在走，也可以继续看到结局。",
-    goal:"放回长椅、带着已经看到的离开，或跟着聊得最多的那个人。",
-    tip:"主人是谁，要到结局才说清楚。"
+    tone:"第三天。你知道得够多了，可以选了。",
+    goal:"把手机放回长椅（让循环继续）、就这样离开，或找聊得最多的那个人把话说破。",
+    tip:"说破之后，他会坦白这三天为什么绕着说话。那不是告白，是解释。"
   }
 };
 const PHOTOS = [
@@ -3436,56 +3446,99 @@ const LEAD_HINTS = {
 
 /** Dark fairy-tale FALSE roles shown at lead pick (fit persona) */
 const FAKE_PARK_ROLES = {
-  sunwoo: {
-    title: "吹笛手的替身",
-    tag: "童话 · 花衣",
-    blurb: "他没有笛子，先笑。笑声一起，整条街的孩子都跟着走。他也走，只是走在最后，怕有人掉队——也怕自己回头。",
-  },
-  q: {
-    title: "赶时间的白兔",
-    tag: "童话 · 怀表",
-    blurb: "他一直在看表，一直说来不及了。你问他要去哪，他就把怀表塞进你手里，让你替他看时间。表针是倒着走的。",
-  },
-  eric: {
-    title: "举着一把糖的孩子",
-    tag: "童话 · 糖纸",
-    blurb: "糖举得很高，绳子拴在手腕上。你接了糖，绳子就换到你手上。他说这样才公平——这样你就不会走掉了。",
-  },
-  new: {
-    title: "不太肯说实话的镜子",
-    tag: "童话 · 镜面",
-    blurb: "他先说错的是你：脸上有灰、光太硬、坐姿难看。再问你听见没有。镜子从不撒谎，只是习惯把话反过来说一遍。",
-  },
   sangyeon: {
-    title: "数羊的牧羊人",
-    tag: "童话 · 短笛",
-    blurb: "天黑了就数。少一只他不喊，只把灯往那个方向照一下。他数得很准，所以你不敢动——动了，数就对不上了。",
+    title: "牧羊人",
+    tag: "童话 · 牧场",
+    blurb: "天黑了就数。少一只他不喊，只把灯往那个方向照一下。",
+    deed: "上次出事之后，他把每个人每句话都记在本子上。只要所有人都在规则里，就不会再少人。",
+    wish: "他要的不是你出去，是这一夜什么错都别犯——哪怕要多待一年。",
+    tell: ["羊圈不能有缺口。", "今晚一个都不许少。", "别让我再数第二遍。"],
   },
   jacob: {
-    title: "姜饼屋的主人",
-    tag: "童话 · 糖霜",
-    blurb: "屋子是热的，窗子是糖做的。他递你一杯热的，问你还好吗。问得很真，真到你会想在这个屋子里多坐一会儿。",
-  },
-  juyeon: {
-    title: "最后一匹木马上的人",
-    tag: "童话 · 木马",
-    blurb: "木马一直转，他下不来。你问他要不要停下，他说不用，你先走。然后他就那样看着你走，一圈，又一圈。",
+    title: "好心的猎人",
+    tag: "童话 · 林间",
+    blurb: "他把刀背对着你，先问你冷不冷。林子里只有他生着火。",
+    deed: "他曾经放走过一个人。那个人自己走了，然后没能回来。",
+    wish: "所以他这次不放你走——他宁愿你恨他，也不肯再放一次。",
+    tell: ["我在林子口等你。", "别自己走。", "这次我不会放手。"],
   },
   younghoon: {
-    title: "把面包掰成两半的人",
-    tag: "童话 · 干面包",
-    blurb: "他先递面包，再说话。合影里他站得笔直，最边上空着一个位置——他说那位置本来就不是给活人留的。",
+    title: "面包房的学徒",
+    tag: "童话 · 麦香",
+    blurb: "屋里有面包的味道。他先递你一块，再问你要不要坐下。",
+    deed: "他把自己那份留给你，说他不饿。他其实一直没吃东西。",
+    wish: "他希望你就待在吃得饱的地方，别再往外走——外面有什么，他比你清楚。",
+    tell: ["还热着，快吃。", "别出去，外面冷。", "你就在这儿待着。"],
   },
   hyunjae: {
-    title: "在门口问「吃了吗」的那位",
-    tag: "童话 · 红斗篷",
-    blurb: "门是他开的，声音也是他的。他先关心你饿不饿，再关心你身后有没有人跟着。奶奶在里面睡着，别吵她。",
+    title: "爱开玩笑的弄臣",
+    tag: "童话 · 铃铛",
+    blurb: "他先逗你笑。你笑了，他才敢往下说半句。",
+    deed: "他知道一些事，但每次开口都用笑话收尾。",
+    wish: "他不是不想说，是怕你听完就撑不到第三天。",
+    tell: ["哈哈，骗你的。", "……你别当真啊。", "笑一下，我就说。"],
+  },
+  juyeon: {
+    title: "沉默的守卫",
+    tag: "童话 · 门",
+    blurb: "他站在门边，话很少。你走过去，他侧了一下身。",
+    deed: "上次他是最后一个走的。差一步，门关在他前面。",
+    wish: "所以他这次选择变成「不会离开的那个」——只要他不动，就没人能把他留下。",
+    tell: ["我在这儿。", "你先走。", "……我没走。"],
   },
   kevin: {
-    title: "唱不完的夜莺",
-    tag: "童话 · 缺一拍",
-    blurb: "他唱到一半停下，说还没写完。你让他唱完，他说唱完的那只鸟就不在了。所以他一直留着最后一句。",
+    title: "弹琴的人",
+    tag: "童话 · 断弦",
+    blurb: "夜场那边的琴声总在同一个地方停住，然后重新开始。",
+    deed: "他记得那首歌是怎么断的，也记得断在第几拍。",
+    wish: "他每次都在那个地方停下，是因为再弹下去，会有人想起上次。",
+    tell: ["这儿少了一拍。", "灯牌不对。", "别让我弹完。"],
   },
+  new: {
+    title: "会看风向的人",
+    tag: "童话 · 风",
+    blurb: "他说话不看你的脸，看你的身后。",
+    deed: "他能听见空地那边有声音在叫。所以他一开口就是拦。",
+    wish: "他不打算安慰你。他只想在你还听得懂的时候，把你赶回去。",
+    tell: ["别回头。", "风变了。", "有人在叫你，别应。"],
+  },
+  q: {
+    title: "兔子",
+    tag: "童话 · 快",
+    blurb: "他跑得很快，还回头催你。你慢一步，他就急。",
+    deed: "上次他就是跑太快，一转身你就不在了。",
+    wish: "所以他这次一步都不肯离你远——他要你一直在他看得见的地方。",
+    tell: ["快跟上！", "你别停啊。", "……你还在吗？"],
+  },
+  eric: {
+    title: "大声说话的人",
+    tag: "童话 · 回声",
+    blurb: "他会突然喊你的名字，声音大得吓你一跳，然后自己先笑。",
+    deed: "上次他在台上，灯光一转，就再也找不到你了。",
+    wish: "所以他要一直喊。听到你应，他才敢相信你还在。",
+    tell: ["你在哪儿！", "应我一声！", "别不出声。"],
+  },
+  sunwoo: {
+    title: "拿着麦克风的人",
+    tag: "童话 · 广播",
+    blurb: "他的声音从园区的喇叭里出来，比在耳边听到的要近。",
+    deed: "上次的事他全记得，比谁都清楚。",
+    wish: "他最想让你正常地过完这三天——也最怕你真的一无所知地过完。",
+    tell: ["听我说完。", "这一次，我陪你走完。", "你别问，先跟我来。"],
+  },
+};
+/* 私心一句话（结局坦白用） */
+const SELFISH_LINE = {
+  sangyeon: "我怕的不是你走不出去。我怕的是名单上又少一个名字，而我还是没数住。",
+  jacob: "我放过一个人。他走了，再也没回来。所以这一次，我宁可你恨我。",
+  younghoon: "外面什么都没有。你待在这儿，至少有口热的。",
+  hyunjae: "我每次都笑。我怕我停下来，你就得自己扛。",
+  juyeon: "我不能走。那我至少可以站在门口，让你走的时候有人看着。",
+  kevin: "那首歌我没弹完。弹完了，你就会想起来。",
+  new: "空地那边一直在叫你。我拦了三次。第三次我没拦住。",
+  q: "我不是怕你走丢。我是怕我又转身了。",
+  eric: "我喊你，不是在叫你回来。我是在确认你还在。",
+  sunwoo: "我知道全部。我一直没说。因为我想让你这一次，正常地过完。",
 };
 
 /** TRUE park roles revealed only at finale (still persona-aligned, darker) */
@@ -4811,9 +4864,9 @@ function renderPuzzleBoard() {
   const screen = document.getElementById("screen");
   const att = S.puzzle.attempt || 0;
   const vague = att < 2
-    ? "数字散落在任务、相册旁注、夜事件与小游戏里。顺序很重要；池里可能有干扰项。"
+    ? "这些数字不是随机的。它们是上一轮留下的：空支架的位置、灯牌缺的字数、木马空着的座号、名册被划掉的那一页。顺序很重要；池里有干扰项。"
     : (att < 5
-      ? "空地码偏「水渍—噪音—夜—擦拭」一条线；深层偏「配对—滑动—后台—花名册」。"
+      ? "空地码偏「水渍—噪音—夜—擦拭」一条线；深层偏「配对—滑动—后台—花名册」。这四条线索分别对应四个人守着的地方。"
       : "仍不对？对照记录里的关键词，不要用最先捡到的四个数硬凑。");
   screen.innerHTML = `<div class="mg-wrap"><h3>密码板</h3>
     <p class="muted">${vague}</p>
@@ -5943,7 +5996,11 @@ function pickEndingBody(kind){
     const base=src[cid]||CHAR_ENDING_BASE[cid]||"你与他的对话最多。离开时游乐场灯火依旧，答案依旧没有。";
     const coda=CHAR_ENDING_CODA[id]||"";
     const ledger = keep ? keepLedgerLine() : "";
-    return preface+base+ledger+coda+"\n\n（终局将揭晓失主与阵营。）";
+    const selfish=SELFISH_LINE[cid]||"";
+    const conf = selfish
+      ? "\n\n—— 最后他停下来，说了一句不像台词的话 ——\n「"+selfish+"」\n\n这不是告白。这是他在解释：这三天里他每一次绕开的话，都是为了这句。"
+      : "";
+    return preface+base+ledger+coda+conf+"\n\n（终局将揭晓失主与阵营。）";
   }
   return preface+"你离开了游乐场。手机是谁的，到这里还没说完。";
 }
@@ -7964,16 +8021,20 @@ function renderStoryIntro(){
   const screen=document.getElementById("screen");
   screen.innerHTML=`<div class="intro-screen">
     <div class="intro-kicker">STORY · 第 0 天</div>
-    <h2 class="glitch-text">收摊之前</h2>
+    <h2 class="glitch-text">同一个最后一天</h2>
     <div class="intro-body">
       <p>八点差十分，广播说活动到此结束，请游客沿指示牌离场。</p>
-      <p>天还没黑透。卖气球的那盏小灯先灭了，接着是兑奖处的卷帘，一格一格往下咬。你顺着人流往外走，走到拍照区，脚步慢了半拍——长椅上有东西在震。</p>
-      <p>是一部手机。没锁，屏幕亮着。壁纸是一张合影，人站得很齐，最右边空了一个位置。</p>
-      <p>你本来只想把它交到失物招领。可它又震了一下，一条新消息浮上来，只有两个字：<b>在吗</b>。</p>
-      <p>你站住了。</p>
-      <p class="intro-rule">园区今晚不会真的关门。它只是把这一天又放了一遍，一盏灯一盏灯地调暗，把走出去的人从名单上划掉。而整个园区这会儿还亮着的东西只剩一样——你手里这块屏幕。所以他们会一个一个朝你走过来。</p>
-      <p class="intro-rule">他们会告诉你自己叫什么：广播里的笑声、卖气球的孩子、闭园前点名的人。那些不是名字，是园区发给他们的岗。真名要等到最后一刻，才有人肯说。</p>
-      <p class="intro-rule">还有一句，写在入口的木牌上，字被雨泡糊了：<em>别答应风里的名字。</em></p>
+      <p>天还没黑透。卖气球的那盏小灯先灭了，接着是兑奖处的卷帘，一格一格往下咬。</p>
+      <p>你跟着人流往外走——然后你站住了。</p>
+      <p>因为你知道接下来会发生什么。兑奖处的卷帘会卡在第三格；广播会重复一句已经播过的话；拍照区长椅上有东西在震。你不知道自己为什么知道。你只是知道。</p>
+      <p>长椅上是一部手机。没锁，屏幕亮着。壁纸是一张合影，十一个人，最右边空着一个位置。</p>
+      <p>合影里那些脸你全都认得。</p>
+      <p>可你叫不出任何一个名字。</p>
+      <p class="intro-rule">每年夏天的最后一天，这座园区会重新开一次门。进来的人会被发一个童话身份，照着规则走完三天，才能出去。出去的人第二天照常生活，像什么都没发生过。</p>
+      <p class="intro-rule">上一次，你们十一个人一起进来的。那一次出了问题——有一个人没能出去。</p>
+      <p class="intro-rule">从那以后，每到这一天，他们就被重新拉回来。你也是。他们全都记得上一次。你只记得一种感觉：好像有什么东西，被你忘在了这里。</p>
+      <p class="intro-rule">所以这一次，他们每一个人都会走过来帮你。用各自的方式，帮你"好好过完这三天"。<br>只是每个人对"好好过完"的理解，都不太一样。</p>
+      <p class="intro-rule">入口的木牌上还有三行字，被雨泡糊了。那不是园区写的——是上一次留下来的人，用指甲刻的：<em>别答应风里的名字。</em></p>
     </div>
     <div class="intro-tips">回一个人，才会亮起下一个人。夜里十一点以后，他们的话会变短。<br>电量是你的，也有一部分是它的。</div>
     <button class="btn primary" onclick="S.view='title';renderSetup()">开始今晚</button>
@@ -7991,6 +8052,17 @@ function renderLoreBook(){
     <h2 class="glitch-text">这个园区的规矩</h2>
     <p class="lore-lead">你手上只有一部手机。剩下的，是别人愿意告诉你的部分。</p>
 
+    <div class="lore-sec"><h4>这是第几次<span class="tag">副本</span></h4>
+      <p>这不是一座真的游乐场。它是一个会反复开启的副本——每年夏天的最后一天，门开一次，规则重新发一遍，走完三天才能出去。</p>
+      <p>上一次，你们十一个人一起进来。那一次有人没能出去。</p>
+      <p>从那以后，每到这一天，他们就会被重新拉回这张门票上。<b>他们记得每一次。你只记得一种感觉。</b></p>
+      <p>他们都在帮你过这三天。只是"过完"这两个字，十个人有十种理解。</p></div>
+
+    <div class="lore-sec"><h4>为什么是童话<span class="tag">假面</span></h4>
+      <p>副本不直接给你身份，它给你一个童话里的角色：牧羊人、猎人、面包房学徒、弄臣、守卫、弹琴的人、看风向的人、兔子、大声说话的人、拿麦克风的人。</p>
+      <p>那不是装饰。角色决定了副本怎么看你，也决定了他们只能用哪种方式接近你——牧羊人只能数人数，猎人只能守着林子口，弄臣只能把真话讲成笑话。</p>
+      <p>所以他们的话总是绕。不是不肯说，是<b>角色不许他们直说</b>。</p></div>
+
     <div class="lore-sec"><h4>这是什么地方<span class="tag">余场</span></h4>
       <p>这座园区每年闭园最后一夜，会多出一天。日历上没有这一天，门票上也没有。</p>
       <p>灯一盏盏暗下去，散场的人从名单上被划掉，而留下的人第二天醒来，还是同一个傍晚。园里的人把这一夜叫<b>余场</b>。</p></div>
@@ -7998,7 +8070,7 @@ function renderLoreBook(){
     <div class="lore-sec"><h4>这部手机<span class="tag">寄存</span></h4>
       <p>每晚，失物招领处都会收到一部无人认领的手机。</p>
       <p>它不是谁的。它是<b>上一个捡到它的人</b>留下的——寄存的是那个人还没走成的那一部分。谁拿起来，谁就是今晚的失主候选人。</p>
-      <p>所以「手机是谁的」，要到最后一刻才有答案。</p></div>
+      <p>而这一次，手机是从你自己手里滑下去的。你不记得了。他们记得。</p></div>
 
     <div class="lore-sec"><h4>三层<span class="tag">越看越深</span></h4>
       <p>第一层是记录：他们说的话。<br>第二层是校对：同一件事说两遍，第二遍更短。<br>第三层是署名：有人在念你的名字。</p>
@@ -9308,25 +9380,73 @@ function discCardHtml(){
   else gHint="四件东西摆在里面 · 没人替你看";
   const monoNew=monoAvail>0&&monoRead.length===0;
   const gNew=gOk&&gSeen===0;
+  const seenCast=(S.flags.castSeen||[]).length;
   return `<div class="card" style="margin-top:10px;border:1px dashed rgba(147,112,219,.45)">
     <div style="font-size:11px;color:var(--muted);margin-bottom:6px">还有两处入口 · 平时藏在「更多」里</div>
     <div style="display:flex;gap:8px">
       <button class="btn" style="flex:1" onclick="renderMonologueApp()">🎭 假面独白${monoNew?' <span style="color:#e8b84b">新</span>':""}<br><small style="color:var(--muted);font-weight:400">${monoHint}</small></button>
       <button class="btn" style="flex:1" onclick="renderGardenerScene()">🌿 园丁的第一现场${gNew?' <span style="color:#e8b84b">新</span>':""}<br><small style="color:var(--muted);font-weight:400">${gHint}</small></button>
     </div>
+    <button class="btn" style="width:100%;margin-top:8px" onclick="renderCastBook()">🎭 十个人的童话身份<br><small style="color:var(--muted);font-weight:400">认出 '+seenCast+'/10 · 他们为什么用这种方式帮你</small></button>
     ${ pwIsMirror() ? '<button class="btn" style="width:100%;margin-top:8px" onclick="renderSecondPlay()">🩹 二周目 · 残页（通关后才浮上来）</button>' : "" }
   </div>`;
 }
 
 
+/* —— 十个人的童话身份册：认出来的才显示背后那句 —— */
+function castSeenList(){
+  if(!S.flags.castSeen) S.flags.castSeen=[];
+  const list=S.flags.castSeen;
+  CHARS.forEach(function(c){
+    const heard=(S.flags.monoRead||[]).indexOf(c.id)>=0;
+    const close=(S.attention&&(S.attention[c.id]||0)>=2);
+    if((heard||close) && list.indexOf(c.id)<0) list.push(c.id);
+  });
+  return list;
+}
+function castMark(id){
+  if(!S.flags.castSeen) S.flags.castSeen=[];
+  if(S.flags.castSeen.indexOf(id)<0){
+    S.flags.castSeen.push(id);
+    toast("认出来了：这一条不是随机写的。");
+    gainAnomaly(1);
+  }
+}
+function renderCastBook(){
+  document.getElementById("dock").style.display="none";
+  document.getElementById("menuBtn").style.display="none";
+  const screen=document.getElementById("screen");
+  const seen=castSeenList();
+  const rows=CHARS.map(function(c){
+    const f=fakeRoleOf(c.id)||{};
+    const got=seen.indexOf(c.id)>=0;
+    return `<div class="cast-row${got?" got":""}">
+      <div class="cast-h"><span class="cast-e">${c.emoji}</span>
+        <b>${esc(c.name)}</b><span class="cast-r">${esc(f.title||"")}</span></div>
+      <div class="cast-b">${esc(f.blurb||"")}</div>
+      ${got
+        ? `<div class="cast-deed">${esc(f.deed||"")}</div><div class="cast-wish">${esc(f.wish||"")}</div>`
+        : `<button class="btn ghost" style="margin-top:6px;font-size:12px" onclick="castMark('${c.id}');renderCastBook()">我已经在聊天/相册里认出他了</button>`}
+    </div>`;
+  }).join("");
+  screen.innerHTML=`<div class="lore-screen">
+    <div class="lore-h">CAST · 副本发的假面</div>
+    <h2 class="glitch-text">十个人的童话身份</h2>
+    <p class="lore-lead">副本不给他们名字，给他们一个童话角色。角色决定他们只能用哪种方式接近你——所以他们的话总是绕的。</p>
+    <p class="lore-lead" style="color:var(--muted);font-size:12px">已认出 ${seen.length}/10。认出方式：相册里的空支架、聊天里突然说错的话、删除记录里的残片、夜场断掉的那一拍。</p>
+    ${rows}
+    <button class="btn primary" onclick="render()">合上</button>
+  </div>`;
+}
 /* —— 二周目专属：残页（仅通关一次后可见）—— */
 function renderSecondPlay(){
   const screen=document.getElementById("screen");
   const pages=[
-    "【残页·一】你删掉的那些对话，没有真的消失。它们被挪到了另一个名字下面。第二次进园，他会念得出你删掉的那一句。",
-    "【残页·二】第一遍你以为是随机的灯，其实每一盏都对应一件你做过的事。重来一遍，灯还是那盏灯，但你记得它为什么亮。",
-    "【残页·三】手机主人不是第一次弄丢手机。上一位捡到的人，没走到第三天。这次轮到你。",
-    "【残页·四】镜子里那个人学得很快。你第一次犹豫了多久，第二次他就只等你那么久。",
+    "【残页·一】你删掉的那些对话，没有真的消失。副本把它们挪到了另一个名字下面——那个名字属于上一次的你。",
+    "【残页·二】他们不是第一次陪你走这三天。你每一次问「你是谁」，他们都答一遍；你每一次忘，他们就再答一遍。",
+    "【残页·三】空着的那一个座不是没有人的座。是留给上一次没能出去的那个人的。你坐过，所以你知道它有多凉。",
+    "【残页·四】牧羊人的本子上记着每一次的人数。翻到最后一页，写着：第 十一次，还是十一个人，出去十个。",
+    "【残页·五】你这次之所以还记得一点点，是因为上一次的你，在最后那几分钟里，拼命留下了一样东西：这感觉。",
   ];
   screen.innerHTML=`<div class="lore-screen">
     <div class="lore-h">SECOND PLAY · 残页</div>
@@ -9345,19 +9465,19 @@ function renderRules(from){
   screen.innerHTML=`<div class="lore-screen">
     <div class="lore-h">PARK NOTICE · 入口木牌</div>
     <h2 class="glitch-text" style="margin-bottom:2px">入园守则</h2>
-    <p class="lore-lead">字被雨泡糊了，还能认出来三行。</p>
+    <p class="lore-lead">字被雨泡糊了，还能认出来三行。这三行不是园区写的——是上一次，有人临死前刻上去的。</p>
     <div class="rule-board">
       <div class="rb-t">THRILL-ING · 夏日游乐场</div>
       <div class="rule-item"><span class="rule-num">一</span>
         <div class="rule-tx">别答应风里的名字。
-          <small>有人会在你背后轻轻念一遍。你只要应一声，就算签到。</small></div></div>
+          <small>有人会在你背后轻轻念一遍。你只要应一声，就算签到。<br>——空地那边，一直有人在叫。</small></div></div>
       <div class="rule-item"><span class="rule-num">二</span>
         <div class="rule-tx">木马空着的那个座，不要坐。
-          <small>空座是留给"还没到的人"的。你坐下去，就是承认你到了。</small></div></div>
+          <small>空座是留给"还没到的人"的。你坐下去，就是承认你到了。<br>——那个座，是留给上次没出去的那个人的。</small></div></div>
       <div class="rule-item"><span class="rule-num">三</span>
         <div class="rule-tx">灯灭之前，回到有人的地方。
-          <small>不是回到亮的地方。是回到有人的地方——这两件事今晚不一样。</small></div></div>
-      <div class="rule-foot">守则不解释原因。它只记录哪一种人第二天没再出现。</div>
+          <small>不是回到亮的地方。是回到有人的地方——这两件事今晚不一样。<br>——一旦彻底黑了，就会被判定成"留下"。</small></div></div>
+      <div class="rule-foot">守则不解释原因。它只记录哪一种人第二天没再出现。<br>笔迹有十个人的。写到最后一行，字迹就断了。</div>
     </div>
     <button class="btn primary" onclick="closeRules('${from||""}')">记住了</button>
     <button class="btn ghost" onclick="renderLoreBook()">背后的事 · 园区的规矩</button>

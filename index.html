@@ -831,6 +831,14 @@ body.flash-safe .anom-stream .bubble,body.flash-safe .missed-dot{animation:none!
 @keyframes monPulse{0%,100%{opacity:.72}50%{opacity:1}}
 .mon-panel .mon-name{animation:monPulse 4.2s ease-in-out infinite}
 
+.guide-nudge{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:rgba(201,149,92,.1);border:1px solid rgba(201,149,92,.3);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:13px;color:#e7d9c4}
+.guide-nudge b{color:#e8b84b}
+.guide-nudge button{background:rgba(201,149,92,.92);color:#1a1208;border:none;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer}
+.guide-nudge .x{background:transparent;border:1px solid rgba(255,255,255,.25);color:#bbb;margin-left:auto}
+.home-guide-bar{margin-top:14px;text-align:center;font-size:13px;color:rgba(201,149,92,.95);padding:10px 12px;border:1px solid rgba(201,149,92,.28);border-radius:10px;cursor:pointer;letter-spacing:.02em}
+.home-guide-bar:active{background:rgba(201,149,92,.12)}
+
+</style>
 </style>
 </style>
 </head>
@@ -3555,44 +3563,44 @@ const SELFISH_LINE = {
 /** TRUE park roles revealed only at finale (still persona-aligned, darker) */
 const TRUE_PARK_ROLES = {
   sunwoo: {
-    good: "失主真名 Sunwoo。园内角色：返送监控员——用笑声盖住不该播出的气音，把你往亮处推。",
-    bad: "失主真名 Sunwoo。园内角色：返送篡改员——笑声是饵，空拍用来确认你还在听。",
+    good: "拿着麦克风的人。他的声音从喇叭里出来，比在耳边听到的近——他一直在替你念那些你不敢念的名字。",
+    bad: "拿着麦克风的人。广播里那段循环的 closing，其实是在点名。念到你的那天，园区就承认你到了。",
   },
   q: {
-    good: "失主真名 Q。园内角色：行程审查员——用纸条提前删掉危险日程，警告从不署名。",
-    bad: "失主真名 Q。园内角色：涂改员——省略号后面是诱饵句，第二道门是他留的缝。",
+    good: "兔子。他跑得快，是因为他把所有写着你会出事的日程，都提前撕掉了。",
+    bad: "兔子。他催你快一点，不是怕你出事——是你停下来的地方，正好是他需要你停下的地方。",
   },
   eric: {
-    good: "失主真名 Eric。园内角色：夜场引导生——话多是为了把人留在灯下，矛盾来自怕你走丢。",
-    bad: "失主真名 Eric。园内角色：迷路贩子——气球绳连着夜场深处，邀请与否认来回甩，好让你更靠近。",
+    good: "大声说话的人。他喊你，只是为了确认你还在。听到你应一声，他才敢继续。",
+    bad: "大声说话的人。他的声音在替别的东西数你的回应次数。每应一次，记一次。",
   },
   new: {
-    good: "失主真名 New。园内角色：静音巡查——轻声问「听到了吗」是在确认异常有没有贴上你。",
-    bad: "失主真名 New。园内角色：名字收集者——风停时偷听你的名字，再在远处轻轻念一遍。",
+    good: "会看风向的人。他一直拦你，因为风里有人叫你，而他听得见。",
+    bad: "会看风向的人。他不是在帮你听风——他是在等风把你的名字送到他这边。",
   },
   sangyeon: {
-    good: "失主真名 Sangyeon。园内角色：闭园值守——「别看了」是关闸指令，短句是为了不耽误你离开。",
-    bad: "失主真名 Sangyeon。园内角色：封口检票员——票根盖住的是目击者名单，「通行」有时通向空地。",
+    good: "牧羊人。他数人数，是因为怕再少一个。灯往哪儿照，他就往哪儿找。",
+    bad: "牧羊人。他数得很准，所以少的那一个他永远记得——他需要有人把那个数补上。",
   },
   jacob: {
-    good: "失主真名 Jacob。园内角色：安全充电看守——热饮与英文关心是同一套：先让你活着，再谈真相。",
-    bad: "失主真名 Jacob。园内角色：温言诱捕者——Are you okay 让人卸防，再把你留在「还可以再看一层」的光里。",
+    good: "好心的猎人。他把火生在林子口，是因为他放过一个人，那人没能回来。",
+    bad: "好心的猎人。林子里的路是他修的。好走的那条，通向不出去的地方。",
   },
   juyeon: {
-    good: "失主真名 Juyeon。园内角色：木马制动手——少回是因为他在扳闸；沉默期间园里少转一圈危险。",
-    bad: "失主真名 Juyeon。园内角色：空位看守——木马上永远空一个座，短讯「在」其实是座在回你。",
+    good: "沉默的守卫。他站在门口不说话，是在替你顶着门缝。你走的时候，门不会关。",
+    bad: "沉默的守卫。他不拦你，也不送你。他只是站在那儿，等门替他做决定。",
   },
   younghoon: {
-    good: "失主真名 Younghoon。园内角色：证据摄影师——让你看图是为了对照；叫你别放大，是怕噪点学会人形。",
-    bad: "失主真名 Younghoon。园内角色：构图诱饵——照片右下角的缺口是入口，他负责把你的视线送进去。",
+    good: "面包房的学徒。他一直递你吃的，是因为他记得你上次走的时候，什么都没带。",
+    bad: "面包房的学徒。屋子里永远是暖的，面包永远是热的。你多坐一会儿，外面就黑一分。",
   },
   hyunjae: {
-    good: "失主真名 Hyunjae。园内角色：对讲守夜——用语音盖住井底哼唱，杂音里仍在喊你离开免提。",
-    bad: "失主真名 Hyunjae。园内角色：回声寄生——呼吸不是他的；他借用声线，好让你把名字答进井里。",
+    good: "爱开玩笑的弄臣。他把真话包进笑话里，是怕你听完就撑不到最后。",
+    bad: "爱开玩笑的弄臣。你笑的时候最不设防。他说的每句话都在笑里等你。",
   },
   kevin: {
-    good: "失主真名 Kevin。园内角色：曲库守门——副歌缺口是他亲手掐掉的危险句，叫你关机是真的。",
-    bad: "失主真名 Kevin。园内角色：循环园丁——缺口由他浇灌，歌在拔掉耳机后仍会长进你耳朵。",
+    good: "弹琴的人。那首歌停在同一个地方，因为再往下弹，有人就要醒。",
+    bad: "弹琴的人。那首歌没有断。它在等一个听完整的人。他希望是你。",
   },
 };
 
@@ -6440,16 +6448,16 @@ let COMP_UID = 0;
 
 /* 每位男主的假面（暗黑童话）+ 剪影用的轮廓/道具/光色 */
 const COMP_ART = {
-  sunwoo:   {mask:"吹笛手的替身",      hair:"messy", prop:"flute",   glow:"#e8a15c"},
-  q:        {mask:"赶时间的白兔",      hair:"bob",   prop:"ears",    glow:"#b58ae0"},
-  eric:     {mask:"举着一把糖的孩子",  hair:"puff",  prop:"balloon", glow:"#ff8f7a"},
-  new:      {mask:"不太肯说实话的镜子",hair:"long",  prop:"mirror",  glow:"#8fc4ea"},
-  sangyeon: {mask:"数羊的牧羊人",      hair:"short", prop:"crook",   glow:"#9fb4c9"},
-  jacob:    {mask:"姜饼屋的主人",      hair:"soft",  prop:"house",   glow:"#8fd6a6"},
-  juyeon:   {mask:"最后一匹木马上的人",hair:"flat",  prop:"horse",   glow:"#f0a06a"},
-  younghoon:{mask:"把面包掰成两半的人",hair:"side",  prop:"bread",   glow:"#8fe0d4"},
-  hyunjae:  {mask:"在门口问「吃了吗」的那位",hair:"wolf",prop:"walkie",glow:"#c79bef"},
-  kevin:    {mask:"唱不完的夜莺",      hair:"wavy",  prop:"bird",    glow:"#7fd8c9"}
+  sunwoo:   {mask:"拿着麦克风的人",    hair:"messy", prop:"flute",   glow:"#e8a15c"},
+  q:        {mask:"兔子",              hair:"bob",   prop:"ears",    glow:"#b58ae0"},
+  eric:     {mask:"大声说话的人",      hair:"puff",  prop:"balloon", glow:"#ff8f7a"},
+  new:      {mask:"会看风向的人",      hair:"long",  prop:"mirror",  glow:"#8fc4ea"},
+  sangyeon: {mask:"牧羊人",            hair:"short", prop:"crook",   glow:"#9fb4c9"},
+  jacob:    {mask:"好心的猎人",        hair:"soft",  prop:"house",   glow:"#8fd6a6"},
+  juyeon:   {mask:"沉默的守卫",        hair:"flat",  prop:"horse",   glow:"#f0a06a"},
+  younghoon:{mask:"面包房的学徒",      hair:"side",  prop:"bread",   glow:"#8fe0d4"},
+  hyunjae:  {mask:"爱开玩笑的弄臣",    hair:"wolf",prop:"walkie",glow:"#c79bef"},
+  kevin:    {mask:"弹琴的人",          hair:"wavy",  prop:"bird",    glow:"#7fd8c9"}
 };
 
 const COMP_HAIR = {
@@ -8077,11 +8085,11 @@ function renderLoreBook(){
       <p>园区的闸机在入口，也在出口。它一直在，一直是开的。</p>
       <p>可是没有一个人走进去过。你问十个人"出去以后是什么"，十个人都答得很顺——但他们答的是<b>听说</b>。</p>
       <p>没有一个人说"我出去过"。</p>
-      <p>你问他们为什么不走，他们会先愣一下，然后很自然地换个话题。那个愣，很短，但每次都有。</p></div>
+      <p>你问他们为什么不走，他们会把话题带去别的地方。每次都带得很自然。</p></div>
 
     <div class="lore-sec"><h4>为什么是童话<span class="tag">假面</span></h4>
-      <p>副本不直接给你身份，它给你一个童话里的角色：牧羊人、猎人、面包房学徒、弄臣、守卫、弹琴的人、看风向的人、兔子、大声说话的人、拿麦克风的人。</p>
-      <p>那不是装饰。角色决定了副本怎么看你，也决定了他们只能用哪种方式接近你——牧羊人只能数人数，猎人只能守着林子口，弄臣只能把真话讲成笑话。</p>
+      <p>他们不直接告诉你他们是谁。你只看得到一个角色：牧羊人、猎人、面包房学徒、弄臣、守卫、弹琴的人、看风向的人、兔子、大声说话的人、拿麦克风的人。</p>
+      <p>那不是装饰。角色决定了他们只能用哪种方式接近你——牧羊人只能数人数，猎人只能守着林子口，弄臣只能把真话讲成笑话。</p>
       <p>所以他们的话总是绕。不是不肯说，是<b>角色不许他们直说</b>。</p></div>
 
     <div class="lore-sec"><h4>这是什么地方<span class="tag">余场</span></h4>
@@ -8232,7 +8240,7 @@ function renderSetup(){
     });
     screen.innerHTML=`<div class="setup">
       <h2 class="glitch-text">选择男主 · 暗黑童话入场</h2>
-      <p class="muted">每位男主以暗黑童话里的身份出现（吹笛手的替身、赶时间的白兔、姜饼屋的主人……）。<br>那不是名字，是园区发的假面。真名、岗，与好人／坏人——只在大结局揭晓。其余九人仍在聊天里。</p>
+      <p class="muted">每位男主以暗黑童话里的身份出现（牧羊人、好心的猎人、沉默的守卫……）。<br>那不是名字，是他们的假面。真名、岗，与好人／坏人——只在大结局揭晓。其余九人仍在聊天里。</p>
       <div class="lead-grid">${cards}</div>
       <button class="btn primary" onclick="confirmSetup()">跟着他的假面进入</button>
       <button class="btn ghost" onclick="S.view='setup';renderSetup()">返回身份</button>
@@ -8335,7 +8343,7 @@ function openGuide(){
       +'.guide-nudge{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:rgba(201,149,92,.1);border:1px solid rgba(201,149,92,.3);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:13px;color:#e7d9c4}'
       +'.guide-nudge b{color:#e8b84b}'
       +'.guide-nudge button{background:rgba(201,149,92,.92);color:#1a1208;border:none;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer}'
-      +'.guide-nudge .x{background:transparent;border:1px solid rgba(255,255,255,.25);color:#bbb;margin-left:auto}';
+      +'';
     document.head.appendChild(st);
   }
   let ov=document.getElementById("guideOverlay");
@@ -9144,46 +9152,46 @@ function renderMemoApp(){
 
 /* —— 假面独白：每款面具各有一段 —— */
 const MONOLOGUES = {
-  sunwoo: { mask:"提灯人", lines:[
-    "灯举久了，手会抖。",
-    "我以为我在照路。后来才发现我一直在数——数还有几个人没走出去。",
+  sunwoo: { mask:"拿着麦克风的人", lines:[
+    "喇叭里的声音传得远。所以我只说给你一个人听的时候，会压得很低。",
+    "我以为我在播通知。后来才发现我一直在念名单——念还有几个人没走出去。",
     "你是最后一个还肯应声的。所以我把灯举低了一点，让你看不清我的脸。"] },
-  q: { mask:"赶时间的白兔", lines:[
-    "我总是很赶，因为时间不是给我的。",
-    "我提前撕掉的那几页日程，全是写着你会出事的那几页。",
-    "撕得越多，我越不像兔子，越像一张纸。"] },
-  eric: { mask:"举着糖的孩子", lines:[
-    "手里的糖是真的。拴着气球的绳子也是真的。",
-    "每只气球下面都坠着一个人。只有一个是我愿意放走的。",
-    "你猜是哪一个。别猜错。"] },
-  new: { mask:"不太肯说实话的镜子", lines:[
-    "我不说谎。我只是把你想要看的先演一遍。",
-    "你照得越久，我越像你。",
-    "所以别照了。我已经很像了。"] },
-  sangyeon: { mask:"数羊的牧羊人", lines:[
+  q: { mask:"兔子", lines:[
+    "我总是很赶。你慢一步，我就得回头找你。上次回头的时候你已经不在了。",
+    "我提前跑掉的那几段路，全是你会出事的那几段。",
+    "跑得越多，我越怕停下来——一停下来就要数人。"] },
+  eric: { mask:"大声说话的人", lines:[
+    "我嗓门大，不是想吓你。是我怕你听不见——上次你就是没听见我叫你。",
+    "台上灯一转，十张脸我只找得到九张。少的那张，我喊了整晚。",
+    "所以现在你走远一步，我都要喊一声。你应了，我才敢继续。"] },
+  new: { mask:"会看风向的人", lines:[
+    "我不看你的脸。我看你身后的风。",
+    "风里有人叫你。叫得很轻，换了三次声音——一次比一次像你认识的人。",
+    "所以别应。你要是应了，就轮到我听不见了。"] },
+  sangyeon: { mask:"牧羊人", lines:[
     "我数羊，是为了知道狼吃了几只。",
     "名单每晚都短一点。我从来没念错过一个名字。",
     "除了那个我故意念错的。"] },
-  jacob: { mask:"姜饼屋的主人", lines:[
-    "屋子是甜的，墙是硬的。",
-    "我请你进来，不是为了吃你，是为了让你别待在外面。",
-    "外面更冷。里面……里面也没有出口。"] },
-  juyeon: { mask:"最后一匹木马上的人", lines:[
-    "我坐在最后一匹上，等它停下来。",
-    "它从来没停过。",
-    "空着的那个座，是我留给你的。我没坐，是因为我坐不上。"] },
-  younghoon: { mask:"把面包掰成两半的人", lines:[
-    "面包我掰成两半，一半给你。",
-    "照片里多出来的那个人，也想要一半。",
-    "我没给。他站在那儿看着，一直看到现在。"] },
-  hyunjae: { mask:"在门口问「吃了吗」的那位", lines:[
-    "我问你吃了吗，是想知道你还有没有力气跑。",
-    "你说吃了，我就知道你还跑得动。",
-    "我说「进来坐坐」的时候，你别进来。"] },
-  kevin: { mask:"唱不完的夜莺", lines:[
-    "最后一句我唱不完。最后一句是要人命的。",
-    "所以我掐了。每掐一次，我就少一点。",
-    "现在还剩下多少，我自己也不敢数。"] }
+  jacob: { mask:"好心的猎人", lines:[
+    "林子口这堆火，我生了很久了。柴是够的，人不够。",
+    "我放走过一个。他说自己认得路。我信了。",
+    "所以这次我不指路。你要走，就从我眼皮底下走。"] },
+  juyeon: { mask:"沉默的守卫", lines:[
+    "我不是话少。我是站的位置不能说话——门那一块，说一个字，松一分。",
+    "上次门关上的时候，声音很小。我到现在还在听。",
+    "我不送你。我到这儿为止。你走出去，替我多看一眼外面。"] },
+  younghoon: { mask:"面包房的学徒", lines:[
+    "还热着，先吃。凉了就不是这个味了。",
+    "你拍我吧。拍不进去的——底片上那块空，早就不是我的了。",
+    "有时候我觉得，站在那块空里的那位，比你先认识我。"] },
+  hyunjae: { mask:"爱开玩笑的弄臣", lines:[
+    "我先笑，你跟着笑。这样听起来就像这里什么都没发生过。",
+    "有几件事我讲成了笑话。你笑完就别再问了——问了我可能就笑不出来了。",
+    "我不拦你。我只是把难听的部分都包了层糖纸。"] },
+  kevin: { mask:"弹琴的人", lines:[
+    "这段你听——手停了，声音还在。不是我弹的。是它记得。",
+    "那首歌断在最高的那句。上次有人听完了，然后就没有然后了。",
+    "所以我停在这儿。你别让我弹完。"] }
 };
 function monoUnlocked(cid){
   if(S.flags && S.flags.compUsed && S.flags.compUsed.indexOf(cid)>=0) return true;
@@ -9444,7 +9452,7 @@ function crookWhisper(cid){
   const i=S.flags.crookIdx[cid]||0;
   const w=pool[Math.min(i,pool.length-1)];
   S.flags.crookIdx[cid]=i+1;
-  const line={from:"them",text:w.t,type:"text",t:realTime(),read:false,beatId:"crook_"+cid+"_"+i};
+  const line={from:"them",text:w.t,type:"text",t:realTime(),read:false};
   if(!S.chatLog[cid]) S.chatLog[cid]=[];
   S.chatLog[cid].push(line);
   S.unread[cid]=(S.unread[cid]||0)+1;
@@ -9643,9 +9651,9 @@ function renderCastBook(){
     </div>`;
   }).join("");
   screen.innerHTML=`<div class="lore-screen">
-    <div class="lore-h">CAST · 副本发的假面</div>
+    <div class="lore-h">CAST · 他们的假面</div>
     <h2 class="glitch-text">十个人的童话身份</h2>
-    <p class="lore-lead">副本不给他们名字，给他们一个童话角色。角色决定他们只能用哪种方式接近你——所以他们的话总是绕的。</p>
+    <p class="lore-lead">他们不直接报名字。你先看见的永远是一个童话角色。角色决定他们只能用哪种方式接近你——所以他们的话总是绕的。</p>
     <p class="lore-lead" style="color:var(--muted);font-size:12px">已认出 ${seen.length}/10。认出方式：相册里的空支架、聊天里突然说错的话、删除记录里的残片、夜场断掉的那一拍。</p>
     ${rows}
     <button class="btn primary" onclick="render()">合上</button>
@@ -9655,7 +9663,7 @@ function renderCastBook(){
 function renderSecondPlay(){
   const screen=document.getElementById("screen");
   const pages=[
-    "【残页·一】你删掉的那些对话，没有真的消失。副本把它们挪到了另一个名字下面——那个名字属于上一次的你。",
+    "【残页·一】你删掉的那些对话，没有真的消失。它们被挪到了另一个名字下面——那个名字，你其实认识。",
     "【残页·二】他们不是第一次陪你走这三天。你每一次问「你是谁」，他们都答一遍；你每一次忘，他们就再答一遍。",
     "【残页·三】空着的那一个座不是没有人的座。是留给上一次没能出去的那个人的。你坐过，所以你知道它有多凉。",
     "【残页·四】牧羊人的本子上记着人数。你一页一页往前翻，翻到某一页，字迹忽然不是你认识的那种了。",

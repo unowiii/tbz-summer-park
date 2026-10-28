@@ -3188,10 +3188,11 @@ const ZONE_TEXT = {
     "水声忽然小了一拍。硬币排成一个看不清的数字。",
     "水面映出两个人。你回头，身后没有人。",
   ],
-  carousel: [
+    carousel: [
     "旋转木马停着。有一匹的座位还在晃。",
     "音乐盒转了半圈，停在同一拍。",
     "空位是暖的。你没看见谁。远处的歌少了半句。",
+    "灯是转着的，木马没有。你看见一匹走完一圈，回到起点，又走一遍。每一圈都经过同一个空位。",
   ],
   ticket: [
     "闸机绿灯偶尔闪。检票的椅子空着。",
@@ -3211,9 +3212,23 @@ function zoneLevelRef() {
   return 0;
 }
 
+/* 木马 · 你第几次来这里（循环感：看得见的圈数，看不见的圈数） */
+const CAROUSEL_PASS = {
+  1: "旋转木马停着。座子都是空的，一匹马的鬃毛还在动。",
+  2: "你记得这个位置。上次你来的时候，木马停在这一格。现在也是这一格——轴没动过，可你走了一圈。",
+  3: "你今天第二次站在这儿。木马还是那匹对着你。你忽然想不起来，第一次站在这儿的时候，太阳在哪边。",
+  4: "木马转得很慢，慢到你能数清。数到第七圈，你发现有一匹马的座垫是塌的——像一直有人坐在上面。",
+  5: "这一次，木马在转。它经过你面前，你看见空座上面有人坐过的形状。下一圈再经过，那个形状还在，人不在。",
+};
+function carouselBody() {
+  const p = (S.flags && S.flags.carouselPass) || 1;
+  return CAROUSEL_PASS[Math.min(p, 5)];
+}
+
 function zoneCopy(id) {
   const lvl = zoneLevelRef();
   let body = (ZONE_TEXT[id] && ZONE_TEXT[id][lvl]) || "这里什么都没有。";
+  if (id === "carousel") body = carouselBody();
   if (id === "empty" && lvl === 2) {
     body = `栅栏外面没有灯。有人叫了一声「${S.playerName || "你"}」，没叫全。站久了掉电很快。`;
   }
@@ -5999,7 +6014,11 @@ function pickEndingBody(kind){
       }
     }catch(e){}
   }
-  if(kind==="safe"||kind==="deep"||kind==="battery"||kind==="hidden"){
+  if(kind==="battery"){
+    return "【黑屏】\n电用完了。\n\n不是手机没电。是灯放完了——你在里面看见的那些，一张一张回到最前面那一张。\n最前面那张没有人。椅子是空的，光还在。\n\n"
+      + ((ENDING_TEXT.battery||{})[id] || (ENDING_TEXT.battery||{}).passerby || "");
+  }
+  if(kind==="safe"||kind==="deep"||kind==="hidden"){
     let t=(ENDING_TEXT[kind]||{})[id] || (ENDING_TEXT[kind]||{}).passerby || "";
     if(S.ownerId){
       const on=(CHARS.find(c=>c.id===S.ownerId)||{}).name||"失主";
@@ -6430,6 +6449,12 @@ function travelTo(zid, confirmed){
     if(!S.records.some(r=>(r.title||"").includes("饮食"))) addRecord("饮食见闻", areaText("food"));
   }
   if(zid==="back" && S.day>=2) S.flags.day2BackVisit = true;
+  if(zid==="carousel"){
+    const _cp=(S.flags.carouselPass||0)+1;
+    S.flags.carouselPass=_cp;
+    if(_cp===3) addRecord("木马 · 第几次", carouselBody());
+    if(_cp===5){ addKeyword("木马圈的圈数"); addRecord("木马 · 它一直在转", carouselBody()); }
+  }
   if((zid==="lot"||zid==="empty") && S.day>=3) S.flags.day3LotVisit = true;
   if(typeof checkQuestProgress==="function") checkQuestProgress();
   // ambient keyword
@@ -7397,6 +7422,7 @@ function openPhoto(pid){
       ${hs?`<button class="hotspot" style="left:${hs.x}%;top:${hs.y}%" onclick="tapHotspot('${p.id}')" title="热点"></button>`:""}
     </div>
     ${pe?`<button class="btn primary" style="margin:8px 0" onclick="tapPhotoRe('${p.id}')">🔍 今天再看一眼 · 有新东西</button>`:""}
+    ${!slideshowShown()?`<button class="btn ghost" style="margin:0 0 8px" onclick="tapSlideshow()">🃏 连着往下滑一遍</button>`:""}
     <p class="muted">点击虚线圆标记可查看热点</p>
   </div>`;
 }
@@ -7563,6 +7589,7 @@ function triggerBadEnding(){
   screen.innerHTML=`<div class="blackout"><div style="font-size:40px;margin-bottom:16px">⬛</div>
     <p style="color:#666">黑屏结局</p>
     <p style="color:#333;margin-top:12px;font-size:12px;max-width:260px;text-align:center;line-height:1.6">你没有去安全区。屏幕熄灭的前一帧，有人贴在玻璃内侧。</p>
+    <p style="color:#333;margin-top:8px;font-size:12px;max-width:260px;text-align:center;line-height:1.6">黑下去以后，屏幕里还剩下一点点光。\n那不是余电。那是最后几张照片，正一张一张往回放。</p>
     <button class="btn" style="margin-top:24px;max-width:200px" onclick="renderEnding('battery')">……</button></div>`;
 }
 function renderMapDead(){
@@ -8126,6 +8153,16 @@ function renderLoreBook(){
       <p>栅栏外那片草地不在图上，因为它还不是园区，是还没被写成景的空白。</p>
       <p>进去要四位数字，四个数从不放在一起：柜台的水渍里一个，灯牌静音时停住的那一格一个，夜巡老人哼的拍子里一个，玻璃擦开血雾的那一角一个。</p>
       <p>要按「先水、再灯、再拍子、最后擦」的顺序填。顺序错了它不响，只是当你没来过。走进去的人会被写进去，成了明年园里的一处景。</p></div>
+
+    <div class="lore-sec"><h4>木马<span class="tag">一直在转</span></h4>
+      <p>园区其实是一匹木马。灯在转，座子在转，游客跟着转。看起来每个人都在往前走，其实绕的是同一个圈。</p>
+      <p>铁律里说木马空着的那个座不要坐。没人说过，木马要怎么才停。</p>
+      <p>有两个说法在园区里传着。一种说，空位坐满了，它就停了。另一种说，空着的那个座，得先有人坐上去，它才肯停——坐上去的人不必下来。</p></div>
+
+    <div class="lore-sec"><h4>相册<span class="tag">不是纪念</span></h4>
+      <p>手机里那些照片，拍得很歪，很近，像是有人举着手机在跑。你原以为那是园区活动。</p>
+      <p>看多了会发现，它们有顺序。顺序是一个人这一生最舍不得的几段，被人剪在一起，一张一张地放。</p>
+      <p>电量不是电池，是这卷带的长度。放完了，屏幕自然黑。黑到底，就是它放完了。</p></div>
 
     <div class="lore-sec"><h4>三条铁律<span class="tag">入口木牌</span></h4>
       <ul class="lore-list">
@@ -9361,6 +9398,39 @@ function photoExtraFor(pid){
   if(S.flags["phRe_"+pid+"_d"+d]) return null;
   return t;
 }
+/* 走马灯 · 这些不是园区的照片 */
+function slideshowLine(){
+  const layer = S.deletedLayer||0;
+  const n = S.playerName||"你";
+  if(layer<=1) return "";
+  const base = "把相册连着往下滑，滑快了就变成一段画面。\n不是幻灯片，是一段一段过去的东西——快得来不及看清，只留下顺序。\n顺序是：有人在跑、有人在喊"+n+"、然后是黑。";
+  if(layer===2) return base + "\n最后一张不是园区。是一间你没进过的房间，天花板上有一盏灯，亮着。";
+  return base + "\n你看过这种画面。在别人的转述里，叫走马灯。\n据说人快到头的时候，眼前会把这一生过一遍。\n这些照片拍得这么歪、这么近，不像在取景，像在回放。\n你不记得自己按过快门。";
+}
+function slideshowShown(){
+  const layer = S.deletedLayer||0;
+  if(layer<=1) return true;
+  return !!(S.flags && S.flags.slideshowSeen>=layer);
+}
+function tapSlideshow(){
+  const layer = S.deletedLayer||0;
+  if(layer<=1){ toast("还没有什么可以连起来看"); return; }
+  advanceTime(4); drainBattery(2);
+  S.flags.slideshowSeen = Math.max(S.flags.slideshowSeen||0, layer);
+  const t = slideshowLine();
+  addRecord("相册 · 连着滑", t);
+  addKeyword("走马灯");
+  gainAnomaly(layer>=3?2:1);
+  if(typeof showCluePopup==="function"){
+    showCluePopup("相册 · 连着滑到底", t+"\n\n已写入记录。", {tag:"相册"});
+  }
+  openPhoto(pid0OfAlbum());
+}
+function pid0OfAlbum(){
+  const ps=(typeof PHOTOS!=="undefined"?PHOTOS:[]).filter(p=>p.day<=(S.day||1));
+  return (ps.length?ps[ps.length-1]:{id:""}).id || "";
+}
+
 function tapPhotoRe(pid){
   const p=PHOTOS.find(x=>x.id===pid); const t=photoExtraFor(pid);
   if(!p||!t) return;

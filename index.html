@@ -326,6 +326,18 @@ h1,h2,h3{font-weight:700}
 .day-strip.day-pulse{
   animation:stripFlash 1.6s ease-out;
 }
+/* —— 做旧拍立得相框（照片位：放入 avatars/成员id.jpg 自动做旧）—— */
+.pola-wrap{display:inline-block;position:relative;transform:rotate(-2.2deg);margin:4px 0}
+.pola-frame{background:#f5f0e4;border:1px solid rgba(0,0,0,.3);padding:7px 7px 24px;box-shadow:0 6px 16px rgba(0,0,0,.5);position:relative;display:block}
+.pola-photo{position:relative;overflow:hidden;background:#1a1512;display:block}
+.pola-photo img.face-img{filter:sepia(.55) saturate(.72) contrast(.94) brightness(.9)}
+.pola-photo::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse at center, transparent 52%, rgba(20,10,5,.55) 100%),
+    repeating-linear-gradient(115deg, rgba(255,255,255,.055) 0 1px, transparent 1px 7px),
+    linear-gradient(180deg, rgba(90,60,20,.14), rgba(40,20,10,.24))}
+.pola-cap{position:absolute;left:0;right:0;bottom:3px;text-align:center;font-size:10px;color:#6b5d48;font-family:Georgia,serif;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pola-tape{position:absolute;top:-9px;left:50%;transform:translateX(-50%) rotate(-3deg);width:64px;height:18px;background:rgba(228,214,178,.75);border-left:1px dashed rgba(0,0,0,.12);border-right:1px dashed rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.25);z-index:2}
 @keyframes stripFlash{
   0%{background:rgba(180,60,90,.45);color:#fff}
   100%{background:rgba(93,173,226,.12);color:#a8d4f0}
@@ -3705,15 +3717,21 @@ function renderInventory() {
     <button class="btn" onclick="renderPuzzleBoard()">打开密码板</button>
     <button class="btn ghost" onclick="S.tab='home';render()">返回主页</button></div>`;
 }
+function agedPhotoHTML(cid, size, caption){
+  return `<span class="pola-wrap"><span class="pola-tape"></span><span class="pola-frame">
+    <span class="pola-photo" style="width:${size}px;height:${size}px">${avatarHTML(cid, size)}</span>
+    ${caption?`<span class="pola-cap">${esc(caption)}</span>`:""}
+  </span></span>`;
+}
 function inspectKeep(id) {
   const d = ITEM_DEFS[id];
   if (!d) { renderInventory(); return; }
   const c = CHARS.find((x) => x.id === d.who);
   const screen = document.getElementById("screen");
   screen.innerHTML = `<div class="mg-wrap"><h3>♡ ${esc(d.name)}</h3>
-    <div style="display:flex;gap:12px;align-items:center;margin:10px 0">
-      ${c ? `<div style="border:1px solid rgba(232,161,92,.4);border-radius:10px;padding:4px">${avatarHTML(c.id, 84)}</div>` : ""}
-      <p style="line-height:1.75;margin:0;font-size:13px">${esc(d.desc)}</p>
+    <div style="display:flex;gap:14px;align-items:center;margin:12px 0">
+      ${c ? agedPhotoHTML(c.id, 96, d.name) : ""}
+      <p style="line-height:1.75;margin:0;font-size:13px;flex:1">${esc(d.desc)}</p>
     </div>
     <p class="muted">不是线索。检视它不会改变任何判定——只是可以再看一遍。</p>
     <button class="btn ghost" onclick="renderInventory()">返回背包</button></div>`;

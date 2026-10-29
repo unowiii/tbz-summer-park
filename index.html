@@ -2708,7 +2708,7 @@ function savedProgressLabel(){
     if(!raw) return "";
     const d=JSON.parse(raw);
     if(!d || !d.playerName) return "";
-    const dd=Math.min(3, d.day||1);
+    const dd=Math.min(d.mode==="short"?3:5, d.day||1);
     const hh=String(d.hour==null?18:d.hour).padStart(2,"0");
     const mm=String(d.minute==null?0:d.minute).padStart(2,"0");
     const nm=(CHARS.find(c=>c.id===d.ownerId)||{}).name||"";
@@ -2776,6 +2776,13 @@ function applyLoadedState(loaded){
     if(!S.suspectMark) S.suspectMark={};
     if(typeof gpInit==="function") gpInit();
     if(!S.hotspotsFound) S.hotspotsFound=[];
+    /* v0.5 迁移：第四五天改成傍晚起算。旧档若停在这两天的上午，接上时补一次拨钟，
+       否则玩家会卡在“白天永远等不到夜戏”的存档里。 */
+    if((S.day||1)>=4 && (S.hour||0)<12 && !S.flags.eveningMigrated){
+      S.flags.eveningMigrated=1;
+      if(S.day===4){ S.hour=18; S.minute=0; }
+      else { S.hour=17; S.minute=30; }
+    }
     CHARS.forEach(c=>{
       if(S.attention[c.id]==null) S.attention[c.id]=0;
       if(S.stage[c.id]==null) S.stage[c.id]=0;
@@ -2796,7 +2803,7 @@ function applyLoadedState(loaded){
 const SLOT_KEYS=["tbz_thrilling_slot1","tbz_thrilling_slot2","tbz_thrilling_slot3"];
 function slotLabelOf(d){
   if(!d || !d.playerName) return "";
-  const dd=Math.min(3, d.day||1);
+  const dd=Math.min(d.mode==="short"?3:5, d.day||1);
   const hh=String(d.hour==null?18:d.hour).padStart(2,"0");
   const mm=String(d.minute==null?0:d.minute).padStart(2,"0");
   const nm=(CHARS.find(c=>c.id===d.ownerId)||{}).name||"";

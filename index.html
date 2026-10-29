@@ -1765,7 +1765,7 @@ function defaultState(){
       safeStopOffered:false, leftPark:false, ended:false, ending:null,
       nightAnomalyStarted:false, faceAlbumDone:false,
       seenContradiction:0, readGlitch:false,
-      dayBriefed:{1:false,2:false,3:false,4:false,5:false}, disclaimerOk:false,
+      dayBriefed:{1:false,2:false,3:false,4:false,5:false}, disclaimerOk:false, mode:"",
       refusedCharge:false, chargedCount:0, deadBattery:false,
       missedMsgWindow:false, jumpReduce:false, juyeonHeld:false, softScare:false, alignHints:0, npcMet:[],
       flashSafe:false, tutorialSeen:false, autoSavedAt:0, anomFrac:0,
@@ -1955,17 +1955,17 @@ function advanceTime(mins, opts){
     S.day++;
   }
   if(S.day > prevDay){
-    for(let d=prevDay; d<S.day && d<=5; d++){
+    for(let d=prevDay; d<S.day && d<=dayCap(); d++){
       if(typeof deliverDayEssays==="function") deliverDayEssays(d);
     }
   }
-  if(S.day > prevDay && S.day<=5){
+  if(S.day > prevDay && S.day<=dayCap()){
     S.pendingDayCard = S.day;
     S.flags.dayBriefed[S.day] = false;
   }
-  if(S.day>5){
+  if(S.day>dayCap()){
     if(!S.flags.ended) tryEnding("timeup");
-    S.day = 5; S.hour = Math.min(S.hour, 23);
+    S.day = dayCap(); S.hour = Math.min(S.hour, 23);
   }
   // Night of day 2+ anomaly start
   if(S.day>=2 && S.hour>=22) S.flags.nightAnomalyStarted=true;
@@ -2059,6 +2059,7 @@ function nextStep(){
     if(p.del<2) return {title:"删除的第二层",sub:"还能再恢复一层。第三层要密码。",go:"deleted",label:"去看"};
     if(p.replied.length<8) return {title:"最后几段对话",sub:"还有人在等你说最后一句。已回 "+p.replied.length+" 人。",go:"chat",label:"去回"};
     if(p.keeps<4) return {title:"再带他走走",sub:"有些纪念品要同行才拿得到。也差不多是时候收尾了。",go:"map",label:"打开地图"};
+    if(isShortMode()) return {title:"怎么离开",sub:"放回长椅，带着看到的走，或顺着聊得最多的人。",go:"leave",label:"去结局"};
     return {title:"今晚到此为止",sub:"把时间拖过凌晨。明天，园区会换一副面孔。",go:"more",label:"看看更多"};
   }
   if(day===4){
@@ -2114,10 +2115,12 @@ function anomalyLevel(){
 }
 function dayLabel(d){
   d = d==null ? S.day : d;
-  return "第"+Math.min(Math.max(d,1),5)+"天";
+  return "第"+Math.min(Math.max(d,1),dayCap())+"天";
 }
 function dayBrief(d){
-  return DAY_INFO[Math.min(Math.max(d||S.day,1),5)] || DAY_INFO[1];
+    const dd=Math.min(Math.max(d||S.day,1),dayCap());
+  if(isShortMode() && dd===3) return DAY_INFO_SHORT_3;
+  return DAY_INFO[dd] || DAY_INFO[1];
 }
 function charPhase(id){
   // 0 early, 1 mid, 2 late — day-gated
@@ -3001,7 +3004,7 @@ function dismissDayCard(el){
   render();
 }
 function showDayCard(day, opts){
-  day = Math.min(Math.max(day||S.day,1),5);
+  day = Math.min(Math.max(day||S.day,1),dayCap());
   opts = opts || {};
   S.pendingDayCard = null;
   const info = DAY_INFO[day];
@@ -3728,13 +3731,13 @@ function endingOptionsRef() {
       id: "true",
       label: "把证据交给大家，让每个人自己决定",
       enabled: S.day >= 3 && (S.deletedLayer || 0) >= 2 && typeof triAllNotes==="function" && triAllNotes().length >= 2,
-      reason: "不再替所有人决定怎么离开。需要：第3天 · 恢复过深层 · 记下至少2条不对劲。",
+      reason: "不再替所有人决定怎么离开。需要："+(isShortMode()?"第3天":"第4天起")+" · 恢复过深层 · 记下至少2条不对劲。",
     },
     {
       id: "perfect",
       label: "按上一轮的日程表，把所有人一个不少地送出门口",
       enabled: S.day >= 3 && ((S.deletedLayer || 0) >= 3 || !!(S.puzzle && S.puzzle.unlockedL3)) && S.flags.anomaliesSeen >= 6,
-      reason: "所有人都准时到达，就没有人出错。需要：第3天 · 挖到底层 · 看过6处异常。",
+      reason: "所有人都准时到达，就没有人出错。需要："+(isShortMode()?"第3天":"第4天起")+" · 挖到底层 · 看过6处异常。",
     },
   ];
   try{
@@ -8786,9 +8789,8 @@ function confirmDisclaimer(){
   }
   clearInterval(_gateTimer);
   S.flags.disclaimerOk=true;
-  S.view="intro";
   if(typeof ambienceUnlock==="function") ambienceUnlock();
-  renderStoryIntro();
+  renderModePick();
 }
 /* 多周目：主页日历停摆 */
 function homeDateShiftHtml(){
@@ -8817,6 +8819,38 @@ function introNoticeHtml(){
     }
   }catch(e){}
   return "";
+}
+/* —— 开场：选长度（简易三天 / 深入五天） —— */
+function renderModePick(){
+  if(S.mode==="short" || S.mode==="full" || S.playerName){
+    if(S.mode!=="short" && S.mode!=="full") S.mode="full";
+    S.view="intro"; renderStoryIntro(); return;
+  }
+  document.getElementById("dock").style.display="none";
+  document.getElementById("menuBtn").style.display="none";
+  const screen=document.getElementById("screen");
+  screen.innerHTML=`<div class="intro-screen">
+    <div class="intro-kicker">SELECT · 今晚要多长</div>
+    <h2 class="glitch-text">这里有两个夏天</h2>
+    <div class="intro-body">
+      <p>同一个园区，同一部手机。区别只是——你愿意在这里待几天。</p>
+    </div>
+    <button class="btn primary" onclick="pickMode('full')" style="text-align:left;padding:14px 16px">
+      <b>深入版 · 五天</b><br>
+      <small style="font-weight:400;opacity:.85">第一天的温柔，第三天的第一次害怕，第四天发现自己在照片里，第五天说真话。内容最全，推荐第一次玩。</small>
+    </button>
+    <button class="btn" onclick="pickMode('short')" style="text-align:left;padding:14px 16px;margin-top:8px">
+      <b>简易版 · 三天</b><br>
+      <small style="font-weight:400;opacity:.8">第三天就是结局。更短、更集中，适合已经玩过、或者想先尝个味道的人。</small>
+    </button>
+    <p class="intro-tips" style="margin-top:10px">选完之后不能改——但可以删档重来。</p>
+  </div>`;
+}
+function pickMode(m){
+  S.mode = (m==="short") ? "short" : "full";
+  S.view="intro";
+  try{ autoSaveNow(); }catch(e){}
+  renderStoryIntro();
 }
 function renderStoryIntro(){
   document.getElementById("dock").style.display="none";
@@ -10462,7 +10496,7 @@ function tapGroupHotspot(id){
   }
   try{ openGroupPhoto(); }catch(e){}
 }
-function group10Version(){ return (S.day>=4||S.flags.ended)?3:(S.day>=2?2:1); }
+function group10Version(){ const v3=isShortMode()?(S.day>=3||S.flags.ended):(S.day>=4||S.flags.ended); return v3?3:(S.day>=2?2:1); }
 function openGroupPhoto(){
   drainBattery(1); advanceTime(3);
   const v=group10Version();
@@ -11080,7 +11114,17 @@ const ZONE_DAY_EXTRA={
   empty:{2:"风又停了一次。这次你听清了风里那个名字——不是你的。但用的是你熟悉的那个人的声音。",
          3:"草地上多了一行脚印，从栅栏缺口进来，到你站的位置前一步，消失。脚印比你的鞋小半码。"}
 };
-function clampDay(){ return Math.min(S.day||1,5); }
+/* —— 模式：简易版（三天收束）/ 深入版（五天真相） —— */
+function isShortMode(){ return !!(S && S.mode==="short"); }
+function dayCap(){ return isShortMode() ? 3 : 5; }
+const DAY_INFO_SHORT_3={
+  title:"第3天",
+  short:"第3天 · 收束",
+  tone:"第三天。你知道得够多了，可以选了。",
+  goal:"把手机放回长椅（让循环继续）、就这样离开，或找聊得最多的那个人把话说破。",
+  tip:"说破之后，他会坦白这三天为什么绕着说话。那不是告白，是解释。"
+};
+function clampDay(){ return Math.min(S.day||1,dayCap()); }
 /* 失主三层反转 · 第二层：照片里多出来的那只手 */
 function prevPickExtra(pid){
   if(pid!=="p7") return "";

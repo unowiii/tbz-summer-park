@@ -581,6 +581,44 @@ body.flash-safe .anom-stream .bubble,body.flash-safe .missed-dot{animation:none!
 @keyframes wavePulse{from{filter:brightness(1)}to{filter:brightness(1.35)}}
 
 
+.pm-jerk{animation:pmJerk .56s cubic-bezier(.36,.07,.19,.97) both}
+@keyframes pmJerk{0%{transform:translate(0,0) rotate(0)}14%{transform:translate(-4px,1px) rotate(-.3deg)}32%{transform:translate(3px,-2px) rotate(.26deg)}50%{transform:translate(-2px,2px) rotate(-.15deg)}68%{transform:translate(2px,-1px) rotate(.1deg)}100%{transform:translate(0,0) rotate(0)}}
+.pm-black{position:absolute;inset:0;background:#050405;z-index:9998;pointer-events:none;animation:pmBlack .48s ease forwards}
+@keyframes pmBlack{0%{opacity:0}28%{opacity:1}70%{opacity:1}100%{opacity:0}}
+.pm-ghostline{display:flex;align-items:center;gap:5px;margin:0 0 12px;padding:10px 12px;border-left:2px solid rgba(192,57,43,.65);background:linear-gradient(90deg,rgba(192,57,43,.11),rgba(192,57,43,0));font-size:14px;color:#e9e2d6;letter-spacing:.06em;transition:opacity 1.3s}
+.pm-ghostline.pm-gfade{opacity:0}
+.pm-gcaret{display:inline-block;width:1px;height:15px;background:#c0392b;animation:pmCaret 1s steps(1) infinite}
+@keyframes pmCaret{0%,49%{opacity:1}50%,100%{opacity:0}}
+/* ② 电话 */
+.dial-wrap{max-width:300px;margin:0 auto}
+.dial-num{font-size:26px;text-align:center;letter-spacing:.14em;min-height:36px;color:#efe7d9;font-family:Consolas,monospace;margin:6px 0 14px}
+.dial-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.dial-key{padding:13px 0;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#efe7d9;font-size:19px;font-weight:600}
+.dial-key small{display:block;font-size:9px;opacity:.45;font-weight:400;letter-spacing:.2em}
+.dial-call{width:64px;height:64px;border-radius:50%;background:#2e7d46;border:1px solid rgba(120,220,150,.5);color:#fff;font-size:26px;margin:0 auto;display:block}
+.dial-sub{font-size:11px;color:rgba(233,226,214,.5);text-align:center;margin-top:10px;line-height:1.7}
+.call-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid rgba(255,255,255,.08);border-radius:12px;margin-bottom:8px;background:rgba(255,255,255,.025)}
+.call-row .cn{font-size:14px;color:#efe7d9}
+.call-row .cs{font-size:11px;color:rgba(233,226,214,.45)}
+.call-row button{margin-left:auto}
+.pm-call{position:absolute;inset:0;z-index:9990;background:linear-gradient(175deg,#0c0a0d 0%,#171016 55%,#0a0709 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:26px;animation:pmCallIn .5s ease}
+@keyframes pmCallIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.pm-call .pc-badge{font-size:12px;letter-spacing:.35em;color:rgba(233,226,214,.5);animation:pmCaret 1.4s steps(1) infinite}
+.pm-call .pc-num{font-size:24px;color:#efe7d9;letter-spacing:.1em}
+.pm-call .pc-sub{font-size:12px;color:rgba(233,226,214,.55);line-height:1.8;max-width:280px}
+.pm-call .pc-btns{display:flex;gap:34px;margin-top:18px}
+.pm-call .pc-btn{width:66px;height:66px;border-radius:50%;font-size:26px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.25);color:#fff}
+.pm-call .pc-accept{background:#2e7d46;box-shadow:0 0 22px rgba(70,180,110,.35)}
+.pm-call .pc-decline{background:#8f2f2f;box-shadow:0 0 22px rgba(200,70,70,.3)}
+.pm-call .pc-log{font-size:13px;color:#e9e2d6;line-height:2;min-height:120px;max-width:300px;text-align:left}
+.pm-call .pc-log div{opacity:0;animation:pcLine .8s ease forwards}
+@keyframes pcLine{to{opacity:1}}
+.pm-call .pc-nod{font-size:11px;color:rgba(233,226,214,.4);letter-spacing:.2em}
+.pm-typing{position:absolute;left:10px;right:10px;bottom:66px;z-index:900;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:rgba(20,14,16,.95);border:1px solid rgba(192,57,43,.45);box-shadow:0 6px 26px rgba(0,0,0,.55);font-size:13px;color:#e9e2d6;transition:opacity 1.2s}
+.pm-typing.pm-gfade{opacity:0}
+.pm-tkey{font-size:12px;opacity:.5}
+.pm-ttext{flex:1;letter-spacing:.05em;min-height:1.2em}
+.pm-tcaret{display:inline-block;width:1px;height:14px;background:#c0392b;animation:pmCaret 1s steps(1) infinite}
 .music-card{background:rgba(40,8,16,.55);border:1px solid rgba(192,57,43,.35);border-radius:14px;padding:12px;margin:8px 0}
 .music-card.on{border-color:rgba(255,138,128,.7);box-shadow:0 0 16px rgba(192,57,43,.25)}
 .music-card .mc-title{font-weight:700;font-size:13px}
@@ -2170,6 +2208,7 @@ function memOnHide(){
   try{
     const m=loadMem();
     m.leftTab=S.chatWith?"chat":(S.tab||"home");
+    try{ if(typeof __zoneSecMap!=="undefined"&&Object.keys(__zoneSecMap).length) m.stoneLive=__zoneSecMap; }catch(e){}
     saveMem(m);
   }catch(e){}
 }
@@ -7798,6 +7837,7 @@ function renderArea(zid){
     ${zid==="carousel"?carouselLanternBtn():""}
     ${zt?`<button class="btn primary" style="margin-bottom:8px" onclick="zoneReLook('${zid}')">👣 今天再走一遍 · 有新东西</button>`:""}
     ${companionDockHTML(zid)}
+    ${personalEntryHtml(zid)}
     <div class="card"><p style="line-height:1.75;font-size:14px">${esc(txt)}</p>
     <p class="ambient">环境：${ambientSound(zid)}</p></div>
     ${realLateAreaHtml(zid)}
@@ -8258,6 +8298,7 @@ function makeEndingCard(){
       <h3>本局卡片</h3>
       <p class="muted" style="font-size:12px;margin-bottom:8px">长按图片存到相册，或者直接截图。</p>
       <img src="${data}" style="width:100%;border-radius:10px;display:block" />
+      <a class="btn" style="display:block;text-align:center;margin-top:8px;text-decoration:none" download="TBZ-ending.png" href="${data}">⬇ 保存图片</a>
       <button class="btn ghost" onclick="this.closest('.modal').remove()">关闭</button>
     </div>`;
     wrap.addEventListener("click",e=>{ if(e.target===wrap) wrap.remove(); });
@@ -8265,6 +8306,7 @@ function makeEndingCard(){
   }catch(e){ toast("卡片生成失败"); }
 }
 function renderEnding(kind){
+  try{ if(typeof metaStoneFinish==="function") metaStoneFinish(kind); }catch(e){}
   document.getElementById("dock").style.display="none";
   document.getElementById("menuBtn").style.display="none";
   document.querySelectorAll('.day-card-overlay').forEach(e=>e.remove());
@@ -8720,6 +8762,7 @@ function applyFlashSafe(){
 function render(){
   if(typeof syncAnomalyAlias==="function") syncAnomalyAlias();
   applyFlashSafe();
+  if(S && S.tab==="chat" && S.chatWith){ setTimeout(function(){ try{ if(S.chatWith) maybeGhostTyping(S.chatWith); }catch(e){} }, 900); }
   if(typeof maybeNameGlitch==="function") maybeNameGlitch();
   if(typeof maybeRealLateHook==="function") maybeRealLateHook();
   if(typeof erodeOnRender==="function") erodeOnRender();
@@ -8865,6 +8908,7 @@ function renderMore(){
         <button class="more-cell" ${lock?"disabled":""} onclick="${lock?"toast('删除层第二天再开')":"renderDeleted()"}"><span>🗑</span><b>已删除${lock?"<i>明天</i>":""}</b></button>
         <button class="more-cell" onclick="renderPlayHub()"><span>🎮</span><b>小游戏</b></button>
         <button class="more-cell" ${day<2?"disabled":""} onclick="${day<2?"toast('先把第一晚走完')":"renderSuspectBoard()"}"><span>🔎</span><b>嫌疑板${day<2?"<i>明天</i>":""}</b></button>
+        <button class="more-cell" onclick="renderPhoneApp()"><span>📞</span><b>电话</b></button>
         <button class="more-cell" onclick="renderGardenerScene()"><span>🌿</span><b>园丁</b></button>
         <button class="more-cell" onclick="renderMonologueApp()"><span>🎭</span><b>假面独白</b></button>
         <button class="more-cell" onclick="showDayCard(S.day,{instant:true})"><span>📅</span><b>日程</b></button>
@@ -9003,6 +9047,7 @@ function renderHome(){
     ${actionCardHtml()}
     ${guideHtml()}
     <div class="today-tip"><div class="tt">${esc(dayLabel())}${homeDateShiftHtml()}</div>${esc(info.tone)}</div>
+    ${metaGhostNoteHtml()}
     <div class="home-apps">
       <button class="app-icon" onclick="gotoTab('chat')"><span class="ico">💬</span><span class="lab">聊天${unreadTotal?`(${unreadTotal})`:""}</span></button>
       <button class="app-icon" onclick="gotoTab('album')"><span class="ico">🖼</span><span class="lab">相册</span></button>
@@ -9704,6 +9749,497 @@ function openGhostPhoto(){
 }
 
 /* 每局必见的三次 */
+/* ================= ④ 元层 · 它记得你上一轮真的做了什么 ================= */
+let __zoneSecMap={};
+function metaStoneTick(){
+  try{
+    if(!S||!S.playerName||S.flags.ended) return;
+    if(!S.currentZone||!document.querySelector(".area-view")) return;
+    if(!Object.keys(__zoneSecMap).length){
+      try{ const m=loadMem(); if(m.stoneLive&&Object.keys(m.stoneLive).length) __zoneSecMap=m.stoneLive; }catch(e){}
+    }
+    __zoneSecMap[S.currentZone]=(__zoneSecMap[S.currentZone]||0)+4;
+  }catch(e){}
+}
+function metaStoneFinish(kind){
+  try{
+    const m=loadMem();
+    let bestZone="",bestSec=0,total=0;
+    Object.keys(__zoneSecMap).forEach(function(k){
+      total+=__zoneSecMap[k];
+      if(__zoneSecMap[k]>bestSec){ bestSec=__zoneSecMap[k]; bestZone=k; }
+    });
+    m.last={
+      zone:bestZone, sec:bestSec,
+      min:Math.round(total/60),
+      zones:Object.keys(__zoneSecMap).length,
+      ending:kind,
+      maxPass:S.flags.carouselPass||1
+    };
+    m.stoneLive={};
+    saveMem(m);
+    __zoneSecMap={};
+  }catch(e){}
+}
+function metaGhostNoteHtml(){
+  try{
+    const m=loadMem();
+    if((m.runs||0)<1||!m.last) return "";
+    const L=m.last;
+    const zn=((typeof ZONES!=="undefined")?(ZONES.find(function(z){return z.id===L.zone;})||{}).name:null)||"某个地方";
+    const mm=Math.max(1,Math.round((L.sec||0)/60));
+    let name="";
+    try{ name=(typeof endingDisplayName==="function")?(endingDisplayName(L.ending)||""):""; }catch(e){}
+    return '<div class="meta-ghost">'
+      +'<div class="mg-t">上一轮 · 它都记得</div>'
+      +'<div class="mg-b">你在'+esc(zn)+'一带待得最久——大约 '+mm+' 分钟。走了 '+(L.zones||1)+' 个地方。'
+      +(L.maxPass>=3?('木马的那一圈，你走了 '+L.maxPass+' 遍。'):'')
+      +(name?('结局停在「'+esc(name)+'」。'):'')
+      +'</div>'
+      +'<div class="mg-s">这一轮的每一步，也会被这样记住。</div>'
+      +'</div>';
+  }catch(e){ return ""; }
+}
+
+/* ================= ③ 只有跟他走才看得到 · 十人专属一幕 ================= */
+const PERSONAL_SCENES={
+ sunwoo:{title:"空场试音",zone:["stage","night"],record:"夜场散了之后，Sunwoo 让我对空场喊自己的名字。回声慢半拍，还多了一个音节。他说：它学我教它的方式叫你。",
+  beats:["夜场散了，Sunwoo 把你拉回舞台。他递给你一支没插线的麦克风，说空场的时候试音最好听。\n\n「你来。喊你自己的名字。」","你犹豫了一下，还是喊了。\n\n回声回来的时候，慢了半拍——而且，多了一个音节。","他没有笑。他等你把那半个音节听完，才开口：\n\n「听见了吗。它学你，但学得不太像。它叫你的方式，是照着我教的叫的。」"]},
+ q:{title:"第无数只兔子",zone:["back","game"],record:"Q 让我投了一次从来不松爪的娃娃机。奖品袋里不是兔子，是一张照片：我在掏奖品袋，拍照的角度是从机器里面。",
+  beats:["游戏区的娃娃机没人玩。Q 拍了拍机身。\n\n「这台爪子从来不松。但你要是想看点什么，就投一次。」","你投了。爪子第一把就抓住那只兔子，稳稳送进出口。\n\nQ 帮你取奖品袋——里面的不是兔子。","是一张照片。照片里是你，站在娃娃机前面，正在伸手掏奖品袋。\n\n拍照的角度，是从机器里面。"]},
+ eric:{title:"第十一根木桩",zone:["game","night"],record:"Eric 把最后一枚套圈给我，说套中十一号有大奖。摊位明明只有十个号。灯灭了一瞬，圈已经套在十一号上。那一排木桩，现在有十一根。",
+  beats:["「最后一枚圈给你。」Eric 把套圈塞进你手里，指了指最远那根木桩。\n\n「套中十一号，大奖。」","你问他：摊位不是只有十个号吗。\n\n他说：数一遍不就知道了。你数了，十个。你回头，他把灯拉灭了一瞬。","灯再亮的时候，圈已经套在木桩上了。\n\n木桩上写着 11。那一排木桩，现在有十一根。"]},
+ new:{title:"虚掉的那颗头",zone:["photo"],record:"New 在拍照区给我拍了张照。快门没人碰自己响。成片里我旁边多一个人，比着我半边肩，头是虚的。他说：虚的那半边是我。",
+  beats:["拍照区的灯自己亮了一档。New 站进布景，朝你招手。\n\n「过来，给你拍一张。这里的相机不用人按。」","快门响的时候，没有人碰相机。\n\n成片吐出来：你站在布景里，笑得挺好。","你旁边还有一个人。比着你高的那半边肩，头是虚的，像没对上焦。\n\nNew 看了很久，说：「下次站我左边。虚的那半边，是我。」"]},
+ sangyeon:{title:"失物登记簿",zone:["ticket","back"],record:"Sangyeon 给我看了检票口的失物登记簿。今天那页已经填好：手机一部。历任失主的名字都自己出现了，只有拾得人签名栏空着。他说：你的要自己写。",
+  beats:["Sangyeon 在检票口值夜。他把一本登记簿推过来。\n\n「翻了你就明白。」\n\n今天那页已经填好：拾得物品——手机，一部。","拾得人签名是空的。你说不是你签的。\n\n他说：这里的名字都会自己出现。园区的、员工的、历任失主的，一页一页，全都自己出现。","「只有你的，要自己写。」\n\n他把笔递过来。笔杆是温的，像刚被谁握了很久。"]},
+ jacob:{title:"一直熬着的汤",zone:["food","ticket"],record:"Jacob 说关东煮的汤从开园那天就没换过。汤底沉着很多手机，屏幕全亮着，像沉在水底的星星。他说：都是自己掉进去的。你的还浮着。",
+  beats:["打烊前，Jacob 还守着那锅关东煮。\n\n「汤从开园那天就没换过。」他说得理所当然。\n\n「要看看里面吗。」","你低头。汤底沉着很多手机，一部叠着一部，屏幕全都亮着，光透过汤浮上来。\n\n像沉在水底的星星。","「都是自己掉进去的。」他给你盛了碗汤，没有拦你看。\n\n「放心，你的还浮着呢。」"]},
+ juyeon:{title:"第十一匹",zone:["carousel"],record:"Juyeon 数木马，每次都是十一匹，可这里只有十匹。多出来的那匹没有座垫，鞍上刻着我名字的草稿——写错又划掉的那版。我只给一个人看过。",
+  beats:["木马停着。Juyeon 拍了拍身边的位置。\n\n「陪我数一遍。我数过很多次，每次都是十一匹。可这里的木马只有十匹。」","你跟着他数。十匹。\n\n他重新数。十一匹——多出来的那匹没有座垫，位置紧挨着你们刚才站的地方。","鞍上刻着一行小字，是你名字的草稿。写错了一笔，又划掉。\n\n那是你在纸上试签名的那个版本。\n\n你只给一个人看过。"]},
+ younghoon:{title:"再来一瓶",zone:["food","photo"],record:"Younghoon 开的两瓶汽水，瓶盖里都印着「再来一瓶」。他说这箱里全是。他说这里的『再来』不是奖品的意思，是字面的意思。",
+  beats:["Younghoon 起了两瓶汽水，递你一瓶。\n\n「这个牌子只在园区卖。」\n\n瓶盖起开，里面印着「再来一瓶」。","他也起开自己的。也是「再来一瓶」。\n\n他笑了一下：「我问过店家，这箱里全是。」","「这里的『再来』，」他把瓶盖捏扁，\n\n「不是奖品的意思。是字面的意思。」"]},
+ hyunjae:{title:"对讲机",zone:["back","night"],record:"后台的对讲机在夜里会报东西。那头说：第十一位游客，请到检票口。Hyunjae 立刻关掉，说是第十位。然后他把频道贴纸撕掉了。",
+  beats:["后台的对讲机全调在一个频道。Hyunjae 拧开音量。\n\n「夜里这个频道会有人报东西。听不听。」","电流声持续了很久。忽然那头有人报站，声音很稳：\n\n「第十一位游客，请到检票口。」","他一把关掉，动作快得像挨了烫。\n\n「听错了。」他说，「是第十位。」\n\n可你看得清清楚楚——他把频道的贴纸，撕掉了。"]},
+ kevin:{title:"八颗灯",zone:["night","carousel"],record:"Kevin 给我戴上许愿灯，说别数。我数了两遍，第一遍七颗，第二遍八颗。他把灯串摘下来扔在地上说跑吧。地上的灯串，只有六颗亮着。",
+  beats:["夜场的灯串垂下来一截。Kevin 把它绕在你手腕上。\n\n「许愿灯。别数，数了就不灵了。」","你还是数了。七颗。\n\n你刚要说出口，又数了一遍。\n\n八颗。","他没有看你。他把灯串从你手腕上摘下来，扔在地上。\n\n「跑吧。」\n\n你回头看：地上的灯串，只有六颗亮着。"]}
+};
+function personalEntryHtml(zid){
+  try{
+    if(!S.companion) return "";
+    const sc=PERSONAL_SCENES[S.companion];
+    if(!sc||sc.zone.indexOf(zid)<0) return "";
+    if(S.flags["per_"+S.companion]) return "";
+    if((S.day||1)<2) return "";
+    const c=CHARS.find(x=>x.id===S.companion);
+    return `<button class="btn primary" style="margin:8px 0" onclick="openPersonalScene('${S.companion}',0)">🥀 跟${esc(c.name)}再走一段 · 只有他能带你去的地方</button>`;
+  }catch(e){ return ""; }
+}
+function openPersonalScene(cid,idx){
+  const sc=PERSONAL_SCENES[cid];
+  const c=CHARS.find(x=>x.id===cid);
+  if(!sc||!c) return;
+  const screen=document.getElementById("screen");
+  if(idx>=sc.beats.length){
+    S.flags["per_"+cid]=1;
+    try{ gainAnomaly(1); }catch(e){}
+    try{ triAdmire(cid,2); }catch(e){}
+    try{ addRecord("跟"+c.name+"走 · "+sc.title, sc.record); }catch(e){}
+    try{
+      if(typeof showCluePopup==="function") showCluePopup("跟"+c.name+"走 · "+sc.title, sc.record, {tag:"只有跟他走才看得到"});
+      else toast("已记入记录");
+    }catch(e){}
+    try{ renderArea(S.currentZone); }catch(e){ S.tab="map"; render(); }
+    return;
+  }
+  drainBattery(2);
+  advanceTime(4);
+  const last=idx===sc.beats.length-1;
+  screen.innerHTML=`<div class="area-view">
+    <div class="day-badge">${esc(sc.title)} · 与${esc(c.name)}</div>
+    <div class="card" style="border-left:3px solid ${c.color}">
+      <p style="line-height:1.95;font-size:14px;white-space:pre-line">${esc(sc.beats[idx])}</p>
+    </div>
+    <button class="btn ${last?"primary":""}" onclick="openPersonalScene('${cid}',${idx+1})">${last?"📎 记下这一幕":"……"}</button>
+    ${last?"":`<button class="btn ghost" onclick="personalSkip('${cid}')">先走了</button>`}
+  </div>`;
+}
+function personalSkip(cid){
+  try{ renderArea(S.currentZone); }catch(e){ S.tab="map"; render(); }
+}
+
+/* ================= ② 电话 · 没有名字的号码 ================= */
+let __dial="";
+let __callRingT=null,__callRingOn=false;
+const BUSY_LINES={
+  sunwoo:"响了两声就断。像有人看着屏幕，想了想，按掉了。",
+  q:"忙音。但忙音底下有一层很轻的、笑出声的气音。",
+  eric:"通了半秒，那边喊了句什么，被风吃掉一半，然后挂断。",
+  new:"您拨打的电话暂时无人接听。提示音的女声很平静，平静得像背了一万遍。",
+  sangyeon:"响到第五声。第五声之后不是忙音，是有人在听筒那头轻轻吸了一口气——然后才忙音。",
+  jacob:"接通了。那边很吵，像深夜的游乐园不该有的吵。有人小声说了句 sorry，挂了。",
+  juyeon:"忙音。你身后木马的音乐，比听筒里的忙音响。",
+  younghoon:"您拨打的电话正在通话中。可你记得，今晚没有人打给他。",
+  hyunjae:"响了一声，被掐断。再拨，是空号。第三次，又是响一声被掐断。",
+  kevin:"接通了。那边放着走马灯一样的音乐，有人跟着哼，调子比你听过的都高。"
+};
+function phoneLog(t){
+  try{ addRecord("电话", t); }catch(e){}
+}
+function renderPhoneApp(){
+  try{ if(typeof playUiSfx==="function") playUiSfx("settings"); }catch(e){}
+  const screen=document.getElementById("screen");
+  const keys=[["1",""],["2","ABC"],["3","DEF"],["4","GHI"],["5","JKL"],["6","MNO"],["7","PQRS"],["8","TUV"],["9","WXYZ"],["*",""],["0","+"],["#",""]];
+  const cnt=S.flags.callSelfCount||0;
+  const day=S.day||1;
+  const done=(S.flags.callSelfDone&&cnt>=3);
+  const hint=done
+    ? "再拨过去，是空号。它把号码也注销了。"
+    : (cnt===0?"没有名字。备注栏是空的。点「呼叫」。"
+      :cnt===1?"第一次：响了两声就断。再打一次。"
+      :cnt===2?"刚才有呼吸声。节奏跟你的重合。最后一次了。":"");
+  const rows=CHARS.map(c=>{
+    return `<div class="call-row"><span style="width:26px;height:26px;border-radius:50%;background:${c.color};display:flex;align-items:center;justify-content:center;font-size:12px">${c.emoji}</span><span class="cn">${esc(c.name)}</span><button class="chip" onclick="dialContact('${c.id}')">呼叫</button></div>`;
+  }).join("");
+  screen.innerHTML=`<div>
+    <button class="back-btn" onclick="S.tab='more';render()">← 返回</button>
+    <h3>电话</h3>
+    <div class="dial-wrap">
+      <div class="dial-num" id="dialNum">${esc(__dial)||"<span style='opacity:.3'>输入号码</span>"}</div>
+      <div class="dial-grid">${keys.map(k=>`<button class="dial-key" onclick="dialKey('${k[0]}')">${k[0]}<small>${k[1]||"&nbsp;"}</small></button>`).join("")}</div>
+      <button class="dial-call" onclick="dialGo()">📞</button>
+      <div class="dial-sub">没有信号条。但拨号音是正常的。<br>2947 之外，这个园区的号码你只记得一个。</div>
+    </div>
+    <p class="muted" style="margin:14px 0 6px">通讯录</p>
+    ${rows}
+    <div class="call-row" style="border-color:rgba(192,57,43,.5)">
+      <span style="width:26px;height:26px;border-radius:50%;background:#1a1216;display:flex;align-items:center;justify-content:center;font-size:12px">📞</span>
+      <span class="cn">没有名字的号码<br><span class="cs">${esc(hint)}</span></span>
+      <button class="chip" ${done?"disabled":""} onclick="dialSelf()">${done?"空号":"呼叫"}</button>
+    </div>
+  </div>`;
+}
+function dialKey(k){
+  if(__dial.length>=12) return;
+  __dial+=k;
+  try{ if(typeof playUiSfx==="function") playUiSfx("more"); }catch(e){}
+  const el=document.getElementById("dialNum");
+  if(el) el.textContent=__dial;
+}
+function dialGo(){
+  if(!__dial){ toast("先输号码"); return; }
+  drainBattery(2); advanceTime(2);
+  if(__dial==="2947"){
+    __dial="";
+    const first=!S.flags.dialPark;
+    S.flags.dialPark=1;
+    gainAnomaly(1);
+    phoneLog(first
+      ? "拨了空地的密码。接通了。三秒，只有风声，和很远很远的木马音乐——升了不止一个调。然后挂断。"
+      : "又拨了一次。这次连风都没有。只有拨号音，一直在响，像在等你把它说完。");
+    toast(first?"……接通了？":"只有拨号音。");
+    return;
+  }
+  __dial="";
+  toast(Math.random()<0.5?"您拨打的号码是空号":"您拨打的号码是空号。这次连提示音都懒得多说。");
+}
+function dialContact(cid){
+  const c=CHARS.find(x=>x.id===cid); if(!c) return;
+  drainBattery(2); advanceTime(2);
+  toast("呼叫 "+c.name+"……");
+  setTimeout(function(){
+    toast("听筒："+(BUSY_LINES[cid]||"忙音。"));
+    phoneLog("给"+c.name+"打了电话。"+(BUSY_LINES[cid]||"忙音。"));
+    gainAnomaly(1);
+  },1400);
+}
+function dialSelf(){
+  drainBattery(3); advanceTime(3);
+  const cnt=(S.flags.callSelfCount||0)+1;
+  S.flags.callSelfCount=cnt;
+  const day=S.day||1, h=S.hour||0;
+  if(cnt===1){
+    toast("响了两声。挂了。");
+    phoneLog("第一次拨那个没有名字的号码。响了两声，就断了。断得很干脆，像有人在另一头盯着屏幕。");
+    renderPhoneApp(); return;
+  }
+  if(cnt===2){
+    toast("接通了。有人……在呼吸。");
+    phoneLog("第二次拨。接通了。三秒，只有呼吸声。很近。节奏跟我的重合——我数了，一模一样。然后挂断。");
+    gainAnomaly(1);
+    renderPhoneApp(); return;
+  }
+  if(day<2||h<21){
+    toast("这次是空号。换个时间再打。");
+    S.flags.callSelfCount=2;
+    phoneLog("再拨。空号。明明刚才还接通过。可能要在更深的夜里打。");
+    renderPhoneApp(); return;
+  }
+  S.flags.callSelfDone=true;
+  gainAnomaly(2);
+  addKeyword("别接");
+  phoneLog("第三次。接通了。听筒里是一个声音——是我的声音。它只说了两个字：「别接。」然后忙音。我不知道它在警告谁。");
+  setTimeout(function(){ spVeil("听筒里是你的声音。\n它说：别接。"); },900);
+  renderPhoneApp();
+}
+/* —— 深夜来电 —— */
+function callTick(){
+  try{
+    if(!S||!S.playerName||S.flags.ended||S.flags.deadBattery) return;
+    if(S.flags.incomingDone||S.flags.incomingActive) return;
+    const d=S.day||1, h=S.hour||0;
+    if(d<2||h<2||h>=4) return;
+    if(!S.flags.callSelfDone) return;   // 先接过自己，夜里的电话才会来
+    S.flags.incomingActive=1;
+    showIncomingCall(false);
+  }catch(e){}
+}
+function pmRingTone(){
+  try{
+    const ac=voiceCtx(); if(!ac) return;
+    const now=ac.currentTime;
+    const vol=(typeof window.__ambienceVol==="number"?window.__ambienceVol:48)/100;
+    [622,466].forEach(function(f,i){
+      const o=ac.createOscillator(); o.type="sine"; o.frequency.value=f;
+      const g=ac.createGain();
+      g.gain.setValueAtTime(0,now);
+      g.gain.linearRampToValueAtTime(0.11*vol,now+0.05+i*0.25);
+      g.gain.setValueAtTime(0.11*vol,now+0.4+i*0.25);
+      g.gain.linearRampToValueAtTime(0,now+0.55+i*0.25);
+      o.connect(g); g.connect(ac.destination);
+      o.start(now); o.stop(now+0.6+i*0.25);
+    });
+  }catch(e){}
+}
+function showIncomingCall(second){
+  const phone=document.getElementById("phone");
+  if(!phone) return;
+  const old=document.getElementById("pmCall"); if(old) old.remove();
+  if(__callRingT){ clearInterval(__callRingT); }
+  __callRingT=setInterval(pmRingTone,1900);
+  setTimeout(pmRingTone,60);
+  const el=document.createElement("div");
+  el.className="pm-call"; el.id="pmCall";
+  const declined=second?"已经拒接过一次了。它不打算算了。":"";
+  el.innerHTML=`<div class="pc-badge">来 电</div>
+    <div class="pc-num">没有名字的号码</div>
+    <div class="pc-sub">凌晨两点四十。园区里早就没有人了。<br>${declined}</div>
+    <div class="pc-btns">
+      <button class="pc-btn pc-decline" ${second?"disabled style='opacity:.35'":""} onclick="answerIncoming(false)">✕</button>
+      <button class="pc-btn pc-accept" onclick="answerIncoming(true)">✓</button>
+    </div>
+    ${second?"<div class='pc-nod'>无法拒接</div>":"<div class='pc-nod'>响铃中 · 不接会一直响到没电</div>"}`;
+  phone.appendChild(el);
+  S.flags.incomingTimer=setTimeout(function(){
+    if(!document.getElementById("pmCall")) return;
+    stopIncomingUI();
+    S.flags.incomingDone=1;
+    drainBattery(5);
+    phoneLog("凌晨的电话响了很多声。我一直没接。它自己停了。电量掉了 5%。它下决心打来，等得起，但不会永远等。");
+    toast("电话停了。");
+  },32000);
+}
+function stopIncomingUI(){
+  if(__callRingT){ clearInterval(__callRingT); __callRingT=null; }
+  try{ if(S.flags.incomingTimer) clearTimeout(S.flags.incomingTimer); }catch(e){}
+  const el=document.getElementById("pmCall"); if(el) el.remove();
+}
+function answerIncoming(accept){
+  if(!accept){
+    stopIncomingUI();
+    S.flags.incomingActive=0;
+    toast("拒接。");
+    setTimeout(function(){ S.flags.incomingActive=1; showIncomingCall(true); },2600);
+    return;
+  }
+  stopIncomingUI();
+  const phone=document.getElementById("phone");
+  const el=document.createElement("div");
+  el.className="pm-call"; el.id="pmCall";
+  const lines=[
+    "电流声。很远。",
+    "……",
+    "背景里有木马的音乐。升了很多个调，你数不清了。",
+    "一个声音开口了。很轻。",
+    "「别接。」",
+    "——那是你的声音。"
+  ];
+  el.innerHTML=`<div class="pc-badge">通话中 00:0<span id="pcSec">1</span></div>
+    <div class="pc-num">没有名字的号码</div>
+    <div class="pc-log" id="pcLog">${lines.map((l,i)=>`<div style="animation-delay:${i*1.4}s">${esc(l)}</div>`).join("")}</div>
+    <div class="pc-btns"><button class="pc-btn pc-decline" onclick="hangIncoming()">✕</button></div>
+    <div class="pc-nod">听筒很烫</div>`;
+  phone.appendChild(el);
+  let sec=1;
+  const si=setInterval(function(){
+    sec++; const t=document.getElementById("pcSec");
+    if(t) t.textContent=Math.min(9,sec);
+    if(sec>=10){ clearInterval(si); hangIncoming(); }
+  },1400);
+}
+function hangIncoming(){
+  stopIncomingUI();
+  S.flags.incomingDone=1;
+  S.flags.incomingActive=0;
+  drainBattery(4);
+  gainAnomaly(2);
+  addKeyword("别接");
+  phoneLog("凌晨的电话。我接了。听筒里先是电流，然后是木马的音乐——升了很多个调。最后有一个声音说「别接」。那是我的声音。它没有解释它在警告谁。");
+  spVeil("你听见自己的声音。\n它说：别接。");
+}
+
+/* ================= ① 手机自己动 · 界面不等你 ================= */
+const __stay={tab:"",since:0};
+let __ghostTypingBusy=false;
+let __cbTimer=null,__cbGain=null,__cbPass=0;
+
+function selfMoveTick(){
+  try{
+    if(!S||!S.playerName||S.flags.ended||S.flags.deadBattery) return;
+    /* 木马音乐盒：只在木马区的区域视图里响，每转一圈升一个半音 */
+    const inCarousel = S.currentZone==="carousel" && !!document.querySelector(".area-view");
+    const passNow = Math.max(1,Math.min(8,(S.flags.carouselPass||1)));
+    if(inCarousel && (__cbPass!==passNow || !__cbTimer)){ carouselBoxStop(); __cbPass=passNow; carouselBoxStart(); }
+    if(!inCarousel && __cbTimer){ carouselBoxStop(); __cbPass=0; }
+
+    const t=S.chatWith?"chat":(S.tab||"home");
+    const now=Date.now();
+    if(__stay.tab!==t){ __stay.tab=t; __stay.since=now; return; }
+    if(t!=="album") return;
+    if(S.flags.selfMoved) return;
+    const d=S.day||1, h=S.hour||0;
+    if(!(d>=2||h>=20)) return;
+    if((now-__stay.since)<38000) return;
+    S.flags.selfMoved=1;
+    selfMoveJump();
+  }catch(e){}
+}
+
+function selfMoveJump(){
+  const phone=document.getElementById("phone");
+  if(!phone) return;
+  try{ if(typeof playUiSfx==="function") playUiSfx("album"); }catch(e){}
+  phone.classList.add("pm-jerk");
+  setTimeout(()=>phone.classList.remove("pm-jerk"),600);
+  setTimeout(function(){
+    const ov=document.createElement("div");
+    ov.className="pm-black";
+    phone.appendChild(ov);
+    setTimeout(function(){ ov.remove(); },500);
+  },260);
+  setTimeout(function(){
+    S.tab="notes"; S.chatWith=null;
+    try{ render(); }catch(e){}
+    try{ drainBattery(1); }catch(e){}
+    setTimeout(selfMoveGhostLine,320);
+  },540);
+  setTimeout(function(){
+    try{ addRecord("手机 · 自己翻页","我没有碰屏幕。相册自己退出去，停在备忘录上。顶部有一行不是我打的字，一个字一个字出来，光标一直在闪。"); }catch(e){}
+  },900);
+}
+
+function selfMoveGhostLine(){
+  const screen=document.getElementById("screen");
+  if(!screen) return;
+  let runs=0;
+  try{ const m=loadMem(); runs=m.runs||0; }catch(e){}
+  const d=S.day||1;
+  let txt="你翻到第几张了";
+  if(runs>=1) txt="这一页你上一轮也看过";
+  else if(d>=3) txt="第十一张在哪儿";
+  const el=document.createElement("div");
+  el.className="pm-ghostline";
+  el.innerHTML='<span class="pm-gtext"></span><i class="pm-gcaret"></i>';
+  screen.insertBefore(el,screen.firstChild);
+  const t=el.querySelector(".pm-gtext");
+  let i=0;
+  const iv=setInterval(function(){
+    t.textContent=txt.slice(0,++i);
+    if(i>=txt.length){
+      clearInterval(iv);
+      setTimeout(function(){ el.classList.add("pm-gfade"); },3200);
+      setTimeout(function(){ el.remove(); },4700);
+    }
+  },130);
+}
+
+/* 聊天页：键盘自己弹起来，打字，再一个个删掉 */
+function maybeGhostTyping(cid){
+  if(__ghostTypingBusy) return;
+  if(!S||S.flags.ended||S.flags.deadBattery) return;
+  if(S.flags.ghostTyped) return;
+  if(!cid||cid==="unknown") return;
+  if((S.day||1)<2) return;
+  if((S.hour||0)<21) return;
+  const phone=document.getElementById("phone");
+  if(!phone) return;
+  __ghostTypingBusy=true;
+  S.flags.ghostTyped=1;
+  const box=document.createElement("div");
+  box.className="pm-typing";
+  box.innerHTML='<span class="pm-tkey">⌨</span><span class="pm-ttext"></span><i class="pm-tcaret"></i>';
+  phone.appendChild(box);
+  const txt=box.querySelector(".pm-ttext");
+  const seq=["我一直在你后面","别回头","你刚才是不是把手机拿远了一点","……"];
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  (async function(){
+    await sleep(900);
+    for(const line of seq){
+      for(let i=1;i<=line.length;i++){ txt.textContent=line.slice(0,i); await sleep(155); }
+      await sleep(1150);
+      if(line!==seq[seq.length-1]){
+        for(let i=line.length;i>=0;i--){ txt.textContent=line.slice(0,i); await sleep(55); }
+        await sleep(520);
+      }
+    }
+    await sleep(1500);
+    box.classList.add("pm-gfade");
+    await sleep(1200);
+    box.remove();
+    __ghostTypingBusy=false;
+    try{ addRecord("聊天 · 输入框","键盘自己弹起来，一个字一个字打出来，又一个个删掉。我什么都没按。最后停住的那两个字是：别回头。"); }catch(e){}
+    try{ gainAnomaly(1); }catch(e){}
+  })();
+}
+
+/* 木马八音盒：第 N 圈升 N-1 个半音 */
+function carouselBoxStop(){
+  if(__cbTimer){ clearInterval(__cbTimer); __cbTimer=null; }
+  if(__cbGain){ try{ __cbGain.gain.cancelScheduledValues(0); __cbGain.gain.value=0; }catch(e){} }
+  __cbGain=null;
+}
+function carouselBoxStart(){
+  if(__cbTimer) return;
+  let ac=null;
+  try{ ac=(typeof voiceCtx==="function")?voiceCtx():null; }catch(e){}
+  if(!ac) return;
+  const pass=Math.max(1,Math.min(8,(S.flags.carouselPass||1)));
+  const shift=Math.pow(2,(pass-1)/12);
+  const vol=(typeof window.__ambienceVol==="number"?window.__ambienceVol:48)/100;
+  const master=ac.createGain();
+  master.gain.value=Math.max(0.02,0.07*vol);
+  master.connect(ac.destination);
+  __cbGain=master;
+  const seq=[0,4,7,12,7,4,0,-5];
+  let i=0;
+  const tick=function(){
+    const f=523.25*shift*Math.pow(2,seq[i%seq.length]/12);
+    const now=ac.currentTime;
+    const o=ac.createOscillator(); o.type="triangle"; o.frequency.value=f;
+    const o2=ac.createOscillator(); o2.type="sine"; o2.frequency.value=f*2.004;
+    const g=ac.createGain();
+    g.gain.setValueAtTime(0,now);
+    g.gain.linearRampToValueAtTime(0.5,now+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0015,now+1.05);
+    const g2=ac.createGain(); g2.gain.value=0.16;
+    o.connect(g); o2.connect(g2); g2.connect(g); g.connect(master);
+    o.start(now); o2.start(now); o.stop(now+1.1); o2.stop(now+1.1);
+    i++;
+  };
+  tick();
+  __cbTimer=setInterval(tick,640);
+}
+
 function horrorTick(){
   if(!S || !S.playerName || S.flags.ended || S.flags.deadBattery) return;
   const d=S.day||1, h=S.hour||0;
@@ -10850,6 +11386,9 @@ window.onload=()=>{
     if(typeof eleventhTick==="function") eleventhTick();
     try{ if(typeof horrorTick==="function") horrorTick(); }catch(e){}
     try{ if(typeof hbCheck==="function") hbCheck(); }catch(e){}
+    try{ if(typeof selfMoveTick==="function") selfMoveTick(); }catch(e){}
+    try{ if(typeof callTick==="function") callTick(); }catch(e){}
+    try{ if(typeof metaStoneTick==="function") metaStoneTick(); }catch(e){}
   }, 4000);
   // 每 45 秒兜底存一次，防止长时间翻备忘录被清掉
   setInterval(()=>{ if(S.playerName && !S.flags.ended) autoSaveNow(); }, 45000);

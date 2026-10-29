@@ -1675,10 +1675,11 @@ const TIME_MULT = 1.2; // 兜底流速
    同一个倍数会让第一天 20 多个动作就烧完、第二天要一百个动作才熬过去。
    目标：每天 45~50 个动作走完。
    0.7 → 330/(10×0.7)≈47；3.0 → 1440/(10×3.0)=48；2.8 → 约 51（通常提前进结局） */
-const TIME_MULT_BY_DAY = {1:0.7, 2:3.0, 3:2.8};
+/* 4/5 天从傍晚起算（只有 6 小时），流速要压下来，不然黄昏起步的一天会短得来不及走完线索。
+   目标同样是 45~70 个动作走完一天。 */
+const TIME_MULT_BY_DAY = {1:0.7, 2:3.0, 3:2.8, 4:1.15, 5:1.0};
 function timeMult(){
-  const d=Math.min(3, S.day||1);
-  return TIME_MULT_BY_DAY[d] || TIME_MULT;
+  return TIME_MULT_BY_DAY[S.day||1] || TIME_MULT;
 }
 const DAY_INFO = {
   1:{
@@ -1954,6 +1955,16 @@ function advanceTime(mins, opts){
     S.hour-=24;
     S.day++;
   }
+  /* 第五天开始，园区只在傍晚之后发生事情。跨天时把钟拨回傍晚，
+     否则第四五天从 00:00 起步，玩家要几百个动作才走到夜里，夜戏全看不见。 */
+  if(S.day>prevDay && S.hour<12){
+    if(S.day===4){ S.hour=18; S.minute=0; }
+    else if(S.day>=5){ S.hour=17; S.minute=30; }
+  }
+  /* 第四五天重新开放突脸槽位：前两天用掉的聊天/地图/相册惊吓，最后两天可以再来一次 */
+  if(S.day>prevDay && S.day>=4 && !isShortMode()){
+    S.jumpUsed={chat:0,album:0,map:0,status:0,hidden:0};
+  }
   if(S.day > prevDay){
     for(let d=prevDay; d<S.day && d<=dayCap(); d++){
       if(typeof deliverDayEssays==="function") deliverDayEssays(d);
@@ -2148,16 +2159,23 @@ function charStatus(id){
 }
 
 // —— Jump faces ——
-function maybeJumpFace(kind, force){
-  if(S.jumpFaceCount>=5) return false;
+/* 突脸上限：三日版维持 5 次，五日版放到 7 次——第四五天本来就是惊吓最高的两天 */
+function jumpCap(){ return (typeof isShortMode==="function" && isShortMode()) ? 5 : 7; }
+function maybeJumpFace(kind, force, scripted){
+  /* scripted=true 是剧情演出：不吃 5 次上限、不占槽位，否则第四五天的 CG 会被前面用光 */
+  if(!scripted && S.jumpFaceCount>=jumpCap()) return false;
   const slot = kind==="album" ? "album" : kind; // photo→album in our slots
-  if(!force){
-    if(S.jumpUsed[slot]) return false;
-  } else if(S.jumpUsed[slot]) {
-    return false;
+  if(!scripted){
+    if(!force){
+      if(S.jumpUsed[slot]) return false;
+    } else if(S.jumpUsed[slot]) {
+      return false;
+    }
   }
-  S.jumpFaceCount++;
-  S.jumpUsed[slot]=1;
+  if(!scripted){
+    S.jumpFaceCount++;
+    S.jumpUsed[slot]=1;
+  }
   if(typeof ambienceScareSting==="function") try{ambienceScareSting();}catch(e){}
   const el=document.getElementById("jumpFace");
   const phone=document.getElementById("phone");
@@ -2182,23 +2200,23 @@ function maybeJumpFace(kind, force){
   return true;
 }
 /* —— 图片版贴脸：第四五天的 CG。尊重「突脸减弱」与 5 次上限 —— */
-function imgJumpFace(key, kind){
+function imgJumpFace(key, kind, scripted){
   try{
     if(S.flags.jumpReduce || S.flags.softScare) return false;
-    if((S.jumpFaceCount||0)>=5) return false;
+    if(!scripted && (S.jumpFaceCount||0)>=jumpCap()) return false;
     const src=(typeof PARK_IMG!=="undefined")?PARK_IMG[key]:null;
     if(!src) return false;
     const wrap=document.getElementById("jumpFaceWrap");
     const prev=wrap?wrap.innerHTML:"";
     if(wrap) wrap.innerHTML='<img src="'+src+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px">';
-    const ok=maybeJumpFace(kind||"album", true);
+    const ok=maybeJumpFace(kind||"album", true, !!scripted);
     setTimeout(function(){ const w=document.getElementById("jumpFaceWrap"); if(w) w.innerHTML=prev; },1400);
     return ok;
   }catch(e){ return false; }
 }
 /** Easier encounter rules for deep play */
 function tryChatJumpFace(cid){
-  if(S.jumpUsed.chat || S.jumpFaceCount>=5) return false;
+  if(S.jumpUsed.chat || S.jumpFaceCount>=jumpCap()) return false;
   const ph=charPhase(cid);
   // mid+ with night OR late with low bat OR day3
   const ok = (ph>=1 && isLateNight()) || (ph>=2 && isLowBat()) || (S.day>=3 && isLowBat()) || (S.day>=2 && isCritBat() && ph>=1);
@@ -2206,7 +2224,7 @@ function tryChatJumpFace(cid){
   return false;
 }
 function tryStatusJumpFace(){
-  if(S.jumpUsed.status || S.jumpFaceCount>=5) return false;
+  if(S.jumpUsed.status || S.jumpFaceCount>=jumpCap()) return false;
   if(S.battery < 28) return maybeJumpFace("status");
   return false;
 }
@@ -3188,7 +3206,7 @@ function openMenu(){
     <button class="btn" onclick="tryLeavePark();this.closest('.modal').remove()">🚪 离开游乐场</button>
     <button class="btn danger" onclick="if(confirm('确定清除？')){resetGame();this.closest('.modal').remove()}">🗑 重置</button>
     <button class="btn ghost" onclick="this.closest('.modal').remove()">关闭</button>
-    <p class="muted" style="margin-top:8px">电量 ${Math.ceil(S.battery)}% · 突脸 ${S.jumpFaceCount}/5 · 异常感知 ${S.flags.anomaliesSeen}</p>
+    <p class="muted" style="margin-top:8px">电量 ${Math.ceil(S.battery)}% · 突脸 ${S.jumpFaceCount}/${jumpCap()} · 异常感知 ${S.flags.anomaliesSeen}</p>
     <p class="muted">自动存档：每次对话、换区、切日都会写入${savedAtLabel()?"（最近 "+savedAtLabel()+"）":""}。切后台不会丢进度。</p>
   </div>`;
   wrap.addEventListener("click",e=>{if(e.target===wrap)wrap.remove();});
@@ -3264,7 +3282,7 @@ function getCollectionStats(){
   });
   // if empty never unlockable in tally, still show max 6 or 7
   const zonesDenom = ZONES.filter(z=>!z.hidden).length + (S.emptyUnlocked || visitSet.has("empty") ? 1 : 0);
-  const jumps = Math.min(5, S.jumpFaceCount||0);
+  const jumps = Math.min(jumpCap(), S.jumpFaceCount||0);
   const kws = (S.keywords||[]).length;
   const kwsMax = Math.max(12, kws); // soft cap display — use fixed target
   const kwTarget=18;
@@ -8401,7 +8419,7 @@ function endingCardFacts(){
   }catch(e){}
   return [
     "最常找的人 · "+topName,
-    "删除层 "+Math.min(3,S.deletedLayer||0)+"/3 · 异常感知 "+((S.flags&&S.flags.anomaliesSeen)||0)+" · 突脸 "+Math.min(5,(S.jumpFaceCount||0))+"/5",
+    "删除层 "+Math.min(3,S.deletedLayer||0)+"/3 · 异常感知 "+((S.flags&&S.flags.anomaliesSeen)||0)+" · 突脸 "+Math.min(jumpCap(),(S.jumpFaceCount||0))+"/"+jumpCap()+"",
     "第 "+Math.min(3,S.day||1)+" 天 · 剩余电量 "+Math.ceil(S.battery)+"%"
   ];
 }
@@ -8609,7 +8627,7 @@ function renderEnding(kind){
         <div><b>${S.deletedLayer}/3</b><span>删除层</span></div>
         <div><b>${S.flags.warningsIgnored||0}</b><span>无视警告</span></div>
         <div><b>${S.flags.anomaliesSeen||0}</b><span>异常感知</span></div>
-        <div><b>${S.jumpFaceCount}/5</b><span>突脸</span></div>
+        <div><b>${S.jumpFaceCount}/${jumpCap()}</b><span>突脸</span></div>
       </div>
       <p class="settle-note">危险区域：${esc(dangerStr)} · 身份：${esc(({staff:"工作人员",reporter:"记者",passerby:"路人"})[S.identity]||"—")}</p>
     </div>
@@ -8663,7 +8681,7 @@ function renderHiddenSettlement(){
         <div><b>${S.deletedLayer}/3</b><span>删除层</span></div>
         <div><b>${S.flags.warningsIgnored||0}</b><span>无视警告</span></div>
         <div><b>${S.flags.anomaliesSeen||0}</b><span>异常感知</span></div>
-        <div><b>${S.jumpFaceCount}/5</b><span>突脸</span></div>
+        <div><b>${S.jumpFaceCount}/${jumpCap()}</b><span>突脸</span></div>
       </div>
       <p class="settle-note">危险区域：${esc(dangerBits.length?dangerBits.join("、"):"未踏入")} · ${esc(identityAttitudeHint())}</p>
     </div>
@@ -8972,6 +8990,36 @@ function showPhone(){
   S.view="phone";
   updateStatus();
 }
+/* —— 第四五天 · 剧本贴脸 ——
+   这两次是剧情，不是随机：不吃 5 次上限，也不跟相册槽位抢。
+   触发条件放宽到“晚上 + 关键节点”，因为到了第四五天，玩家很难真的熬到 22 点。 */
+function scriptedFaceCheck(tab){
+  if(!S || S.flags.ended) return;
+  const day=S.day||1, h=S.hour||0;
+  const d4 = (day===4) && (h>=19 || (h>=17 && S.flags.g10hot3));
+  const d5 = (day===5) && (h>=18 || (h>=16 && S.flags.g10hot3));
+  if(d4 && !S.flags.sp_facecg){
+    S.flags.sp_facecg="pending";
+    setTimeout(function(){
+      const ok=imgJumpFace("facecg","album",true);
+      if(!ok){ S.flags.sp_facecg=""; return; }
+      S.flags.sp_facecg=1;
+      try{ gainAnomaly(1); }catch(e){}
+      try{ addRecord("深夜 · 不属于名单的脸","屏幕黑下去之前，有一张脸贴得很近，笑得很用力。十个人的名单里，没有这样一张脸。它笑的时候，像是在替谁练习。"); }catch(e){}
+    },600);
+    return;
+  }
+  if(d5 && !S.flags.sp_facecg5){
+    S.flags.sp_facecg5="pending";
+    setTimeout(function(){
+      const ok=imgJumpFace("emptycg","album",true);
+      if(!ok){ S.flags.sp_facecg5=""; return; }
+      S.flags.sp_facecg5=1;
+      try{ gainAnomaly(1); }catch(e){}
+      try{ addRecord("最后一夜 · 木马不在了","相册自己跳了一下。木马不在园区里——它在栅栏外面那块空地上，鞍上没有人。草倒向四面，像刚散场。"); }catch(e){}
+    },600);
+  }
+}
 function gotoTab(tab){
   if(S.flags.deadBattery){ renderDeadBattery(); return; }
   if(typeof playUiSfx==="function") playUiSfx(tab==="home"?"home":tab);
@@ -8981,22 +9029,7 @@ function gotoTab(tab){
   if(tab==="menu"){ openMenu(); return; }
   if(tab==="day"){ showDayCard(S.day,{instant:true}); return; }
   S.tab=tab; S.chatWith=null;
-  if((tab==="chat"||tab==="album") && S.day>=4 && S.day<5 && (S.hour||0)>=22 && !S.flags.sp_facecg){
-    S.flags.sp_facecg=1;
-    setTimeout(function(){
-      imgJumpFace("facecg","album");
-      try{ gainAnomaly(1); }catch(e){}
-      try{ addRecord("深夜 · 不属于名单的脸","屏幕黑下去之前，有一张脸贴得很近，笑得很用力。十个人的名单里，没有这样一张脸。它笑的时候，像是在替谁练习。"); }catch(e){}
-    },600);
-  }
-  if(tab==="album" && S.day>=5 && (S.hour||0)>=21 && !S.flags.sp_facecg5){
-    S.flags.sp_facecg5=1;
-    setTimeout(function(){
-      imgJumpFace("emptycg","album");
-      try{ gainAnomaly(1); }catch(e){}
-      try{ addRecord("最后一夜 · 木马不在了","相册自己跳了一下。木马不在园区里——它在栅栏外面那块空地上，鞍上没有人。草倒向四面，像刚散场。"); }catch(e){}
-    },600);
-  }
+  if(typeof scriptedFaceCheck==="function") scriptedFaceCheck(tab);
   if(tab==="chat"){ ensureSeedChats(); tryPushNewBeats(); }
   drainBattery(0.5);
   advanceTime(1);
@@ -11314,6 +11347,83 @@ const CROOK_WHISPERS = {
     {t:"你在名单上。不在游客那一页。别翻到那一页看。", k:"名单"},
     {t:"检票口数人头，十一个。我数了三遍。我不敢数第四遍。", k:"十一", mark:"tell2"},
   ],
+  sunwoo: [
+    {t:"睡了吗。没睡就回我一个字，什么都行。", k:"睡"},
+    {t:"刚在后台喊你名字，喊了三遍。第三遍有人替我答应了。", k:"名字"},
+    {t:"ㅋㅋ没事。我最近老是对着关掉的麦说话。", k:"麦"},
+    {t:"台上灯一开，底下全是空座位。可刚才有人在我耳机里鼓掌。", k:"鼓掌"},
+    {t:"名单我念到第七个就停了。第八个不是名字，是呼吸声。", k:"第八个"},
+    {t:"你别接电话。我这边拨出去的，接的人声音都跟你一样。", k:"电话"},
+    {t:"我数了下，今晚园里比白天多一个人。多的那个不走路，是滑过来的。", k:"多一个"},
+    {t:"如果我突然 rap 得很慢，那不是忘词。是我在听后面有没有人跟着唱。", k:"跟着"},
+    {t:"你把耳朵贴在手机上。我在这头，替你数到十。", k:"数到十"},
+  ],
+  q: [
+    {t:"规则我试过了。三条都是真的。第四条没人写，但也在生效。", k:"第四条"},
+    {t:"兔子今天不跳了。它蹲在木马下面，面朝空地。", k:"兔子"},
+    {t:"我拍了一张照片。洗出来是我在拍。", k:"洗出来"},
+    {t:"别对着镜子笑。它会比你先笑完。", k:"镜子"},
+    {t:"我刚才试了一句「我要出去」。闸机开了。我没敢走。", k:"我要出去"},
+    {t:"地图每天多一条路，画在同一个位置。走进去的人不算游客。", k:"多一条路"},
+    {t:"你知道他们为什么只在夜里发消息吗。白天他们得站在光里，光会照出脚底下没有影子。", k:"没有影子"},
+    {t:"我把三个人的名字划掉了。划掉的地方，纸自己长回来。", k:"划掉"},
+    {t:"我数过你在园里待了几个小时。那个数字比我来得还早。", k:"几个小时"},
+  ],
+  eric: [
+    {t:"哥！你在哪一盏灯下面？我找不到你。", k:"灯"},
+    {t:"我一盏一盏找过去的。第七盏下面站着一个人，穿你的衣服。", k:"第七盏"},
+    {t:"他不动。我叫他他也不回头。我就没再叫第二声。", k:"不回头"},
+    {t:"ㅠㅠ你别怕。我在。我一直在。", k:"我在"},
+    {t:"广播刚才念了闭园时间。念完之后又补了一句「还有一位」。", k:"还有一位"},
+    {t:"我把手机灯关了。黑暗里有人跟我一起数「一、二、三」。", k:"黑暗"},
+    {t:"我小时候怕黑。现在不怕了。现在我更怕亮着的地方。", k:"亮"},
+    {t:"如果明天你看见我站在灯下不动，别喊我。喊了我就得跟你走。", k:"别喊"},
+    {t:"哥，我把灯全打开了。你数一下有几盏。数完别告诉我数字。", k:"全开"},
+  ],
+  new: [
+    {t:"今晚的风是从园子里往外吹的。这不正常。", k:"风"},
+    {t:"我站在喷泉边听。水声里夹着有人在念日期。", k:"日期"},
+    {t:"念的是今天。可它念了五遍今天。", k:"五遍"},
+    {t:"我不喜欢这个园区。它干净得太快了。脚印、糖纸、水渍，一转身就没有。", k:"太干净"},
+    {t:"我跟着风走，走回了出发的地方。第三次了。", k:"第三次"},
+    {t:"你说话的时候我会听回声。今天你的回声比你慢半拍。", k:"回声"},
+    {t:"有人在我背后学我呼吸。学得很准，就是不会换气。", k:"换气"},
+    {t:"我捂住耳朵就听不见了。可是风还在。风是从我耳朵里面出来的。", k:"耳朵里"},
+    {t:"他们在数人数。数到第十一个的时候，风停了。", k:"第十一"},
+  ],
+  sangyeon: [
+    {t:"都回房间了没有。回我一句，我要数。", k:"数"},
+    {t:"一、二、三……我数到九就得睡。第十个明天再数。", k:"九"},
+    {t:"今天多了一个。我让他们排好队，多的那个站在最后。", k:"最后"},
+    {t:"队长这个位置，就是最后一个走的人关灯。今天灯不是我关的。", k:"关灯"},
+    {t:"别一个人去空地。要去，带上我。带上我，也不算两个人。", k:"带上我"},
+    {t:"我每晚点一次名。点到你的名字时，会有人替你说「到」。", k:"到"},
+    {t:"我把门锁了两遍。早上起来是开着的。锁孔里有草。", k:"锁"},
+    {t:"照顾人这件事做久了，会分不清谁在照顾谁。", k:"照顾"},
+    {t:"如果我明天开始记不住你们的名字，别纠正我。跟着我一起忘。", k:"忘"},
+  ],
+  jacob: [
+    {t:"火我守着呢。你先别过来，这边冷。", k:"火"},
+    {t:"我带了毯子。三条。我们一共几个人来着。", k:"毯子"},
+    {t:"刚才有人在火堆外面站着。一直站到火小下去。", k:"外面"},
+    {t:"我给每个人都留了位置。有一个位置，坐下去会陷一点。", k:"位置"},
+    {t:"猎人不是打猎的。猎人是把跑出去的人带回来的那个。", k:"猎人"},
+    {t:"你别跑。你跑了我得去找你，找到你的时候我会不太像我。", k:"别跑"},
+    {t:"我煮了东西。十碗。我没数错，我数了两遍。", k:"十碗"},
+    {t:"火光照不到的地方我不管。可它刚才照到了一个人的鞋。", k:"鞋"},
+    {t:"明天早上要是火灭了，别叫醒我。让我再睡一会儿。就一会儿。", k:"火灭了"},
+  ],
+  hyunjae: [
+    {t:"今天过得开心吗。别答。我就是想听你打字的动静。", k:"开心"},
+    {t:"我说个好消息：你今晚不会一个人睡。", k:"好消息"},
+    {t:"坏消息我包起来放抽屉了。抽屉锁着，钥匙也在里面。", k:"抽屉"},
+    {t:"我这人不太会说实话。所以你现在看到的这句，你可以不信。", k:"不信"},
+    {t:"有几条未读。你别数。数不完的。", k:"未读"},
+    {t:"我在你手机上留了个东西。不在相册里，也不在聊天里。找不到就算了。", k:"留了"},
+    {t:"他们说我话多。其实我只是怕安静下来，会听见谁的呼吸。", k:"安静"},
+    {t:"我对你说过的每句好话都是真的。这句是假的。", k:"假的"},
+    {t:"要是最后你只能带走一个人，别选我。我会笑着答应的。", k:"别选我"},
+  ],
 };
 function crookWhisper(cid){
   const t=triGet();
@@ -11354,16 +11464,27 @@ function eleventhTick(){
     if(b) injectBeat("hyunjae", b);
   }
 }
-/* 到点就漏一句。越晚越频繁，偏执越高越频繁 */
+/* 到点就漏一句。越晚越频繁，偏执越高越频繁。
+   十个人都在这张名单上，但不能同一秒全响——按“最久没说话”的顺序轮，每天限量。 */
+function crookGapOf(cid){
+  const t=triGet();
+  const base=Math.max(20, 62-(t.paranoia||0)*0.35)-(S.day-1)*7;
+  const jit=(cid.charCodeAt(0)+cid.length*3)%9;   /* 每人错开几分钟，别齐声 */
+  return base+jit;
+}
 function crookTick(){
   const t=triGet();
   if(S.flags.ended) return;
   if(!S.flags.crookNext) S.flags.crookNext={};
   const now=absMin();
+  const due=[];
   Object.keys(CROOK_WHISPERS).forEach(function(cid){
-    const gap=Math.max(18, 60-(t.paranoia||0)*0.35)-(S.day-1)*8;
-    const last=S.flags.crookNext[cid]||0;
-    if(now-last<gap) return;
+    if(now-(S.flags.crookNext[cid]||0)>=crookGapOf(cid)) due.push(cid);
+  });
+  if(!due.length) return;
+  due.sort(function(a,b){ return (S.flags.crookNext[a]||0)-(S.flags.crookNext[b]||0); });
+  const cap=Math.min(3, 1+Math.floor(((S.day||1)-1)/2));  /* D1:1 D3:2 D5:3 */
+  due.slice(0,cap).forEach(function(cid){
     S.flags.crookNext[cid]=now;
     crookWhisper(cid);
   });

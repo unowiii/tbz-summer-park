@@ -2263,7 +2263,7 @@ function updateStatus(){
   const stripDay=document.getElementById("stripDay");
   const stripTone=document.getElementById("stripTone");
   if(!sbB) return;
-  const label = dayLabel()+" · "+(typeof clockLabel==="function"?clockLabel():fmtTime());
+  const label = dayLabel()+" · "+realTime(); /* 状态栏说真话；时间故障演出只留在大时钟 */
   if(sbClock){
     let cTxt = isRealLate() ? (label + " ／ " + realClockText()) : label;
     if(__erodeClockShift) cTxt = shiftClock(cTxt, __erodeClockShift);

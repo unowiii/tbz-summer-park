@@ -7079,6 +7079,36 @@ const COMP_ZONES = {
   });
 })();
 
+/* —— 五日深化 · 第二批：D2 校对 beat / D5 告别补全 —— */
+(function(){
+  const ADD2={
+    sunwoo:[
+      {id:"swd2p",phase:1,minDay:2,lines:[{from:"them",text:"跟你说个好笑的。昨天排队的时候，前面那个人把票根叼在嘴里学鸟叫——"},{from:"them",text:"……我昨天是不是已经讲过这个了？没有吗。那再笑一遍，这次算新的。"}],replies:[{label:"昨天讲过了",type:"质疑",att:2,push:1},{label:"再笑一遍",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]},
+      {id:"swd5b",phase:2,minDay:5,lines:[{from:"them",text:"（最后一条。）闭园曲刚才响了，我跟着唱。唱到一半忘词了。"},{from:"them",text:"我从来没有忘过词。这句你就当是证据——我有点不想让你走。"}],replies:[{label:"我不走远",type:"安抚",att:3,push:0},{label:"忘词的是你吗",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}]}
+    ],
+    new:[
+      {id:"nwd2p",phase:1,minDay:2,lines:[{from:"them",text:"你昨天在灯牌下面站了一会儿。风把发箍吹歪了。"},{from:"them",text:"……我说的昨天。你昨天，去灯牌了吗？"}],replies:[{label:"我昨天没去过",type:"质疑",att:3,push:1,anomaly:1,kw:"昨天"},{label:"可能去过",type:"安抚",att:1,push:0},{label:"……",type:"忽视",att:0,push:0}]}
+    ],
+    sangyeon:[
+      {id:"syd5b",phase:2,minDay:5,lines:[{from:"them",text:"名单改到最后一版了。一共十一行。"},{from:"them",text:"第十行以后我没再数。数到底会少一个人。没数完的时候，就还都在。"}],replies:[{label:"第十一行是谁",type:"追问",att:3,push:1,anomaly:1,kw:"十一行"},{label:"别数了",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]}
+    ],
+    juyeon:[
+      {id:"jyd5b",phase:2,minDay:5,lines:[{from:"them",text:"木马今晚转最后一圈。我在这里守着空座。"},{from:"them",text:"位置守得住。坐上去的人守不住。你出去以后，替我看一眼外面的木马——转不转。"}],replies:[{label:"我替你看",type:"安抚",att:3,push:0},{label:"空座在等谁",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}]}
+    ],
+    kevin:[
+      {id:"kvd5b",phase:2,minDay:5,lines:[{from:"them",text:"信写完了。落款空着，你回来我再签。"},{from:"them",text:"副歌我留了半句没唱。这里的东西都喜欢完整。这半句是我的，我带出去。"}],replies:[{label:"我等你的落款",type:"安抚",att:3,push:0},{label:"半句唱什么",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}]}
+    ],
+    eric:[
+      {id:"erd5",phase:2,minDay:5,lines:[{from:"them",text:"(名字)！！排队的事查清楚了！！我们入园那天，根本没有排队！！"},{from:"them",text:"那明天按什么顺序出去？……算了。按谁最舍不得的顺序。那我肯定第一个，你别跟我抢。"}],replies:[{label:"不跟你抢",type:"安抚",att:3,push:0},{label:"为什么没排队",type:"追问",att:3,push:1,anomaly:1,kw:"入园顺序"},{label:"……",type:"忽视",att:0,push:0}]}
+    ]
+  };
+  Object.keys(ADD2).forEach(function(k){
+    if(!DIALOGUE[k]) return;
+    const have={}; (DIALOGUE[k]||[]).forEach(function(b){ have[b.id]=1; });
+    ADD2[k].forEach(function(b){ if(!have[b.id]) DIALOGUE[k].push(b); });
+  });
+})();
+
 const HEART_BEATS = {
   sunwoo:[
     {text:"刚翻相册，翻到你今天在木马前的样子。不是我拍的——大概是你自己按到的。挺好。"},
@@ -10346,7 +10376,13 @@ const MEMBER_PHOTO_META={
 /* 合照热点：中央的变化只有停下来指认才成立 */
 function tapGroupHotspot(id){
   drainBattery(1);
-  if(id==="g10h2"){
+  if(id==="g10h1"){
+    if(!S.flags.g10hot1){
+      S.flags.g10hot1=1;
+      addRecord("合照 · 最右边","最右边留着一个位置。没有人站过去，也没有人朝那里看。像在等谁散场。");
+      showCluePopup("合照 · 最右边","最右边，还留着一个位置。\n没有人站过去，也没有人看它。\n散场以前，总要有位置是留给人的。",{tag:"细节指认"});
+    } else { toast("那个位置还空着。"); }
+  } else if(id==="g10h2"){
     if(!S.flags.g10hot2){
       S.flags.g10hot2=1; gainAnomaly(1);
       addRecord("合照 · 中央","这一块比第一遍暗。不是光线的问题——是那里站过什么东西，把底色吃掉了。");
@@ -10365,7 +10401,7 @@ function group10Version(){ return (S.day>=4||S.flags.ended)?3:(S.day>=2?2:1); }
 function openGroupPhoto(){
   drainBattery(1); advanceTime(3);
   const v=group10Version();
-  const g10hs = v===2 ? {x:54,y:36,id:"g10h2"} : v===3 ? {x:54,y:34,id:"g10h3"} : null;
+  const g10hs = v===2 ? {x:54,y:36,id:"g10h2"} : v===3 ? {x:54,y:34,id:"g10h3"} : v===1 ? {x:69,y:46,id:"g10h1"} : null;
   const g10hsHtml = g10hs ? `<button class="hotspot" style="left:${g10hs.x}%;top:${g10hs.y}%" onclick="tapGroupHotspot('${g10hs.id}')"></button>` : "";
   if(v>=2&&!S.flags.g10v2){ S.flags.g10v2=1; gainAnomaly(1); addRecord("合照 · 第二遍","色差，重影的时间戳。人数我数了两遍：第一遍十个，第二遍十一个。我告诉自己，第二遍数错了。"); }
   if(v>=3&&!S.flags.g10v3){ S.flags.g10v3=1; gainAnomaly(1); addKeyword("拿手机的人"); addRecord("合照 · 褪色","照片冷了下来。中间覆着的影子形状很稳。那不是多出来的人——那是拿手机的人。"); }
@@ -10591,6 +10627,49 @@ function horrorTick(){
       spVeil("所有你读过的东西，都变回没读过了。\n时间退回十分钟。");
     },1200);
     if(typeof addRecord==="function"){ try{ addRecord("凌晨之前 · 时间倒退","手机上的时间退回了十分钟。所有聊天都变成未读。你没有关掉过任何一个窗口。"); }catch(e){} }
+  }
+
+  /* 校对层 · 第二天夜里：一条昨天收到的消息，又被发来一遍。短了一点。 */
+  if(d===2 && h>=20 && !S.flags.proofMsg){
+    const pcids=Object.keys(S.chatLog||{}).filter(function(k){
+      return (S.chatLog[k]||[]).some(function(x){ return x.from==="them" && x.type==="text" && (x.text||"").length>6; });
+    });
+    if(pcids.length){
+      S.flags.proofMsg=1;
+      const pcid=pcids[Math.floor(Math.random()*pcids.length)];
+      const orig=(S.chatLog[pcid]||[]).filter(function(x){ return x.from==="them" && x.type==="text" && (x.text||"").length>6; })[0];
+      const cut=orig.text.slice(0, Math.max(4, orig.text.length-1-Math.floor(Math.random()*2)));
+      S.chatLog[pcid].push({from:"them",text:cut,type:"text",t:realTime(),read:false});
+      S.unread[pcid]=(S.unread[pcid]||0)+1;
+      try{ gainAnomaly(1); }catch(e){}
+      try{ addRecord("校对 · 重复","有一条消息出现了两遍。第二遍比第一遍短。短掉的部分，不是标点。"); }catch(e){}
+      setTimeout(function(){
+        S.chatLog[pcid].push({from:"them",text:"……这条你是不是读过。我没有发过第二遍。真的。",type:"text",t:realTime(),read:false});
+        S.unread[pcid]=(S.unread[pcid]||0)+1;
+        if(S.tab==="chat" && S.chatWith===pcid) try{ renderChat(pcid); }catch(e){}
+      },2800);
+    }
+  }
+
+  /* SP3V · 第三天深夜：声音比画面先出错（只找你说过话的人） */
+  if(d===3 && h>=21 && !S.flags.sp_voice){
+    S.flags.sp_voice=1;
+    const engaged=function(k){ return (S.chatLog[k]||[]).some(function(x){ return x.from==="them"||x.from==="me"; }); };
+    const V=[];
+    if(engaged("sunwoo")) V.push(["sunwoo","（广播里插进来一段笑声。是他的。笑到一半，停了。不是讲完的那种停。）"]);
+    if(engaged("kevin")) V.push(["kevin","（有琴声。你今晚没在琴房附近。琴声是从消息列表那一层漏上来的。）"]);
+    if(engaged("hyunjae")) V.push(["hyunjae","（对讲机的电流声里，有人叫了你的名字。声音是他的。他不在这层楼。）"]);
+    if(!V.length) V.push(["hyunjae","（一段很轻的哼唱，像从井底传上来。你退出这个页面——它还在。）"]);
+    try{ gainAnomaly(1); }catch(e){}
+    try{ addRecord("声音 · 先出错","今晚先是声音不对：笑声停在半截、琴声不在琴房、对讲机里叫你的名字。放下手机，画面才开始不对。"); }catch(e){}
+    V.slice(0,2).forEach(function(pair,i){
+      setTimeout(function(){
+        S.chatLog[pair[0]]=S.chatLog[pair[0]]||[];
+        S.chatLog[pair[0]].push({from:"them",text:pair[1],type:"text",t:realTime(),read:false});
+        S.unread[pair[0]]=(S.unread[pair[0]]||0)+1;
+        if(S.tab==="chat" && S.chatWith===pair[0]) try{ renderChat(pair[0]); }catch(e){}
+      },800+i*2800);
+    });
   }
 
   /* 学舌 · 第二天夜里起：你说过的话从别人嘴里回来 */

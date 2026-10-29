@@ -596,6 +596,36 @@ body.flash-safe .anom-stream .bubble,body.flash-safe .missed-dot{animation:none!
 @keyframes wavePulse{from{filter:brightness(1)}to{filter:brightness(1.35)}}
 
 
+/* ===== 视觉原型层 · 设计令牌（v-proto）＝字体/间距/图标/色彩/层级统一 ===== */
+:root{
+  --sp-1:6px;--sp-2:10px;--sp-3:14px;--sp-4:20px;
+  --r-sm:10px;--r-md:14px;--r-lg:18px;
+  --fs-xs:11px;--fs-sm:12.5px;--fs-md:14px;--fs-lg:17px;--fs-xl:21px;
+  --tone-ink:var(--ink);--tone-muted:var(--muted);--tone-accent:var(--accent);--tone-card:var(--card);--tone-line:rgba(255,255,255,.08);
+}
+/* 三态各自的色调令牌：calm=暖金 · uneasy=胶片绿 · horror=蓝灰 */
+.phone.calm{--tone-ink:#f5ead6;--tone-muted:rgba(245,234,214,.62);--tone-accent:#f0a860;--tone-line:rgba(240,199,125,.16)}
+.phone.uneasy{--tone-ink:#dfe6df;--tone-muted:rgba(223,230,223,.55);--tone-accent:#8fae9d;--tone-line:rgba(102,123,115,.2)}
+.phone.horror{--tone-ink:#c9d2e2;--tone-muted:rgba(201,210,226,.5);--tone-accent:#7f97c9;--tone-line:rgba(120,140,180,.16)}
+/* 字体与标题层级 */
+.phone h1,.phone h2,.phone h3{font-weight:700;letter-spacing:.02em}
+.phone h3{font-size:var(--fs-lg);color:var(--tone-ink);margin:0 0 var(--sp-2)}
+/* 卡片与间距 */
+.phone .card{padding:var(--sp-3);margin:var(--sp-2) 0;border:1px solid var(--tone-line)}
+.phone .muted{font-size:var(--fs-xs);line-height:1.7;color:var(--tone-muted)}
+.phone .btn{border-radius:var(--r-md);padding:12px var(--sp-3);line-height:1.55}
+.phone .chip{font-size:var(--fs-xs)}
+/* 图标规格统一 */
+.phone .more-cell span{font-size:17px;line-height:1.1;display:block;margin-bottom:3px}
+.phone .more-cell b{font-size:var(--fs-xs);font-weight:600}
+.phone .app-icon .ico{font-size:19px;line-height:1.1}
+/* 状态条与层级 */
+.phone .status-bar .day-clock{font-variant-numeric:tabular-nums}
+.phone .day-badge{font-size:var(--fs-xs);letter-spacing:.06em}
+.phone .back-btn{color:var(--tone-muted)}
+.phone .ambient{font-size:var(--fs-xs);color:var(--tone-muted)}
+/* 照片异常热点（复用 .hotspot 体系） */
+.phone .photo-stage .hotspot{width:46px;height:46px}
 .pm-jerk{animation:pmJerk .56s cubic-bezier(.36,.07,.19,.97) both}
 @keyframes pmJerk{0%{transform:translate(0,0) rotate(0)}14%{transform:translate(-4px,1px) rotate(-.3deg)}32%{transform:translate(3px,-2px) rotate(.26deg)}50%{transform:translate(-2px,2px) rotate(-.15deg)}68%{transform:translate(2px,-1px) rotate(.1deg)}100%{transform:translate(0,0) rotate(0)}}
 .pm-black{position:absolute;inset:0;background:#050405;z-index:9998;pointer-events:none;animation:pmBlack .48s ease forwards}
@@ -8772,6 +8802,7 @@ function gotoTab(tab){
 
 function applyFlashSafe(){
   const on = !!(S && S.flags && S.flags.flashSafe);
+  try{ const ph=document.getElementById("phone"); if(ph&&typeof moodName==="function") ph.dataset.mood=moodName(); }catch(e){}
   document.body.classList.toggle("flash-safe", on);
 }
 function render(){
@@ -10118,10 +10149,30 @@ const MEMBER_PHOTO_META={
  eric:{d:"忙内抢镜失败，收获一张侧脸。",r:"那天他一直盯着检票口的方向。问他，他说在数灯。灯后来，一直亮着。"},
  q:{d:"他戴着园区的发箍说：这样木马就认得我。",r:"「木马就认得我」。这句是那天唯一不该当玩笑听的话。"}
 };
+/* 合照热点：中央的变化只有停下来指认才成立 */
+function tapGroupHotspot(id){
+  drainBattery(1);
+  if(id==="g10h2"){
+    if(!S.flags.g10hot2){
+      S.flags.g10hot2=1; gainAnomaly(1);
+      addRecord("合照 · 中央","这一块比第一遍暗。不是光线的问题——是那里站过什么东西，把底色吃掉了。");
+      showCluePopup("合照 · 中央", "你把手指停在那一块上。\n第一遍看的时候，这里有这么暗吗？\n你说不清。这才是最不对的地方。", {tag:"细节指认"});
+    } else { toast("还是那一块。你没有再看第二次的勇气。"); }
+  } else if(id==="g10h3"){
+    if(!S.flags.g10hot3){
+      S.flags.g10hot3=1; gainAnomaly(1); addKeyword("拿手机的人");
+      addRecord("合照 · 影子","影子的形状很稳。头、肩、垂在身侧的手。它不像闯进来的——它像一直站在那里，替这一格合影，保管着快门。");
+      showCluePopup("合照 · 影子", "头。肩。垂在身侧的手。\n每一张合照里，都应该有一只拿相机的手。\n这张照片里，相机在拍照。", {tag:"细节指认"});
+    } else { toast("影子没有动。它不需要动。"); }
+  }
+  try{ openGroupPhoto(); }catch(e){}
+}
 function group10Version(){ return (S.day>=3||S.flags.ended)?3:(S.day>=2?2:1); }
 function openGroupPhoto(){
   drainBattery(1); advanceTime(3);
   const v=group10Version();
+  const g10hs = v===2 ? {x:54,y:36,id:"g10h2"} : v===3 ? {x:54,y:34,id:"g10h3"} : null;
+  const g10hsHtml = g10hs ? `<button class="hotspot" style="left:${g10hs.x}%;top:${g10hs.y}%" onclick="tapGroupHotspot('${g10hs.id}')"></button>` : "";
   if(v>=2&&!S.flags.g10v2){ S.flags.g10v2=1; gainAnomaly(1); addRecord("合照 · 第二遍","色差，重影的时间戳。人数我数了两遍：第一遍十个，第二遍十一个。我告诉自己，第二遍数错了。"); }
   if(v>=3&&!S.flags.g10v3){ S.flags.g10v3=1; gainAnomaly(1); addKeyword("拿手机的人"); addRecord("合照 · 褪色","照片冷了下来。中间覆着的影子形状很稳。那不是多出来的人——那是拿手机的人。"); }
   const desc=[
@@ -10133,7 +10184,7 @@ function openGroupPhoto(){
   screen.innerHTML=`<div class="lightbox">
     <button class="btn ghost close" onclick="S.tab='album';render()">关闭</button>
     <h3 style="margin-bottom:8px">十个人的合照</h3>
-    <div class="photo-stage big" style="background-image:url('${GROUP10_IMG[v]}');background-size:cover;background-position:center;min-height:300px;border-radius:12px"></div>
+    <div class="photo-stage big" style="background-image:url('${GROUP10_IMG[v]}');background-size:cover;background-position:center;min-height:300px;border-radius:12px;position:relative">${g10hsHtml}</div>
     <p class="muted" style="margin:10px 0;line-height:1.8">${esc(desc)}</p>
     ${v<3?`<button class="btn" onclick="openGroupPhoto()">🔍 再看一遍这张照片</button>`:""}
   </div>`;

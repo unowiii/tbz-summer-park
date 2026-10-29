@@ -912,6 +912,7 @@ body.flash-safe .anom-stream .bubble,body.flash-safe .missed-dot{animation:none!
 .more-cell[disabled]{opacity:.36}
 .more-exit{border-color:rgba(165,52,42,.4);color:#e0a49b}
 
+@keyframes carOrbit{to{transform:rotate(360deg)}}
 </style>
 </style>
 </style>
@@ -3293,15 +3294,56 @@ function zoneLevelRef() {
 
 /* 木马 · 你第几次来这里（循环感：看得见的圈数，看不见的圈数） */
 const CAROUSEL_PASS = {
-  1: "旋转木马停着。座子都是空的，一匹马的鬃毛还在动。",
-  2: "你记得这个位置。上次你来的时候，木马停在这一格。现在也是这一格——轴没动过，可你走了一圈。",
-  3: "你今天第二次站在这儿。木马还是那匹对着你。你忽然想不起来，第一次站在这儿的时候，太阳在哪边。",
-  4: "木马转得很慢，慢到你能数清。数到第七圈，你发现有一匹马的座垫是塌的——像一直有人坐在上面。",
-  5: "这一次，木马在转。它经过你面前，你看见空座上面有人坐过的形状。下一圈再经过，那个形状还在，人不在。",
+  1: "旋转木马停着。你数了一下：十一匹马，有一个位置空着，没有座垫。",
+  2: "你又站到这儿了。木马停在和刚才一格都不差的位置——可你绕它走完了一整圈，回到同一个入口。",
+  3: "第三次。你已经记不清第一次站在哪儿：每一步都像刚走过，又像已经走过很多遍。空位上有一层薄薄的热气。",
+  4: "木马转起来了，很慢。数到第七圈，那匹没有座垫的马每一次都停在同一个位置。你没有让它停。",
+  5: "这一次你数清了：十一匹马，十一个位置，只有你在圈外。木马转完一圈又从头开始——它从来没有往前走过。",
+  6: "你没再数第几次。木马还在转，空位还是那个空位。你开始怀疑，刚才那一圈，也是这一圈。",
 };
 function carouselBody() {
   const p = (S.flags && S.flags.carouselPass) || 1;
-  return CAROUSEL_PASS[Math.min(p, 5)];
+  return CAROUSEL_PASS[Math.min(p, 6)];
+}
+/* 地图整体就是一个圆：十个区域绕一圈，走满一圈回到同一个点 */
+function carouselRingHtml(){
+  const list=ZONES.filter(function(z){ return !(z.hidden && !S.emptyUnlocked); });
+  const n=list.length, R=101, cx=150, cy=152;
+  let dots="";
+  list.forEach(function(z,i){
+    const a=(-90 + i*360/n)*Math.PI/180;
+    const x=(cx+R*Math.cos(a)).toFixed(1), y=(cy+R*Math.sin(a)).toFixed(1);
+    const here=S.currentZone===z.id, car=z.id==="carousel";
+    dots+='<circle cx="'+x+'" cy="'+y+'" r="'+(here?6.5:3.6)+'" fill="'+(here?'#c9955c':(car?'#a5342a':'rgba(255,255,255,.25)'))+'"/>';
+    if(here) dots+='<circle cx="'+x+'" cy="'+y+'" r="11" fill="none" stroke="#c9955c" stroke-width="1" opacity=".55"/>';
+    if(car) dots+='<circle cx="'+x+'" cy="'+y+'" r="15" fill="none" stroke="rgba(165,52,42,.5)" stroke-width="1" stroke-dasharray="2 3"/>';
+  });
+  const laps=1+Math.floor((S.flags.travelCount||0)/Math.max(1,n));
+  return '<div style="margin:8px 0 12px;background:rgba(255,255,255,.022);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:6px 10px 0">'
+    + '<svg viewBox="0 0 300 300" style="width:100%;height:auto;display:block">'
+    + '<circle cx="150" cy="152" r="101" fill="none" stroke="rgba(255,255,255,.10)" stroke-dasharray="3 6"/>'
+    + '<g style="animation:carOrbit 24s linear infinite;transform-origin:150px 152px">'
+    + '<circle cx="150" cy="51" r="2" fill="rgba(201,149,92,.55)"/></g>'
+    + dots
+    + '<text x="150" y="146" text-anchor="middle" font-size="10" fill="rgba(255,255,255,.30)" letter-spacing="3">轨 道</text>'
+    + '<text x="150" y="167" text-anchor="middle" font-size="10" fill="rgba(255,255,255,.24)">第 '+laps+' 圈</text>'
+    + '</svg>'
+    + '<p class="muted" style="margin:0 0 8px;font-size:11.5px;line-height:1.7">十个区域绕成一圈。你每走一次，点往前挪一格——走满一圈，回到同一个点。</p></div>';
+}
+/* 木马区页：这一圈走到第几格 */
+function carouselRingBadge(){
+  const p=Math.max(1, Math.min(8, (S.flags.carouselPass||1)));
+  let dots="";
+  for(let i=0;i<8;i++){
+    const a=(-90+i*45)*Math.PI/180;
+    const x=(60+42*Math.cos(a)).toFixed(1), y=(60+42*Math.sin(a)).toFixed(1);
+    const on=i<p;
+    dots+='<circle cx="'+x+'" cy="'+y+'" r="'+(on?4:2.4)+'" fill="'+(on?'#c9955c':'rgba(255,255,255,.16)')+'"/>';
+  }
+  return '<div style="display:flex;align-items:center;gap:12px;margin:0 0 10px;background:rgba(255,255,255,.022);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:8px 12px">'
+    + '<svg viewBox="0 0 120 120" style="width:76px;height:76px;flex:none;animation:carOrbit 22s linear infinite;transform-origin:60px 60px">'
+    + '<circle cx="60" cy="60" r="42" fill="none" stroke="rgba(255,255,255,.10)" stroke-dasharray="2 5"/>'+dots+'</svg>'
+    + '<div style="font-size:12px;line-height:1.75;color:#cfc9c1">这一圈 · 第 <b style="color:#c9955c">'+(S.flags.carouselPass||1)+'</b> 次经过同一个空位<br><span class="muted">入口和出口是同一个口。</span></div></div>';
 }
 
 function zoneCopy(id) {
@@ -6749,7 +6791,14 @@ function travelTo(zid, confirmed){
     S.flags.carouselPass=_cp;
     if(_cp===3) addRecord("木马 · 第几次", carouselBody());
     if(_cp===5){ addKeyword("木马圈的圈数"); addRecord("木马 · 它一直在转", carouselBody()); }
+    if(_cp>=2){
+      setTimeout(function(){
+        if(typeof toast==="function") toast("你绕木马走了一圈，回到入口。灯牌上的数字没变。");
+        try{ if(navigator.vibrate) navigator.vibrate([10,50,14]); }catch(e){}
+      }, 420);
+    }
   }
+  S.flags.travelCount=(S.flags.travelCount||0)+1;
   if((zid==="lot"||zid==="empty") && S.day>=3) S.flags.day3LotVisit = true;
   if(typeof checkQuestProgress==="function") checkQuestProgress();
   // ambient keyword
@@ -7641,6 +7690,7 @@ function renderArea(zid){
   screen.innerHTML=`<div class="area-view">
     <button class="back-btn" onclick="S.tab='map';render()">← 地图</button>
     <div class="day-badge">${z.name} · D${S.day} ${realTime()}</div>
+    ${zid==="carousel"?carouselRingBadge():""}
     ${bg}
     ${zt?`<button class="btn primary" style="margin-bottom:8px" onclick="zoneReLook('${zid}')">👣 今天再走一遍 · 有新东西</button>`:""}
     ${companionDockHTML(zid)}
@@ -9625,21 +9675,21 @@ function renderMap(){
   }
   const screen=document.getElementById("screen");
   const needCh = needsChargeHint();
-  let html=`<h3>地图</h3><p class="muted">当前：${ZONES.find(z=>z.id===S.currentZone)?.name||"?"} · ${dayLabel()} ${realTime()}<br>移动消耗电量与时间${needCh?" · <b style=color:#27ae60>请优先去安全区充电</b>":""}${(S.day>=2&&(S.flags.anomaliesSeen||0)>=3)?'<br><span style="color:#e05555">● 有一个定位点从你进来就没动过 · 拍照区 · 备注：「失主」</span>':''}</p><div class="map-grid">`;
+  let html=`<h3>地图</h3><p class="muted">当前：${ZONES.find(z=>z.id===S.currentZone)?.name||"?"} · ${dayLabel()} ${realTime()}<br>移动消耗电量与时间${needCh?" · <b style=color:#27ae60>请优先去安全区充电</b>":""}${(S.day>=2&&(S.flags.anomaliesSeen||0)>=3)?'<br><span style="color:#e05555">● 有一个定位点从你进来就没动过 · 拍照区 · 备注：「失主」</span>':''}</p>${carouselRingHtml()}<div class="map-grid">`;
   ZONES.forEach(z=>{
     const locked=z.hidden && !S.emptyUnlocked;
     const here=S.currentZone===z.id;
     const chargeable = z.charge && needCh;
     html+=`<button class="map-zone ${locked?'locked':''} ${z.danger?'danger':''} ${z.safe?'safe':''} ${chargeable?'chargeable':''} ${here?'here':''}"
       onclick="${locked?"toast('空地尚未解锁（需异常/恢复）')":`travelTo('${z.id}')`}">
-      <div class="zn">${z.hidden&&!S.emptyUnlocked?"？？？":z.name}${here?" · 此":""}${z.charge?" 🔌":""}</div>
+      <div class="zn">${z.hidden&&!S.emptyUnlocked?"？？？":z.name}${here?" · 此":(z.id==="carousel"?'<span style="color:rgba(201,149,92,.85);font-weight:400;font-size:11px"> · 你在这儿</span>':"")}${z.charge?" 🔌":""}</div>
       <div class="zh">${locked?"条件未满足":z.hint}${z.danger?" · 高风险":""}</div>
       ${(!locked&&zoneExtraFor(z.id))?'<div class="charge-hint" style="color:#e8b84b">今天再看有新东西</div>':""}
       ${chargeable?`<div class="charge-hint">可充电恢复</div>`:""}
     </button>`;
   });
   html+=`</div>
-  <p class="muted" style="margin-top:10px">安全区（饮食区 / 舞台 / 后台 / 检票口）可充电。喷泉·木马可逛；低电量慎去夜场/空地。<br>已经去过的区域，第二、三天再走一遍，会有新东西。</p>`;
+  <p class="muted" style="margin-top:10px">安全区（饮食区 / 舞台 / 后台 / 检票口）可充电。喷泉·木马可逛；低电量慎去夜场/空地。<br>已经去过的区域，第二、三天再走一遍，会有新东西。${(S.day>=2||(S.flags.carouselPass||0)>=2)?'<br><span style="color:rgba(201,149,92,.75)">木马区那个点，一直标着「你在这儿」。你去别的地方，它也不改。</span>':''}</p>`;
   if(S.flags.deadBattery){
     html+=`<button class="btn danger" style="margin-top:8px" onclick="renderDeadBattery()">返回低电量界面</button>`;
   }

@@ -7679,6 +7679,109 @@ function companionCamHTML(){
   </div>`;
 }
 
+/* ============================================================
+   木马 = 走马灯：灯里贴着一圈画，亮起来就一帧一帧转过去
+   —— 转完一圈回到第一格，除非有人把灯关掉
+   ============================================================ */
+const LANTERN_FRAMES = [
+  "灯亮起来的那一瞬，所有人都在笑。",
+  "有人举着手机，说再拍一张。没有人看镜头。",
+  "长椅上放着一部手机，屏幕还亮着。",
+  "音乐盒从头开始。第一匹马刚走过你面前。",
+  "你回头。身后的人比刚才少一个。",
+  "音乐盒又从头开始。你没有注意到它从头开始。",
+  "每个人都在原地。木马已经走完一圈。",
+  "空座经过你面前。座垫上有一个人的形状。",
+];
+const LANTERN_FRAMES_AGAIN = [
+  "灯亮起来。这一格你见过。",
+  "有人举着手机。这一次镜头对着你。",
+  "长椅上那部手机。锁屏上是你的名字。",
+  "音乐盒从头开始。第一匹马刚走过你面前——和上次同一匹。",
+  "你回头。身后的人数和上次一样，不是同一批。",
+  "音乐盒又从头开始。你数着拍子，发现它从来没往后走过。",
+  "每个人都在原地。木马走完一圈，地面上的脚印还是那一圈。",
+  "空座经过你面前。座垫上那个形状，比上次清楚了一点。",
+];
+let __lanternTimer=null, __lanternIdx=0;
+
+function carouselLanternBtn(){
+  const again=(S.flags.lanternSeen||0)>0;
+  return `<button class="btn" style="width:100%;margin:0 0 8px;border-color:rgba(201,149,92,.35)" onclick="openLantern()">`
+    + `<span style="color:#c9955c">🏮 ${again?"再跟着灯转一圈":"跟着灯转一圈 · 走马灯"}</span>`
+    + `<br><small style="color:var(--muted);font-weight:400">八格。转完会回到第一格。</small></button>`;
+}
+
+function lanternRingSvg(idx){
+  let seg="";
+  for(let i=0;i<8;i++){
+    const a0=(-90+i*45)*Math.PI/180, a1=(-90+(i+1)*45)*Math.PI/180;
+    const x0=60+44*Math.cos(a0), y0=60+44*Math.sin(a0);
+    const x1=60+44*Math.cos(a1), y1=60+44*Math.sin(a1);
+    const on=i===(idx%8);
+    seg+='<path d="M'+x0.toFixed(1)+' '+y0.toFixed(1)+' A44 44 0 0 1 '+x1.toFixed(1)+' '+y1.toFixed(1)+'" fill="none" stroke="'+(on?'#c9955c':'rgba(255,255,255,.13)')+'" stroke-width="'+(on?3:1.2)+'" stroke-linecap="round"/>';
+  }
+  return '<svg viewBox="0 0 120 120" style="width:104px;height:104px;flex:none">'
+    + '<circle cx="60" cy="60" r="44" fill="none" stroke="rgba(255,255,255,.06)"/>'+seg
+    + '<circle cx="60" cy="60" r="4" fill="rgba(201,149,92,'+(idx%8===0?'0.9':'0.35')+')"/></svg>';
+}
+
+function openLantern(){
+  const again=(S.flags.lanternSeen||0)>0;
+  const frames=again?LANTERN_FRAMES_AGAIN:LANTERN_FRAMES;
+  S.flags.lanternSeen=(S.flags.lanternSeen||0)+1;
+  let idx=0;
+  const wrap=document.createElement("div");
+  wrap.id="lanternWrap";
+  wrap.style.cssText="position:fixed;inset:0;z-index:11000;background:rgba(4,3,4,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 22px;backdrop-filter:blur(2px)";
+  wrap.innerHTML='<div id="lanternBody" style="max-width:420px;width:100%;display:flex;flex-direction:column;align-items:center;gap:16px"></div>';
+  document.body.appendChild(wrap);
+  if(typeof drainBattery==="function"){ try{ drainBattery(1); }catch(e){} }
+
+  function paint(){
+    const i=idx%8;
+    const body=document.getElementById("lanternBody");
+    if(!body) return;
+    body.innerHTML = lanternRingSvg(i)
+      + '<div style="font-size:11px;letter-spacing:.24em;color:rgba(201,149,92,.7)">第 '+(i+1)+' 格 / 8</div>'
+      + '<p style="margin:0;text-align:center;font-size:15.5px;line-height:1.95;color:#ece7e0;min-height:88px">'+frames[i]+'</p>'
+      + '<button class="btn ghost" style="margin-top:4px" onclick="closeLantern()">停下来</button>';
+  }
+  try{ if(navigator.vibrate) navigator.vibrate(8); }catch(e){}
+
+  window.__lanternPrev = window.__lanternPrev || document.getElementById("screen").innerHTML;
+  paint();
+  clearInterval(__lanternTimer);
+  __lanternTimer=setInterval(function(){
+    idx++;
+    if(idx>=16){
+      clearInterval(__lanternTimer); __lanternTimer=null;
+      idx=16;
+      const body=document.getElementById("lanternBody");
+      if(body){
+        body.innerHTML = lanternRingSvg(0)
+          + '<p style="margin:0;text-align:center;font-size:15px;line-height:2;color:#ece7e0">第八格之后是第一格。灯没有停——<br>除非有人把灯关掉。</p>'
+          + '<p class="muted" style="margin:0;text-align:center;font-size:12px">你看了两圈。两圈的内容一模一样。</p>'
+          + '<button class="btn ghost" style="margin-top:6px" onclick="closeLantern()">关掉</button>';
+        try{ if(navigator.vibrate) navigator.vibrate([12,60,12]); }catch(e){}
+      }
+      return;
+    }
+    paint();
+  }, 1700);
+}
+
+function closeLantern(){
+  clearInterval(__lanternTimer); __lanternTimer=null;
+  const w=document.getElementById("lanternWrap");
+  if(w) w.remove();
+  if(typeof addRecord==="function"){
+    try{ addRecord("木马 · 走马灯","灯里贴着一圈画。亮起来就一帧一帧转过去，转完回到第一格。八格，两圈，一模一样。"); }catch(e){}
+  }
+  try{ if(typeof gainAnomaly==="function") gainAnomaly(1); }catch(e){}
+  if(typeof renderArea==="function" && S.currentZone==="carousel") renderArea("carousel");
+}
+
 function renderArea(zid){
   const z=ZONES.find(x=>x.id===zid);
   const screen=document.getElementById("screen");
@@ -7692,6 +7795,7 @@ function renderArea(zid){
     <div class="day-badge">${z.name} · D${S.day} ${realTime()}</div>
     ${zid==="carousel"?carouselRingBadge():""}
     ${bg}
+    ${zid==="carousel"?carouselLanternBtn():""}
     ${zt?`<button class="btn primary" style="margin-bottom:8px" onclick="zoneReLook('${zid}')">👣 今天再走一遍 · 有新东西</button>`:""}
     ${companionDockHTML(zid)}
     <div class="card"><p style="line-height:1.75;font-size:14px">${esc(txt)}</p>

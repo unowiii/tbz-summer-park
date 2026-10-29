@@ -1843,6 +1843,7 @@ function advanceTime(mins, opts){
   }
   if(S.day>=3) S.flags.nightAnomalyStarted=true;
   updateStatus();
+  try{ if(typeof horrorTick==="function") horrorTick(); }catch(e){}
   autoSave();
   if(S.pendingDayCard && !opts.silentDay){
     // show after current render cycle
@@ -6486,6 +6487,36 @@ function applyReply(cid, reply){
   if(reply.kw) addKeyword(reply.kw);
   if(reply.saveRec) addRecord(reply.saveRec[0], reply.saveRec[1]);
   if(reply.type==="追问"||reply.type==="质疑") S.flags.proactiveCount++;
+  /* 恐怖：记住你说过的话（后面会被别人原样说出来） */
+  try{
+    const _l=(reply.label||"").replace(/[「」“”"\s]/g,"").slice(0,22);
+    if(_l && _l.length>=4){
+      S.flags.said=S.flags.said||[];
+      if(S.flags.said.indexOf(_l)<0){ S.flags.said.push(_l); if(S.flags.said.length>12) S.flags.said.shift(); }
+    }
+  }catch(e){}
+  /* SP2 · 第二天起：你发出去的那句话，被「你」撤回了 */
+  if((S.day||1)>=2 && !S.flags.sp_recall){
+    const _log=S.chatLog[cid]||[];
+    const _mine=_log.filter(function(m){ return m.from==="me" && m.type==="text" && !m.recalled; });
+    if(_mine.length>=2){
+      S.flags.sp_recall=1;
+      const _m=_mine[_mine.length-2];
+      _m.recalledText=_m.text; _m.text="撤回了一条消息"; _m.type="recalled";
+      _log.push({from:"sys",text:"「你」撤回了一条消息",type:"sys",t:realTime()});
+      setTimeout(function(){
+        spVeil("刚才那句话被撤回了。发送人是你。",function(){
+          _log.push({from:"me",text:"别看照片。",type:"text",t:realTime()});
+          setTimeout(function(){
+            _log.push({from:"them",text:"……你刚才又发了什么？我这边只有一行灰字。",type:"text",t:realTime(),read:false});
+            S.unread[cid]=(S.unread[cid]||0)+1;
+            if(S.tab==="chat" && S.chatWith===cid) try{ renderChat(cid); }catch(e){}
+          },2400);
+          if(S.tab==="chat" && S.chatWith===cid) try{ renderChat(cid); }catch(e){}
+        });
+      },900);
+    }
+  }
   drainBattery(1.5);
   advanceTime(5+Math.floor(Math.random()*8));
   /* —— 失主线：他问「几条未读」之后的第一句回答 —— */
@@ -9428,6 +9459,145 @@ function chooseReply(cid, idx){
   autoSave({now:true});
 }
 
+/* ============================================================
+   恐怖增强 · 必见 setpiece（每局固定，不靠概率）
+   —— 一次安静的停顿，然后一件不该发生的事
+   ============================================================ */
+let __spBusy=false;
+let __hbIv=null, __hbVig=null;
+
+function spVeil(line, cb){
+  if(__spBusy) return;
+  __spBusy=true;
+  try{ if(navigator.vibrate) navigator.vibrate([16,70,24]); }catch(e){}
+  const el=document.createElement("div");
+  el.id="spVeil";
+  el.style.cssText="position:fixed;inset:0;background:#000;z-index:12000;opacity:0;transition:opacity .09s linear;pointer-events:none";
+  document.body.appendChild(el);
+  requestAnimationFrame(function(){ el.style.opacity="1"; });
+  setTimeout(function(){
+    try{
+      if(typeof ambienceScareSting==="function"){ ambienceScareSting(); }
+      else if(typeof playScareSting==="function"){ playScareSting(); }
+    }catch(e){}
+  },430);
+  setTimeout(function(){ el.style.opacity="0"; },560);
+  setTimeout(function(){
+    if(el.parentNode) el.remove();
+    if(typeof toast==="function" && line) toast(line);
+    if(cb) try{ cb(); }catch(e){}
+    __spBusy=false;
+  },800);
+}
+
+/* 低电心跳 */
+function hbStart(){
+  if(__hbIv) return;
+  __hbIv=setInterval(function(){
+    if(!S || S.flags.ended || S.flags.deadBattery || (S.battery||0)>32){ hbStop(); return; }
+    try{
+      const ac=(typeof voiceCtx==="function")?voiceCtx():null;
+      if(!ac) return;
+      const t0=ac.currentTime;
+      [[0,52,0.10],[0.24,44,0.07]].forEach(function(x){
+        const o=ac.createOscillator(), g=ac.createGain();
+        o.type="sine"; o.frequency.setValueAtTime(x[1], t0+x[0]);
+        g.gain.setValueAtTime(0.0001, t0+x[0]);
+        g.gain.linearRampToValueAtTime(x[2], t0+x[0]+0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0+x[0]+0.20);
+        o.connect(g); g.connect(ac.destination);
+        o.start(t0+x[0]); o.stop(t0+x[0]+0.24);
+      });
+    }catch(e){}
+  },1150);
+}
+function hbStop(){
+  if(__hbIv){ clearInterval(__hbIv); __hbIv=null; }
+  if(__hbVig){ const e=__hbVig; __hbVig=null; e.style.opacity="0"; setTimeout(function(){ if(e.parentNode) e.remove(); },1300); }
+}
+function hbCheck(){
+  if(!S || !S.playerName || S.flags.ended){ hbStop(); return; }
+  const low=(S.battery||0)<=30;
+  if(low){
+    if(!__hbVig){
+      const d=document.createElement("div");
+      d.id="lowVig";
+      d.style.cssText="position:fixed;inset:0;pointer-events:none;z-index:9000;box-shadow:inset 0 0 120px 32px rgba(88,0,0,.42);opacity:0;transition:opacity 1.6s ease";
+      document.body.appendChild(d); __hbVig=d;
+      requestAnimationFrame(function(){ d.style.opacity="1"; });
+    }
+    hbStart();
+  } else hbStop();
+}
+
+/* 幽灵照片 */
+function openGhostPhoto(){
+  if(typeof drainBattery==="function"){ try{ drainBattery(1); }catch(e){} }
+  const screen=document.getElementById("screen");
+  screen.innerHTML=`<div class="lightbox">
+    <button class="btn ghost close" onclick="S.tab='album';render()">关闭</button>
+    <h3 style="margin-bottom:8px">今天 21:07</h3>
+    <div class="photo-stage big" style="min-height:260px;background:linear-gradient(165deg,#070708,#1a1114 55%,#0a0709);border-radius:12px;position:relative">
+      <div style="position:absolute;left:18px;right:18px;top:22px;font-size:12px;letter-spacing:.18em;color:rgba(255,255,255,.28)">拍照区 · 长椅</div>
+      <div style="position:absolute;left:18px;right:18px;bottom:16px;background:rgba(0,0,0,.6);padding:10px;border-radius:8px;font-size:12.5px;line-height:1.85">
+        画面是对着长椅拍的。长椅上坐着一个人，低着头，在看手机。<br>
+        拍照的人不在画面里。<br>
+        而这张照片的时间，在你捡到它之后。
+      </div>
+    </div>
+    <p class="muted" style="margin-top:10px">这张照片没有出现在你的相册里。它自己出现在九宫格最后一格。</p>
+  </div>`;
+}
+
+/* 每局必见的三次 */
+function horrorTick(){
+  if(!S || !S.playerName || S.flags.ended || S.flags.deadBattery) return;
+  const d=S.day||1, h=S.hour||0;
+
+  /* SP1 · 第一天夜里：相册多一张你没拍的照片 */
+  if(d>=1 && h>=20 && !S.flags.sp_photo){
+    S.flags.sp_photo=1;
+    setTimeout(function(){ spVeil("相册的最后一格，多了一张照片。不是你拍的。"); },1200);
+  }
+
+  /* SP3 · 第三天夜里：读过的全变回没读，时间倒退十分钟 */
+  if(d>=3 && h>=19 && !S.flags.sp_read){
+    S.flags.sp_read=1;
+    Object.keys(S.chatLog||{}).forEach(function(k){
+      if((S.chatLog[k]||[]).length) S.unread[k]=Math.max(1, S.unread[k]||0);
+    });
+    S.minute=(S.minute||0)-10;
+    while(S.minute<0){ S.minute+=60; S.hour=(S.hour||0)-1; }
+    if(S.hour<0) S.hour=0;
+    setTimeout(function(){
+      spVeil("所有你读过的东西，都变回没读过了。\n时间退回十分钟。");
+    },1200);
+    if(typeof addRecord==="function"){ try{ addRecord("凌晨之前 · 时间倒退","手机上的时间退回了十分钟。所有聊天都变成未读。你没有关掉过任何一个窗口。"); }catch(e){} }
+  }
+
+  /* 学舌 · 第二天夜里起：你说过的话从别人嘴里回来 */
+  if(d>=2 && h>=22 && !S.flags.echoDone && (S.flags.said||[]).length){
+    S.flags.echoDone=1;
+    const said=S.flags.said;
+    const line=said[said.length-1];
+    const pool=CHARS.filter(function(c){ return c.id!==S.ownerId; });
+    const who=pool[Math.floor(Math.random()*pool.length)];
+    if(who && line){
+      S.chatLog[who.id]=S.chatLog[who.id]||[];
+      setTimeout(function(){
+        S.chatLog[who.id].push({from:"them",text:"「"+line+"」",type:"text",t:realTime(),read:false});
+        S.unread[who.id]=(S.unread[who.id]||0)+1;
+        setTimeout(function(){
+          S.chatLog[who.id].push({from:"them",text:"……这句我听过。是你说的。可那时候你还没说。",type:"text",t:realTime(),read:false});
+          S.unread[who.id]=(S.unread[who.id]||0)+1;
+          try{ gainAnomaly(1); }catch(e){}
+          if(S.tab==="chat" && S.chatWith===who.id) try{ renderChat(who.id); }catch(e){}
+        },2600);
+      },600);
+    }
+  }
+}
+
 function renderAlbum(){
   if(typeof playUiSfx==="function") playUiSfx("album");
   const screen=document.getElementById("screen");
@@ -9439,6 +9609,10 @@ function renderAlbum(){
     html+=`<button class="photo-thumb" style="${bg}" onclick="${locked?"toast('尚未解锁')":`openPhoto('${p.id}')`}">
       <div class="ph" style="${img?'background:rgba(0,0,0,.45);color:#fff':''}">${locked?"🔒":esc(p.title)}</div>${(!locked&&photoExtraFor(p.id))?'<span class="ph-new">有新</span>':""}</button>`;
   });
+  if(S.flags.sp_photo){
+    html+=`<button class="photo-thumb" onclick="openGhostPhoto()" style="background:linear-gradient(160deg,#08080a,#1c1216 60%,#0b0709)">
+      <div class="ph" style="background:rgba(0,0,0,.45);color:#fff">今天 21:07</div><span class="ph-new">有新</span></button>`;
+  }
   html+=`</div>`;
   screen.innerHTML=html;
 }
@@ -10520,6 +10694,8 @@ window.onload=()=>{
     if(typeof maybeOwnerPing==="function") maybeOwnerPing({fromTimer:true});
     if(typeof crookTick==="function") crookTick();
     if(typeof eleventhTick==="function") eleventhTick();
+    try{ if(typeof horrorTick==="function") horrorTick(); }catch(e){}
+    try{ if(typeof hbCheck==="function") hbCheck(); }catch(e){}
   }, 4000);
   // 每 45 秒兜底存一次，防止长时间翻备忘录被清掉
   setInterval(()=>{ if(S.playerName && !S.flags.ended) autoSaveNow(); }, 45000);

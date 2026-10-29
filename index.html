@@ -27,7 +27,7 @@ html,body{height:100%;background:
   font-family:"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;color:var(--ink);
   display:flex;align-items:center;justify-content:center;overflow:hidden}
 #app{width:min(100vw,var(--phone-w));height:min(100dvh,var(--phone-h));position:relative}
-.phone{width:100%;height:100%;background:
+.phone{transition:filter 2.8s ease;width:100%;height:100%;background:
     radial-gradient(ellipse at 50% 110%,rgba(100,0,0,.35),transparent 50%),
     linear-gradient(180deg,#1a0c10,#0a0508 60%,#050203);
   border-radius:28px;overflow:hidden;display:flex;flex-direction:column;
@@ -49,16 +49,32 @@ html,body{height:100%;background:
 .phone.low-bat{filter:brightness(.72)}
 .phone.low-bat::after{content:"";pointer-events:none;position:absolute;inset:0;
   box-shadow:inset 0 0 80px 30px rgba(0,0,0,.75);z-index:50}
-.phone.calm{background:linear-gradient(180deg,#3a2a22 0%,#243044 52%,#161c24 100%);
-  box-shadow:0 24px 80px rgba(0,0,0,.45),inset 0 0 0 2px rgba(255,196,140,.28)}
-.phone.calm::before{background:radial-gradient(ellipse at 50% 0%,rgba(255,186,96,.28),transparent 46%),
-  radial-gradient(ellipse at center,transparent 58%,rgba(0,0,0,.28) 100%);
-  box-shadow:inset 0 0 36px 6px rgba(80,40,10,.12)}
+.phone.calm{background:linear-gradient(180deg,#f7edd8 0%,#cfe0e8 46%,#ecdfc6 100%);
+  box-shadow:0 24px 80px rgba(60,50,30,.35),inset 0 0 0 2px rgba(141,185,203,.4);
+  --ink:#4a3f30;--muted:#8a7a62;--card:rgba(255,255,255,.55);--card2:rgba(255,255,255,.78);
+  --glass:rgba(250,244,228,.86);--accent:#b3542e;--sky:rgba(141,185,203,.3);
+  filter:saturate(1.05)}
+.phone.calm::before{background:radial-gradient(ellipse at 50% 0%,rgba(240,199,125,.4),transparent 48%),
+  radial-gradient(ellipse at center,transparent 62%,rgba(120,100,60,.1) 100%);
+  box-shadow:inset 0 0 36px 6px rgba(200,170,110,.14)}
 .phone.calm .glitch-text{animation:none;text-shadow:none}
-.phone.uneasy{background:linear-gradient(180deg,#2a161c,#141016 62%,#0c0a0c)}
+.phone.uneasy{background:linear-gradient(180deg,#242b26 0%,#1a1f1e 55%,#121414 100%);
+  box-shadow:0 24px 80px rgba(0,0,0,.55),inset 0 0 0 2px rgba(102,123,115,.22);
+  filter:saturate(.82)}
+.phone.uneasy::before{background:radial-gradient(ellipse at 50% 0%,rgba(102,123,115,.14),transparent 46%),
+  radial-gradient(ellipse at center,transparent 46%,rgba(0,0,0,.5) 100%);
+  box-shadow:inset 0 0 60px 10px rgba(10,20,14,.5)}
 .step-card{background:linear-gradient(160deg,rgba(255,214,160,.16),rgba(20,28,40,.72));
   border:1px solid rgba(255,196,140,.45);border-radius:16px;padding:14px;margin:10px 0}
 .phone.uneasy .step-card,.phone.horror .step-card{background:rgba(80,16,24,.4);border-color:rgba(192,57,43,.45)}
+.phone.horror{background:linear-gradient(180deg,#20242e 0%,#14171e 58%,#0c0e13 100%);
+  box-shadow:0 24px 80px rgba(0,0,0,.75),inset 0 0 0 2px rgba(70,85,105,.3);
+  filter:saturate(.6) brightness(.94)}
+.phone.horror::before{background:radial-gradient(ellipse at 50% 0%,rgba(70,90,120,.1),transparent 44%),
+  radial-gradient(ellipse at center,transparent 40%,rgba(0,0,5,.62) 100%);
+  box-shadow:inset 0 0 70px 14px rgba(0,0,10,.6)}
+.phone.horror .card{background:rgba(24,30,42,.5);border:1px solid rgba(90,110,140,.14)}
+.phone.horror .day-strip{background:rgba(38,43,53,.5);border-bottom-color:rgba(90,110,140,.2);color:#9fb2c9}
 .step-card .sk{font-size:10px;letter-spacing:.16em;color:#e7b56a;margin-bottom:4px}
 .step-card h3{font-size:18px;margin:0 0 6px}
 .step-card p{font-size:13px;line-height:1.6;color:#e6d7c8;margin:0 0 10px}
@@ -10088,6 +10104,59 @@ function hangIncoming(){
   spVeil("你听见自己的声音。\n它说：别接。");
 }
 
+/* ================= 美术改造 · 十人合照三阶段 + 成员照片 ================= */
+const GROUP10_IMG={1:"./img/zone_1.png",2:"./img/zone_2.png",3:"./img/zone_3.png"};
+const MEMBER_IMG={q:"./img/zone_q.png",hyunjae:"./img/zone_hyunjae.png",younghoon:"./img/zone_younghoon.png",juyeon:"./img/zone_juyeon.png",sunwoo:"./img/zone_sunwoo.png",new:"./img/zone_new.png",kevin:"./img/zone_kevin.png",eric:"./img/zone_eric.png",jacob:"./img/zone_jacob.png",sangyeon:"./img/zone_sangyeon.png"};
+const MEMBER_PHOTO_META={
+ sangyeon:{d:"他说：跟紧一点，走丢我可不等。",r:"那天他说不等就不等。后来我才想起来，我们回头的时候，他一直站在原地。他数的，不是我们的人数。"},
+ jacob:{d:"他把水递过来，说柜台上那瓶是给你留的。",r:"柜台上那瓶。我一回头它就在。一开始，就在。"},
+ younghoon:{d:"他把面包举到我面前：你看，中间空出来的形状。",r:"中间空出来的形状。我那时以为是爱心。现在再看——那是一个人的轮廓。"},
+ hyunjae:{d:"他说这个角度拍他最好看。我信了。",r:"他身后有两个人背对着我们。我到现在不敢去数他们是谁。"},
+ juyeon:{d:"回程的车上他闭着眼，耳机没拔。",r:"他说是在补觉。可那天晚上，我们根本没有坐过车。"},
+ sunwoo:{d:"他抢过手机给自己拍了一张：这张必须存在。",r:"「必须存在」。他说得很认真，不像在玩。"},
+ new:{d:"他摆好姿势问：帅吗。我说帅。他就笑了。",r:"每一次他都是同一个姿势、同一个问题，我也给过同一个答案。像排练过的。"},
+ kevin:{d:"他说：拍下来，回家给妈妈看。",r:"Kevin 的家不在这里。他说的「回家」，我一直没敢问是哪儿。"},
+ eric:{d:"忙内抢镜失败，收获一张侧脸。",r:"那天他一直盯着检票口的方向。问他，他说在数灯。灯后来，一直亮着。"},
+ q:{d:"他戴着园区的发箍说：这样木马就认得我。",r:"「木马就认得我」。这句是那天唯一不该当玩笑听的话。"}
+};
+function group10Version(){ return (S.day>=3||S.flags.ended)?3:(S.day>=2?2:1); }
+function openGroupPhoto(){
+  drainBattery(1); advanceTime(3);
+  const v=group10Version();
+  if(v>=2&&!S.flags.g10v2){ S.flags.g10v2=1; gainAnomaly(1); addRecord("合照 · 第二遍","色差，重影的时间戳。人数我数了两遍：第一遍十个，第二遍十一个。我告诉自己，第二遍数错了。"); }
+  if(v>=3&&!S.flags.g10v3){ S.flags.g10v3=1; gainAnomaly(1); addKeyword("拿手机的人"); addRecord("合照 · 褪色","照片冷了下来。中间覆着的影子形状很稳。那不是多出来的人——那是拿手机的人。"); }
+  const desc=[
+    "入园那天，十个人，一张合照。有人歪着头，有人没看镜头。日期戳还热着。一切都对。",
+    "同一张照片。颜色偏了，日期戳叠成两层。我数了两遍人头。",
+    "颜色褪下来了。中间那个人的位置上，覆着一团很稳的影子——不像闯进来的。像拿手机的人，一直站在那里。"
+  ][v-1];
+  const screen=document.getElementById("screen");
+  screen.innerHTML=`<div class="lightbox">
+    <button class="btn ghost close" onclick="S.tab='album';render()">关闭</button>
+    <h3 style="margin-bottom:8px">十个人的合照</h3>
+    <div class="photo-stage big" style="background-image:url('${GROUP10_IMG[v]}');background-size:cover;background-position:center;min-height:300px;border-radius:12px"></div>
+    <p class="muted" style="margin:10px 0;line-height:1.8">${esc(desc)}</p>
+    ${v<3?`<button class="btn" onclick="openGroupPhoto()">🔍 再看一遍这张照片</button>`:""}
+  </div>`;
+  toast(v===1?"所有人都看镜头了——除了一个。":v===2?"日期戳怎么有两层。":"这张照片冷了。");
+}
+function openMemberPhoto(cid, reMode){
+  drainBattery(1); advanceTime(2);
+  const m=MEMBER_PHOTO_META[cid]; if(!m) return;
+  const c=CHARS.find(x=>x.id===cid);
+  if(!S.flags["mSeen_"+cid]){ S.flags["mSeen_"+cid]=1; }
+  if(reMode&&!S.flags["mRe_"+cid]){ S.flags["mRe_"+cid]=1; gainAnomaly(1); addRecord("照片 · "+(c?c.name:cid)+" 再看", m.r); }
+  const screen=document.getElementById("screen");
+  const cold=((S.day||1)>=2)?"filter:saturate(.78) contrast(1.05)":"";
+  screen.innerHTML=`<div class="lightbox">
+    <button class="btn ghost close" onclick="S.tab='album';render()">关闭</button>
+    <h3 style="margin-bottom:8px">${esc(c?c.name:cid)} · 那天的相册</h3>
+    <div class="photo-stage big" style="background-image:url('${MEMBER_IMG[cid]}');background-size:cover;background-position:center;min-height:280px;border-radius:12px;${cold}"></div>
+    <p class="muted" style="margin:10px 0;line-height:1.85">${esc(m.d)}</p>
+    ${reMode?`<div class="card" style="border-left:3px solid var(--crimson)"><p style="line-height:1.85;font-size:13px;margin:0">${esc(m.r)}</p></div>`
+      :`<button class="btn" onclick="openMemberPhoto('${cid}',true)">🔍 第二天再看一眼</button>`}
+  </div>`;
+}
 /* ================= ① 手机自己动 · 界面不等你 ================= */
 const __stay={tab:"",since:0};
 let __ghostTypingBusy=false;
@@ -10292,12 +10361,19 @@ function renderAlbum(){
   if(typeof playUiSfx==="function") playUiSfx("album");
   const screen=document.getElementById("screen");
   let html=`<h3>相册</h3><p class="muted" style="margin-bottom:8px">九宫格 · 部分照片随天数与恢复层解锁<br>同一张照片，第二、三天再看，会有新东西（有「有新」角标）。</p><div class="album-grid">`;
+  html+=`<button class="photo-thumb" onclick="openGroupPhoto()" style="background-image:url('${GROUP10_IMG[group10Version()]}');background-size:cover;background-position:center">
+      <div class="ph" style="background:rgba(0,0,0,.45);color:#fff">十个人的合照</div>${group10Version()>=2?'<span class="ph-new">有新</span>':""}</button>`;
   PHOTOS.forEach(p=>{
     const locked = p.day>S.day && !(S.deletedLayer>=2 && p.day<=3);
     const img = (!locked && p.park && typeof PARK_IMG!=="undefined" && PARK_IMG[p.park]) ? PARK_IMG[p.park] : "";
     const bg = img ? `background-image:url('${img}');background-size:cover;background-position:center` : "";
     html+=`<button class="photo-thumb" style="${bg}" onclick="${locked?"toast('尚未解锁')":`openPhoto('${p.id}')`}">
       <div class="ph" style="${img?'background:rgba(0,0,0,.45);color:#fff':''}">${locked?"🔒":esc(p.title)}</div>${(!locked&&photoExtraFor(p.id))?'<span class="ph-new">有新</span>':""}</button>`;
+  });
+  MEMBER_PHOTO_META && Object.keys(MEMBER_PHOTO_META).forEach(function(cid){
+    const c=CHARS.find(x=>x.id===cid);
+    html+=`<button class="photo-thumb" onclick="openMemberPhoto('${cid}')" style="background-image:url('${MEMBER_IMG[cid]}');background-size:cover;background-position:center">
+      <div class="ph" style="background:rgba(0,0,0,.45);color:#fff">${esc(c?c.name:cid)}</div>${(!S.flags["mRe_"+cid]&&S.flags["mSeen_"+cid])?'<span class="ph-new">有新</span>':""}</button>`;
   });
   if(S.flags.sp_photo){
     html+=`<button class="photo-thumb" onclick="openGhostPhoto()" style="background:linear-gradient(160deg,#08080a,#1c1216 60%,#0b0709)">

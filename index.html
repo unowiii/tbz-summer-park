@@ -3046,7 +3046,11 @@ function ENDING_CATALOG(){
     {key:"hidden", name:"隐藏结局", hint:"低电·深夜·深层·危险区…", badge:"👁",
       tease:"电量只剩一格，而你还想再删一层。"},
     {key:"battery", name:"黑屏", hint:"放弃充电或危险区耗尽", badge:"⬛",
-      tease:"屏幕黑下去的时候，那边还在打字。"}
+      tease:"屏幕黑下去的时候，那边还在打字。"},
+    {key:"true", name:"十种回家方式", hint:"第3天 · 交出证据 · 不替任何人决定", badge:"🕯",
+      tease:"门口的影子有十一个方向。"},
+    {key:"perfect", name:"完美计划", hint:"第3天 · 日程表 · 一个人都不少", badge:"📋",
+      tease:"所有人都到了。照片里少了一个。"}
   ];
 }
 function getCollectionStats(){
@@ -3471,7 +3475,7 @@ function endingOptionsRef() {
   }
   const lead = attentionLead();
   const who = lead ? (CHARS.find((c) => c.id === lead) || {}).name || "" : "";
-  return [
+  const opts = [
     {
       id: "safe",
       label: "把手机放回长椅",
@@ -3490,7 +3494,25 @@ function endingOptionsRef() {
       enabled: !!lead,
       reason: "需要一段明显压过其他人的对话。",
     },
+    {
+      id: "true",
+      label: "把证据交给大家，让每个人自己决定",
+      enabled: S.day >= 3 && (S.deletedLayer || 0) >= 2 && typeof triAllNotes==="function" && triAllNotes().length >= 2,
+      reason: "不再替所有人决定怎么离开。需要：第3天 · 恢复过深层 · 记下至少2条不对劲。",
+    },
+    {
+      id: "perfect",
+      label: "按上一轮的日程表，把所有人一个不少地送出门口",
+      enabled: S.day >= 3 && ((S.deletedLayer || 0) >= 3 || !!(S.puzzle && S.puzzle.unlockedL3)) && S.flags.anomaliesSeen >= 6,
+      reason: "所有人都准时到达，就没有人出错。需要：第3天 · 挖到底层 · 看过6处异常。",
+    },
   ];
+  try{
+    if(loadMem().trueDone){
+      opts.push({ id:"eleventh", label:"点开那个第十一个联系人", enabled:true, reason:"头像是你自己的照片。备注：失主。" });
+    }
+  }catch(e){}
+  return opts;
 }
 
 function attentionLead() {
@@ -5943,7 +5965,7 @@ younghoon:[{id:"yh1",phase:0,minDay:1,lines:[{from:"them",text:"谢谢。"},{fro
 {id:"yh3b",phase:1,minDay:2,lines:[{from:"them",text:"新图。……别急着点。"},{from:"them",text:"先回我：你还在亮处吗。"}],replies:[{label:"在",type:"安抚",att:2,push:0},{label:"图里有什么",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}],reqAtt:4},
 {id:"yh5b",phase:2,minDay:3,lines:[{from:"them",text:"……收图。"},{from:"them",text:"别把右下角当入口。听我的。"}],replies:[{label:"好",type:"安抚",att:2,push:0},{label:"入口？",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}],reqNight:true}],
 hyunjae:[
-{id:"hj1",phase:0,minDay:1,lines:[{from:"them",text:"谢啦～今天乱成一锅，你还帮捡。人好好，我记着。"},{from:"them",text:"翻别人手机要付精神损失费。开玩笑的。说真的：饮食区炸物很香，你吃了没？"}],replies:[{label:"还没吃，求推荐",type:"安抚",att:2,push:0,zoneHint:"food"},{label:"方便说下怎么丢的吗",type:"追问",att:2,push:0},{label:"嗯",type:"忽视",att:0,push:0}]},
+{id:"hj_unread",phase:0,minDay:1,lines:[{from:"them",text:"对了，趁我想起来。你捡到它的时候，手机里有几条未读消息？"}],replies:[{label:"十几条吧，怎么了",type:"追问",att:2,push:0},{label:"为什么这么问？",type:"质疑",att:2,push:0}]},{id:"hj1",phase:0,minDay:1,lines:[{from:"them",text:"谢啦～今天乱成一锅，你还帮捡。人好好，我记着。"},{from:"them",text:"翻别人手机要付精神损失费。开玩笑的。说真的：饮食区炸物很香，你吃了没？"}],replies:[{label:"还没吃，求推荐",type:"安抚",att:2,push:0,zoneHint:"food"},{label:"方便说下怎么丢的吗",type:"追问",att:2,push:0},{label:"嗯",type:"忽视",att:0,push:0}]},
 {id:"hj2",phase:0,minDay:1,lines:[{from:"them",text:"语音也行文字也行，反正我话多。"},{from:"them",text:"夜场开始前我再叫你。要是听到杂音——先当麦的问题哈哈。饿了就去吃，别硬撑着听恐怖故事。"}],replies:[{label:"好，等你",type:"安抚",att:1,push:0},{label:"什么杂音？",type:"追问",att:2,push:1,kw:"杂音"},{label:"哈哈",type:"忽视",att:0,push:0}],reqAtt:1},
 {id:"hj2b",phase:0,minDay:1,lines:[{from:"them",text:"舞台侧走廊回声怪，别在那儿待太久。"},{from:"them",text:"待太久会饿。饿了判断力下降——别笑，我认真的。"}],replies:[{label:"好的",type:"安抚",att:1,push:0},{label:"为什么怪",type:"追问",att:2,push:0},{label:"哦",type:"忽视",att:0,push:0}],reqAtt:2},
 {id:"hj3",phase:1,minDay:2,lines:[{from:"them",text:"喂你在吗？我刚才想发「要不要一起吃宵夜」结果打成怪字。"},{from:"them",text:"信号有点糊。你要是听到电流声，先关免提——然后告诉我你吃了什么，我好安心。"}],replies:[{label:"你还好吗？",type:"追问",att:3,push:1,anomaly:1,kw:"语音噪声"},{label:"我关免提了",type:"安抚",att:1,push:0},{label:"信号不好吧",type:"忽视",att:0,push:0,warnIgnore:1}]},
@@ -6226,6 +6248,13 @@ function pickEndingBody(kind){
       }
     }catch(e){}
   }
+  if(kind==="true"){
+    return "【TEN DIFFERENT WAYS HOME · 十种回家方式】\n\n你把所有证据摊在长椅上，然后退了半步。\n你不再念日程表，不再核对名单，不再替任何人决定「怎么走才算对」。\n\n有人留下来整理照片，有人自己走向大门，有人跟你说了对不起，有人只说了句「回去再聊」就先走了。\n没有人排成一队。没有人走同一条路。\n\n出口的灯还是老样子。但这一次，门口的影子有十一个，朝着十一个方向。\n\n手机在你口袋里震了最后一下：\n「这次不用等所有人了。我们都可以回家。」\n\n（走过这个结局之后，群聊里会出现第十一个联系人。）";
+  }
+  if(kind==="perfect"){
+    const _pn=S.ownerId?((CHARS.find(c=>c.id===S.ownerId)||{}).name||"失主"):"失主";
+    return "【THE PERFECT PLAN · 完美计划】\n\n你照着"+_pn+"的日程表，把每一个人都送到了出口。\n没有人迟到。没有人走错。没有人吵起来。三天里所有的岔路，你都提前替他们选好了。\n\n所有人都在道谢。只有最后一张照片不对——\n十个人站在门口，笑得很整齐。\n拍照的人不在照片里。手机屏幕朝上摆在长椅上，联系人备注只有一个：失主。\n\n你低头看那行字。\n备注栏里的名字，是你自己的。\n\n（木马转完了一圈。座还是那个座。）";
+  }
   if(kind==="battery"){
     return "【黑屏】\n电用完了。\n\n不是手机没电。是灯放完了——你在里面看见的那些，一张一张回到最前面那一张。\n最前面那张没有人。椅子是空的，光还在。\n\n"
       + ((ENDING_TEXT.battery||{})[id] || (ENDING_TEXT.battery||{}).passerby || "");
@@ -6238,7 +6267,10 @@ function pickEndingBody(kind){
         ? `（结局：把你往里带的是 ${on}。）\n\n`
         : `（结局：想让你离开的是 ${on}。）\n\n`);
     }
-    return preface+t.replace(/\{n\}/g, n);
+    let out=preface+t.replace(/\{n\}/g, n);
+    if(kind==="safe") out+="\n\n——\n回到标题画面的时候，通知栏里多了一条没有头像的消息：\n「今天玩得开心吗？」\n\n（这个结局很温和。这也是它最不对的地方。）";
+    if(kind==="deep") out+="\n\n——\n手机在你口袋里安静下来，最后一次震动像一句道别：\n「不用等我了。你们先回家。」";
+    return out;
   }
   if(kind && kind.startsWith("char_")){
     const cid=kind.slice(5);
@@ -6283,7 +6315,7 @@ function showEndingChoices(){
   const screen=document.getElementById("screen");
   let html=`<div><h3>离开之前</h3><p class="muted">选择一种收束方式。条件不足的选项会灰掉。</p>`;
   opts.forEach(o=>{
-    const act = o.id==="char" ? "tryEnding('char')" : (o.id==="hidden" ? "triggerEnding('hidden')" : `tryEnding('${o.id==="safe"?"leave_safe":o.id==="deep"?"leave":o.id}')`);
+    const act = o.id==="char" ? "tryEnding('char')" : (o.id==="hidden"||o.id==="true"||o.id==="perfect"||o.id==="eleventh") ? "triggerEnding('"+o.id+"')" : `tryEnding('${o.id==="safe"?"leave_safe":o.id==="deep"?"leave":o.id}')`;
     html += `<button class="btn ${o.enabled?"primary":""}" ${o.enabled?"":"disabled"} style="margin:6px 0;opacity:${o.enabled?1:.45}" onclick="${act}">${esc(o.label)}</button>
       <p class="muted" style="margin:0 0 10px;font-size:11px">${esc(o.reason||"")}</p>`;
   });
@@ -6456,6 +6488,27 @@ function applyReply(cid, reply){
   if(reply.type==="追问"||reply.type==="质疑") S.flags.proactiveCount++;
   drainBattery(1.5);
   advanceTime(5+Math.floor(Math.random()*8));
+  /* —— 失主线：他问「几条未读」之后的第一句回答 —— */
+  if(cid==="hyunjae" && S.flags.unreadAsked && !S.flags.unreadAnswered){
+    S.flags.unreadAnswered=true;
+    S.chatLog[cid].push({from:"them",text:"……哦。没什么。未读会归零的，正常的手机都会。它一直没有归零——从上一轮起，就停在「1」。",type:"text",t:realTime()});
+    try{ gainAnomaly(1); }catch(e){}
+    try{ if(typeof tryChatJumpFace==="function") tryChatJumpFace(cid); }catch(e){}
+    return;
+  }
+  /* —— 规则三：同一个问题，不能向同一个人问第二次 —— */
+  if(reply.type==="追问"||reply.type==="质疑"){
+    S.flags.pried=S.flags.pried||{};
+    S.flags.pried[cid]=(S.flags.pried[cid]||0)+1;
+    if(S.flags.pried[cid]>=3){
+      const WL=["……你刚问过类似的了。","你是不是在查什么？","这个问题，是第二遍了。别再问了。"];
+      S.chatLog[cid].push({from:"sys",text:"（他停了一下，没有马上回。）",type:"sys",t:realTime()});
+      S.chatLog[cid].push({from:"them",text:WL[Math.floor(Math.random()*WL.length)],type:"text",t:realTime()});
+      try{ triSuspect(cid,2); }catch(e){}
+      try{ if(typeof tryChatJumpFace==="function") tryChatJumpFace(cid); }catch(e){}
+      return;
+    }
+  }
   const ph=charPhase(cid);
   let follow="";
   let followType="text";
@@ -7810,6 +7863,7 @@ function renderMapDead(){
 }
 function triggerEnding(kind){
   S.ownerRevealed=true;
+  if(kind==="true"){ try{ const _m=loadMem(); _m.trueDone=1; saveMem(_m); }catch(e){} }
   if(typeof ambienceDuck==="function") ambienceDuck(kind==="hidden"?0.15:0.08);
 
   S.flags.ended=true; S.flags.ending=kind;
@@ -7855,6 +7909,9 @@ function endingDisplayName(kind){
   if(kind==="deep") return "深入向";
   if(kind==="battery") return "黑屏";
   if(kind==="hidden") return "隐藏结局";
+  if(kind==="true") return "TEN DIFFERENT WAYS HOME · 真结局";
+  if(kind==="perfect") return "THE PERFECT PLAN · 循环结局";
+  if(kind==="eleventh") return "THE ELEVENTH SEAT · 第十一个座位";
   if(kind && kind.startsWith("char_")){
     const c=CHARS.find(x=>x.id===kind.slice(5));
     return "角色专属 · "+(c?c.name:"？");
@@ -7862,7 +7919,8 @@ function endingDisplayName(kind){
   return "未知结局";
 }
 function endingToneClass(kind){
-  if(kind==="hidden") return "ending settle hidden-end";
+  if(kind==="hidden"||kind==="perfect"||kind==="eleventh") return "ending settle hidden-end";
+  if(kind==="true") return "ending settle char-end";
   if(kind==="battery") return "ending settle bad-end";
   if(kind==="safe") return "ending settle clear-end";
   if(kind==="deep") return "ending settle clear-end";
@@ -8032,8 +8090,10 @@ function renderEnding(kind){
   unlockEndingMeta(kind);
 
   let title="", stamp="通关";
-  if(kind==="safe"){ title="结局 · 安全向"; stamp="清场离开"; }
-  else if(kind==="deep"){ title="结局 · 深入向"; stamp="带着错位离开"; }
+  if(kind==="safe"){ title="结局 · 安全向 A NORMAL SUMMER"; stamp="清场离开"; }
+  else if(kind==="deep"){ title="结局 · 失主结局 DON'T WAIT FOR ME"; stamp="选择遗忘"; }
+  else if(kind==="true"){ title="结局 · TEN DIFFERENT WAYS HOME"; stamp="十种回家方式"; }
+  else if(kind==="perfect"){ title="结局 · THE PERFECT PLAN"; stamp="一个都不少"; }
   else if(kind==="battery"){ title="结局 · 黑屏"; stamp="电量归零"; }
   else if(kind==="hidden"){ title="结局 · ？？？"; stamp="删除失败"; }
   else if(kind.startsWith("char_")){
@@ -8062,6 +8122,26 @@ function renderEnding(kind){
       <button class="btn danger" onclick="renderHiddenSettlement()">……结算被顶开</button>
     </div>`;
     screen0.scrollTop=0;
+    return;
+  }
+
+  if(kind==="eleventh"){
+    const n2=S.playerName||"你";
+    screen.innerHTML=`<div class="ending settle hidden-end overwrite">
+      <div class="anom-stream">
+        <div class="bubble sys" style="opacity:.55;font-size:11px">群聊 · 成员 11 人</div>
+        <div class="bubble sys" style="opacity:.55;font-size:11px">新联系人：${esc(n2)} · 头像：你自己的照片 · 备注：失主</div>
+        <div class="bubble them">如果你又捡到了这部手机，不要再试着让所有人一起离开。</div>
+        <div class="bubble them">这不是留言。这是我捡到它的那天，对自己说过的话。</div>
+        <div class="bubble me">……你是谁？</div>
+        <div class="bubble them">是走完一遍的你。木马转了一圈，座还是那个座。</div>
+        <div class="bubble sys" style="opacity:.55;font-size:11px">最后一条消息 · 发送时间：明天</div>
+        <div class="bubble them">这一次，你可以不用再等了。</div>
+      </div>
+      <p class="muted" style="margin:10px 0 6px;font-size:12px">THE ELEVENTH SEAT · 第十一个座位</p>
+      <button class="btn danger" onclick="afterEnd()">把手机放回长椅</button>
+    </div>`;
+    screen.scrollTop=0;
     return;
   }
 
@@ -8281,14 +8361,42 @@ function confirmDisclaimer(){
   if(typeof ambienceUnlock==="function") ambienceUnlock();
   renderStoryIntro();
 }
+/* 多周目：主页日历停摆 */
+function homeDateShiftHtml(){
+  try{ const m=loadMem();
+    if((m.runs||0)>=1) return '<span style="opacity:.55;font-size:11px"> · 日历停在一个你没选过的日期</span>';
+  }catch(e){}
+  return "";
+}
+/* 多周目：开场页的轮次角标 + 通知栏残留消息 */
+function introLoopKicker(){
+  try{
+    const m=loadMem();
+    return (m.runs||0)>=1 ? " · 第 "+(m.runs+1)+" 轮" : "";
+  }catch(e){ return ""; }
+}
+function introNoticeHtml(){
+  try{
+    const m=loadMem();
+    if(m.lastEnding==="safe" && !(m.said&&m.said.safeNotified)){
+      m.said=m.said||{}; m.said.safeNotified=1; saveMem(m);
+      return '<p style="border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:8px 10px;font-size:12.5px;line-height:1.6">📱 通知栏 · 没有头像的消息<br>「今天玩得开心吗？」</p>';
+    }
+    if(m.trueDone && !(m.said&&m.said.eleventhNudged)){
+      m.said=m.said||{}; m.said.eleventhNudged=1; saveMem(m);
+      return '<p style="border:1px solid rgba(224,85,85,.5);border-radius:10px;padding:8px 10px;font-size:12.5px;line-height:1.6">📱 通知栏 · 群聊<br>「群聊 · 成员 11 人」——你数了两遍，确实是 11。</p>';
+    }
+  }catch(e){}
+  return "";
+}
 function renderStoryIntro(){
   document.getElementById("dock").style.display="none";
   document.getElementById("menuBtn").style.display="none";
   const screen=document.getElementById("screen");
   screen.innerHTML=`<div class="intro-screen">
-    <div class="intro-kicker">STORY · 第 0 天</div>
+    <div class="intro-kicker">STORY · 第 0 天${introLoopKicker()}</div>
     <h2 class="glitch-text">把手机还给他</h2>
-    <div class="intro-body">
+    <div class="intro-body">${introNoticeHtml()}
       <p>八点差十分，广播说活动到此结束，请游客沿指示牌离场。</p>
       <p>天还没黑透。卖气球的那盏小灯先灭了，接着是兑奖处的卷帘，一格一格往下咬。</p>
       <p>你跟着人流往外走——然后你站住了。</p>
@@ -8709,7 +8817,7 @@ function renderHome(){
     ${guideNudge()}
     ${actionCardHtml()}
     ${guideHtml()}
-    <div class="today-tip"><div class="tt">${esc(dayLabel())}</div>${esc(info.tone)}</div>
+    <div class="today-tip"><div class="tt">${esc(dayLabel())}${homeDateShiftHtml()}</div>${esc(info.tone)}</div>
     <div class="home-apps">
       <button class="app-icon" onclick="gotoTab('chat')"><span class="ico">💬</span><span class="lab">聊天${unreadTotal?`(${unreadTotal})`:""}</span></button>
       <button class="app-icon" onclick="gotoTab('album')"><span class="ico">🖼</span><span class="lab">相册</span></button>
@@ -9337,9 +9445,13 @@ function renderAlbum(){
 
 function renderMap(){
   if(typeof playUiSfx==="function") playUiSfx("map");
+  if(S.day>=2 && (S.flags.anomaliesSeen||0)>=3 && !S.flags.mapPinSeen){
+    S.flags.mapPinSeen=true;
+    addRecord("地图 · 不动的定位点","拍照区有一个从你进来就没动过的定位点。备注写着：失主。点开细节的时候，失主那一栏显示的，是你自己的名字。");
+  }
   const screen=document.getElementById("screen");
   const needCh = needsChargeHint();
-  let html=`<h3>地图</h3><p class="muted">当前：${ZONES.find(z=>z.id===S.currentZone)?.name||"?"} · ${dayLabel()} ${realTime()}<br>移动消耗电量与时间${needCh?" · <b style=color:#27ae60>请优先去安全区充电</b>":""}</p><div class="map-grid">`;
+  let html=`<h3>地图</h3><p class="muted">当前：${ZONES.find(z=>z.id===S.currentZone)?.name||"?"} · ${dayLabel()} ${realTime()}<br>移动消耗电量与时间${needCh?" · <b style=color:#27ae60>请优先去安全区充电</b>":""}${(S.day>=2&&(S.flags.anomaliesSeen||0)>=3)?'<br><span style="color:#e05555">● 有一个定位点从你进来就没动过 · 拍照区 · 备注：「失主」</span>':''}</p><div class="map-grid">`;
   ZONES.forEach(z=>{
     const locked=z.hidden && !S.emptyUnlocked;
     const here=S.currentZone===z.id;
@@ -9618,11 +9730,25 @@ const ZONE_DAY_EXTRA={
          3:"草地上多了一行脚印，从栅栏缺口进来，到你站的位置前一步，消失。脚印比你的鞋小半码。"}
 };
 function clampDay(){ return Math.min(S.day||1,3); }
+/* 失主三层反转 · 第二层：照片里多出来的那只手 */
+function prevPickExtra(pid){
+  if(pid!=="p7") return "";
+  let runs=0;
+  try{ runs=(loadMem().runs||0); }catch(e){}
+  if(runs>=1 || S.day>=3){
+    if(S.flags.prevPickSeen) return "";
+    S.flags.prevPickSeen=true;
+    return "放大左下角：合影最边上多出半只袖子。袖口的弧度朝向镜头，像有人正举着手机在拍这张照片。十个人里，没有一个人承认这只手是自己的。相纸背面有一行铅笔小字：「每一轮都在。」";
+  }
+  return "";
+}
 function photoExtraFor(pid){
   const m=PHOTO_DAY_EXTRA[pid]; if(!m) return null;
   const d=clampDay(); const t=m[d];
   if(!t) return null;
-  if(S.flags["phRe_"+pid+"_d"+d]) return null;
+  if(S.flags["phRe_"+pid+"_d"+d]) return prevPickExtra(pid);
+  const pe=prevPickExtra(pid);
+  if(pe) return pe;
   return t;
 }
 /* 走马灯 · 这些不是园区的照片 */
@@ -9798,6 +9924,15 @@ function crookWhisper(cid){
     if(t.seenTells[cid].indexOf(label)<0) t.seenTells[cid].push(label);
   }
   if(typeof renderChatList==="function"){} // 由 tick 刷新
+}
+/* 失主三层反转 · 第一层：那句「几条未读」 */
+function eleventhTick(){
+  if(!S || S.flags.ended) return;
+  if(S.day>=1 && S.hour>=19 && !S.flags.unreadAsked && S.chatLog && S.chatLog.hyunjae){
+    S.flags.unreadAsked=true;
+    const b=(DIALOGUE.hyunjae||[]).find(function(x){return x.id==="hj_unread";});
+    if(b) injectBeat("hyunjae", b);
+  }
 }
 /* 到点就漏一句。越晚越频繁，偏执越高越频繁 */
 function crookTick(){
@@ -10384,6 +10519,7 @@ window.onload=()=>{
     if(typeof tryStatusJumpFace==="function" && S.battery<28 && Math.random()<0.08) tryStatusJumpFace();
     if(typeof maybeOwnerPing==="function") maybeOwnerPing({fromTimer:true});
     if(typeof crookTick==="function") crookTick();
+    if(typeof eleventhTick==="function") eleventhTick();
   }, 4000);
   // 每 45 秒兜底存一次，防止长时间翻备忘录被清掉
   setInterval(()=>{ if(S.playerName && !S.flags.ended) autoSaveNow(); }, 45000);

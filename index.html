@@ -77,6 +77,50 @@ html,body{height:100%;background:
 .step-card .sk{font-size:10px;letter-spacing:.16em;color:#e7b56a;margin-bottom:4px}
 .step-card h3{font-size:18px;margin:0 0 6px}
 .step-card p{font-size:13px;line-height:1.6;color:#e6d7c8;margin:0 0 10px}
+/* —— 主页进度面板 —— */
+.prog-card{background:rgba(18,24,34,.62);border:1px solid rgba(120,160,200,.22);border-radius:12px;padding:11px 12px;margin:10px 0}
+.phone.horror .prog-card{background:rgba(28,20,30,.66);border-color:rgba(170,80,90,.28)}
+.prog-h{display:flex;justify-content:space-between;align-items:center;font-size:11px;letter-spacing:.12em;color:#9fb8d2;cursor:pointer}
+.prog-h b{color:#e6d7c8;font-weight:600;letter-spacing:0}
+.prog-h .pg-f{color:#7f93a8;font-size:10px;letter-spacing:0}
+.prog-daybar{height:4px;border-radius:3px;background:rgba(255,255,255,.1);margin:8px 0 7px;overflow:hidden}
+.prog-daybar i{display:block;height:100%;background:linear-gradient(90deg,#7fb2d8,#e7b56a)}
+.prog-goal{font-size:12px;color:#e6d7c8;margin-bottom:9px;line-height:1.5}
+.prog-goal span{color:#8a9fb5}
+.prog-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.prog-row{cursor:pointer}
+.prog-row .pr-t{display:flex;justify-content:space-between;font-size:11px;color:#b9c6d4;margin-bottom:3px}
+.prog-row .pr-t b{color:#e8b84b;font-weight:600}
+.prog-row.done .pr-t b{color:#7fc9a0}
+.prog-bar{height:5px;border-radius:3px;background:rgba(255,255,255,.09);overflow:hidden}
+.prog-bar i{display:block;height:100%;background:#6f9fc4;border-radius:3px;transition:width .3s}
+.prog-row.done .prog-bar i{background:#5f9e7d}
+.prog-card.fold .prog-grid,.prog-card.fold .prog-goal,.prog-card.fold .prog-daybar{display:none}
+/* —— 新周目提示 / 轮次档案 —— */
+.ng-card{background:linear-gradient(150deg,rgba(90,60,110,.3),rgba(18,24,34,.7));border:1px solid rgba(180,130,200,.32);border-radius:12px;padding:11px 12px;margin:10px 0;cursor:pointer}
+.ng-card.locked{background:rgba(20,26,36,.6);border-color:rgba(255,255,255,.12)}
+.ng-h{font-size:13px;font-weight:700;color:#e6d7c8;margin-bottom:5px}
+.ng-b{font-size:12px;line-height:1.65;color:#b9c6d4}
+.ng-go{font-size:11px;color:#d7a7e6;margin-top:7px;text-align:right}
+.ng-card.locked .ng-go{color:#8a9fb5}
+.ng-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.ng-pill{font-size:10px;padding:3px 7px;border-radius:20px;background:rgba(255,255,255,.07);color:#94a3b3}
+.ng-pill.on{background:rgba(150,90,180,.32);color:#f0d8ff}
+/* —— 上一轮 · 它都记得（原来没样式）—— */
+.meta-ghost{background:rgba(147,112,219,.08);border:1px dashed rgba(147,112,219,.32);border-radius:10px;padding:10px 12px;margin:10px 0}
+.mg-t{font-size:11px;letter-spacing:.12em;color:#c9a6dc;margin-bottom:4px}
+.mg-b{font-size:12px;line-height:1.65;color:#c3b9cf}
+.mg-s{font-size:11px;color:#8a7f96;margin-top:5px}
+/* —— 轮次档案 —— */
+.arc-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.arc-row b{color:#e8b84b;font-weight:600}
+.arc-bar{height:5px;border-radius:3px;background:rgba(255,255,255,.09);overflow:hidden;margin:3px 0 9px}
+.arc-bar i{display:block;height:100%;background:#9a6fb8;border-radius:3px}
+.arc-item{padding:9px 10px;border-radius:9px;background:rgba(255,255,255,.045);margin-top:7px;font-size:12px;line-height:1.6;color:#c3b9cf}
+.arc-item.on{background:rgba(150,90,180,.16);border-left:2px solid #b07fd0}
+.arc-item .ai-t{color:#e6d7c8;font-weight:600;display:block;margin-bottom:2px}
+.arc-item.lock{opacity:.62}
+
 .status-bar{display:flex;justify-content:space-between;align-items:center;
   padding:10px 14px 8px;font-size:11px;background:var(--glass);backdrop-filter:blur(12px);
   flex-shrink:0;z-index:20;border-bottom:1px solid rgba(255,255,255,.06);gap:6px}
@@ -1989,6 +2033,7 @@ function advanceTime(mins, opts){
   if(S.day>=3) S.flags.nightAnomalyStarted=true;
   updateStatus();
   try{ if(typeof horrorTick==="function") horrorTick(); }catch(e){}
+  try{ if(typeof ngTick==="function") ngTick(); }catch(e){}
   autoSave();
   if(S.pendingDayCard && !opts.silentDay){
     // show after current render cycle
@@ -5383,6 +5428,72 @@ function finishSwipe(win) {
 /* —— Digit puzzle —— */
 /* 通关次数：二周目起换一套规矩（锁倒咬 + 旧号码残留记录） */
 function ngClearCount(){ try{ return (loadMeta().clearCount||0); }catch(e){ return 0; } }
+/* 统一轮次口径：结局图鉴的通关次数与「再玩一次」的次数取大者，避免两处不同步 */
+function ngRunNo(){
+  try{ return Math.max(ngClearCount(), (loadMem().runs||0)); }catch(e){ return ngClearCount(); }
+}
+/* —— 周目专属对话：只有通关过一次的人才会收到 ——
+   不解释、不点破身份，只让他们说一句「我记得你上次」。 */
+const NG_DIALOGUES=[
+  {id:"ng_sangyeon", cid:"sangyeon", title:"点名", need:1,
+   hint:"第二轮起 · 回过任意一个人",
+   lines:[
+     "等一下。",
+     "你刚才回人的顺序，跟上次一模一样。",
+     "我没点名。你别那样看我。……今天名单上还是十一个，我数过。"
+   ]},
+  {id:"ng_new", cid:"new", title:"删得更早", need:2,
+   hint:"第二轮起 · 恢复过删除记录",
+   lines:[
+     "这条你删过。",
+     "上一次删得比这次还早，早了整整一天。",
+     "你听，回声又慢半拍。它比你多走了一轮，还是追不上。"
+   ]},
+  {id:"ng_hyunjae", cid:"hyunjae", title:"它没听话", need:3,
+   hint:"第二轮起 · 第三天入夜后",
+   lines:[
+     "跟你说个好消息：你上次把手机放回长椅了。",
+     "坏消息是，它没听话。早上又回到那个凹陷里，屏幕还亮着。",
+     "所以这次别费劲了。陪我坐一会儿就行。——这句我上次也说过，你没听。"
+   ]},
+  {id:"ng_juyeon", cid:"juyeon", title:"第二十步", need:4,
+   hint:"第二轮起 · 第四天以后，撞见那张脸",
+   lines:[
+     "你看见那张脸了。",
+     "名单上没有它，闸机也没有放行记录。可它进来了。",
+     "第十一个位置一直空着。你上次走到第二十步就停了——这次，我陪你走完。"
+   ]}
+];
+function ngSeenMap(){
+  try{ return (loadMeta().ngSeen)||{}; }catch(e){ return {}; }
+}
+function ngSeenCount(){ return NG_DIALOGUES.filter(d=>!!ngSeenMap()[d.id]).length; }
+/* 到点就漏一句上一轮的话。只在本轮触发一次，跨轮次记进图鉴。 */
+function ngTick(){
+  try{
+    if(!S || S.flags.ended || ngRunNo()<1) return;
+    if(!S.flags.ngBeats) S.flags.ngBeats={};
+    const p=routeSnapshot();
+    const cap=(typeof dayCap==="function")?dayCap():5;   /* 简易版只有三天，条件同步压缩 */
+    const conds={
+      ng_sangyeon: p.replied.length>=1,
+      ng_new: (S.deletedLayer||0)>=1,
+      ng_hyunjae: (S.day||1)>=Math.min(3,cap) && ((S.hour||0)>=21 || cap<=3),
+      ng_juyeon: (S.day||1)>=Math.min(4,cap) && (S.flags.sp_facecg===1 || !!p.empty || cap<=3)
+    };
+    NG_DIALOGUES.forEach(function(d){
+      if(S.flags.ngBeats[d.id] || (S.day||1)<Math.min(d.need,cap) || !conds[d.id]) return;
+      S.flags.ngBeats[d.id]=1;
+      if(!S.chatLog) S.chatLog={};
+      if(!S.chatLog[d.cid]) S.chatLog[d.cid]=[];
+      injectBeat(d.cid, {id:d.id, lines:d.lines.map(function(t){ return {from:"them",text:t}; })});
+      try{ const m=loadMeta(); m.ngSeen=m.ngSeen||{}; if(!m.ngSeen[d.id]) m.ngSeen[d.id]=Date.now(); saveMeta(m); }catch(e){}
+      try{ addRecord("上一轮的声音 · "+d.title, d.lines.join("\n")); }catch(e){}
+      try{ const c=CHARS.find(function(x){return x.id===d.cid;});
+           toast("🔓 解锁了一段上一轮的话 · "+(c?c.name:"")); }catch(e){}
+    });
+  }catch(e){}
+}
 function pwIsMirror(){ return ngClearCount() >= 1; }
 function renderPuzzleBoard() {
   gpInit();
@@ -9327,6 +9438,7 @@ function renderMore(){
         <button class="more-cell" onclick="openMenu()"><span>☰</span><b>存档 / 音乐</b></button>
         <button class="more-cell" onclick="renderRules('more')"><span>🪧</span><b>入园守则</b></button>
         <button class="more-cell" onclick="renderLoreBook()"><span>📖</span><b>园区规矩</b></button>
+        <button class="more-cell" onclick="renderRunArchive()"><span>🔁</span><b>轮次档案${ngRunNo()>0?"<i>新</i>":""}</b></button>
         <button class="more-cell" onclick="openGuide()"><span>📘</span><b>玩法指南</b></button>
         <button class="more-cell more-exit" onclick="tryLeavePark()"><span>🚪</span><b>离开园区</b></button>
       </div>
@@ -9424,6 +9536,113 @@ function goGuideStep(i){
   S.flags.guideDone=true; render();
 }
 
+
+/* ============================================================
+   主页进度面板：把「我走到哪了」写成看得见的数字
+   ============================================================ */
+function pgMeter(label, val, total, onclick, extraCls){
+  const done = val>=total;
+  const w = Math.max(3, Math.min(100, Math.round(val/Math.max(total,1)*100)));
+  return `<div class="prog-row ${done?"done":""} ${extraCls||""}" onclick="${onclick}">
+    <div class="pr-t"><span>${esc(label)}</span><b>${val}/${total}</b></div>
+    <div class="prog-bar"><i style="width:${w}%"></i></div>
+  </div>`;
+}
+function progressPanelHtml(){
+  if(S.flags.ended) return "";
+  try{
+    const p=routeSnapshot();
+    const cap=dayCap();
+    const day=Math.min(S.day||1,cap);
+    const dayPct=Math.max(6,Math.round(day/Math.max(cap,1)*100));
+    const fold=!!S.flags.progFold;
+    const step=nextStep();
+    const notes=triAllNotes().length;
+    const hot=Math.min(6,p.hot||0);
+    const del=Math.min(3,S.deletedLayer||0);
+    const dig=Math.min(4,(S.digits||[]).length);
+    let rows="";
+    rows+=pgMeter("已发现异常",notes,3,"renderCrookBoard()");
+    rows+=pgMeter("已回的人",p.replied.length,10,"gotoTab('chat')");
+    rows+=pgMeter("相册线索",hot,6,"gotoTab('album')");
+    if(day>=2) rows+=pgMeter("密码数字",dig,4,"renderPuzzleBoard()");
+    if(day>=2) rows+=pgMeter("删除层",del,3,"renderDeleted()");
+    if(day>=4) rows+=pgMeter("隐藏文件",Object.keys(S.flags.hiddenRead||{}).length,6,"renderHiddenApp()");
+    return `<div class="prog-card ${fold?"fold":""}">
+      <div class="prog-h" onclick="S.flags.progFold=!S.flags.progFold;autoSaveNow();render()">
+        <span>本局进度</span><span><b>第 ${day}/${cap} 天</b><span class="pg-f">　${fold?"展开":"收起"} ${fold?"⌄":"⌃"}</span></span>
+      </div>
+      <div class="prog-daybar"><i style="width:${dayPct}%"></i></div>
+      <div class="prog-goal"><span>当前目标 · </span>${esc(step.title)}</div>
+      <div class="prog-grid">${rows}</div>
+    </div>`;
+  }catch(e){ return ""; }
+}
+/* —— 新周目提示：没通关的人给钩子，通关过的人给进度 —— */
+function runHintHtml(){
+  if(S.flags.ended) return "";
+  try{
+    const n=ngRunNo();
+    if(n<1){
+      if((S.day||1)<2) return "";
+      return '<div class="ng-card locked" onclick="renderRunArchive()">'
+        +'<div class="ng-h">🔒 下一轮才给看</div>'
+        +'<div class="ng-b">通关一次之后，有几段话才会浮上来。手机里还留着不属于这一轮的聊天记录——它比你早到。</div>'
+        +'<div class="ng-go">看看还差什么 ›</div></div>';
+    }
+    const seen=ngSeenMap();
+    const pills=NG_DIALOGUES.map(function(d){
+      return `<span class="ng-pill ${seen[d.id]?"on":""}">${seen[d.id]?"✓":"○"} ${esc(d.title)}</span>`;
+    }).join("");
+    const got=NG_DIALOGUES.filter(function(d){return !!seen[d.id];}).length;
+    return `<div class="ng-card" onclick="renderRunArchive()">
+      <div class="ng-h">第 ${n+1} 轮 · 它认得你</div>
+      <div class="ng-b">${got>0?"已经有人认出你了。剩下的还在等各自的时辰。":"这一轮，他们说的话会和上次不一样。先回一个人试试。"}</div>
+      <div class="ng-pills">${pills}</div>
+      <div class="ng-go">轮次档案 · 已解锁 ${got}/${NG_DIALOGUES.length} ›</div>
+    </div>`;
+  }catch(e){ return ""; }
+}
+/* —— 轮次档案：把「重玩能得到什么」一次列清楚 —— */
+function renderRunArchive(){
+  const screen=document.getElementById("screen");
+  const dock=document.getElementById("dock"); if(dock) dock.style.display="none";
+  const mb=document.getElementById("menuBtn"); if(mb) mb.style.display="none";
+  let n=0, meta={unlocked:{}}, cat=[], unc=0, seen={};
+  try{ n=ngRunNo(); meta=loadMeta(); cat=(typeof ENDING_CATALOG==="function")?ENDING_CATALOG():[];
+       unc=cat.filter(c=>meta.unlocked[c.key]).length; seen=meta.ngSeen||{}; }catch(e){}
+  const ngCount=Object.keys(cat).length||9;
+  const pages=Math.min(5,n+1);
+  const pers=(typeof CHARS!=="undefined")?CHARS.filter(c=>S.flags["per_"+c.id]).length:0;
+  const hidden=Object.keys(S.flags.hiddenRead||{}).length;
+  const bar=function(label,val,total){
+    const w=Math.max(3,Math.min(100,Math.round(val/Math.max(total,1)*100)));
+    return `<div class="arc-row"><span>${esc(label)}</span><b>${val}/${total}</b></div><div class="arc-bar"><i style="width:${w}%"></i></div>`;
+  };
+  let items=NG_DIALOGUES.map(function(d){
+    const on=!!seen[d.id];
+    return `<div class="arc-item ${on?"on":"lock"}">
+      <span class="ai-t">${on?"🔓 ":"🔒 "}${esc(d.title)}</span>
+      ${on?esc(d.lines[0]):esc(d.hint)}
+    </div>`;
+  }).join("");
+  screen.innerHTML=`<div class="lore-screen">
+    <div class="lore-h">RUN ARCHIVE · 轮次档案</div>
+    <h2 class="glitch-text">${n>0?("第 "+(n+1)+" 轮"):"还没走完第一轮"}</h2>
+    <p class="lore-lead">${n>0?"它记得你每一次走进来。没拿到的东西，不会归零。":"有些话只在第二轮之后才说得出口。这里先替你记着差什么。"}</p>
+    ${bar("结局图鉴",unc,ngCount)}
+    ${bar("二周目残页",pages,5)}
+    ${bar("上一轮的声音",NG_DIALOGUES.filter(d=>!!seen[d.id]).length,NG_DIALOGUES.length)}
+    ${bar("跟他们单独走过",pers,10)}
+    ${bar("隐藏文件",hidden,6)}
+    <div style="margin-top:14px;font-size:11px;letter-spacing:.12em;color:#9fb8d2">上一轮的声音 · 解锁条件</div>
+    ${items}
+    <p class="muted" style="margin-top:12px;font-size:12px;line-height:1.7">${n>0?"残页每多通关一次多浮出一条。第五次要走满四轮。":"通关一次 → 残页浮出两条、陌生号码里多出三天前的记录、四个人会开始认出你。"}</p>
+    <button class="btn primary" onclick="closeRunArchive()">合上</button>
+    ${n>0?'<button class="btn" onclick="renderSecondPlay()">🩹 看二周目残页</button>':""}
+    <button class="btn" onclick="renderEndingGallery()">🏅 结局图鉴</button>
+  </div>`;
+}
 function renderHome(){
   const screen=document.getElementById("screen");
   const info=dayBrief();
@@ -9447,7 +9666,9 @@ function renderHome(){
       <p>${esc(step.sub)}</p>
       <button class="btn primary" onclick="doNextStep()">${esc(step.label)}</button>
     </div>
+    ${progressPanelHtml()}
     ${alert}
+    ${runHintHtml()}
     ${triMiniHtml()}
     ${guideNudge()}
     ${actionCardHtml()}
@@ -11248,6 +11469,10 @@ function zoneReLook(zid){
   showCluePopup("再看 · "+z.name+"（第"+d+"天）", t+"\n\n已写入记录。异常感上升。", {tag:"园区再看"});
   renderArea(zid);
 }
+function closeRunArchive(){
+  try{ showPhone(); }catch(e){ S.view="phone"; }
+  render();
+}
 /* —— 主页：两处深入口的显眼提示 —— */
 /* 主页「深入入口」——改成分组动作卡，不再和数值混在一起 */
 function actionCardHtml(){
@@ -11283,7 +11508,12 @@ function actionCardHtml(){
       <span class="act-t"><b>嫌疑板</b><small>${esc(a3)}</small></span>
       <span class="act-n">›</span>
     </button>
-    ${ pwIsMirror() ? `<button class="act-row" onclick="renderSecondPlay()"><span class="act-i">🩹</span><span class="act-t"><b>二周目 · 残页</b><small>通关后才浮上来</small></span><span class="act-n">›</span></button>` : "" }
+    ${ pwIsMirror() ? `<button class="act-row" onclick="renderSecondPlay()"><span class="act-i">🩹</span><span class="act-t"><b>二周目 · 残页</b><small>已浮出 ${Math.min(5,ngRunNo()+1)}/5 · 每通关一次多一条</small></span><span class="act-n">›</span></button>` : "" }
+    <button class="act-row" onclick="renderRunArchive()">
+      <span class="act-i">🔁</span>
+      <span class="act-t"><b>轮次档案</b><small>${ngRunNo()>0?("已解锁 "+ngSeenCount()+"/"+NG_DIALOGUES.length+" 段上一轮的话"):"通关一次后，这里会不一样"}</small></span>
+      <span class="act-n">›</span>
+    </button>
   </div>`;
 }
 
@@ -11725,12 +11955,18 @@ function renderSecondPlay(){
     "【残页·四】牧羊人的本子上记着人数。你一页一页往前翻，翻到某一页，字迹忽然不是你认识的那种了。",
     "【残页·五】你这次之所以还记得一点点，是因为上一次的你，在最后那几分钟里，拼命留下了一样东西：这感觉。",
   ];
+  const shown=Math.min(5,ngRunNo()+1);
+  const open=pages.slice(0,shown).map(function(p){ return '<div class="rule-item"><div class="rule-tx">'+esc(p)+'</div></div>'; }).join("");
+  const rest=pages.slice(shown).map(function(p,i){
+    return '<div class="rule-item" style="opacity:.4"><div class="rule-tx">【残页·'+(shown+i+1)+'】再通关一次，这一条才会浮上来。</div></div>';
+  }).join("");
   screen.innerHTML=`<div class="lore-screen">
-    <div class="lore-h">SECOND PLAY · 残页</div>
+    <div class="lore-h">SECOND PLAY · 残页 ${shown}/${pages.length}</div>
     <h2 class="glitch-text">只有二周目看得见的</h2>
-    <p class="lore-lead">通关一次之后，这些字才浮上来。</p>
-    ${pages.map(function(p){ return '<div class="rule-item"><div class="rule-tx">'+esc(p)+'</div></div>'; }).join("")}
+    <p class="lore-lead">通关一次之后，这些字才浮上来。每多走完一轮，多认出一条。</p>
+    ${open}${rest}
     <button class="btn primary" onclick="render()">合上</button>
+    <button class="btn" onclick="renderRunArchive()">🔁 轮次档案</button>
     <button class="btn" onclick="openGuide()">📘 玩法指南</button>
   </div>`;
 }

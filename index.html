@@ -1711,11 +1711,13 @@ const PHOTOS = [
     hotspot:{x:50,y:34,id:"night:sign",clue:"残缺的灯",body:"灯牌只亮一半。歌也像从中间开始。",chain:"kevin",chainText:"灯牌上的字不该少。歌也不该少一截。",anomaly:true}},
   {id:"back",title:"后台通道",day:2,park:"back",desc:"最后一天的名字被擦掉了。",
     hotspot:{x:40,y:42,id:"back:schedule",clue:"擦掉的名字",body:"擦掉的地方反光。看不清是谁的名字。",chain:"sangyeon",chainText:"别看了。",anomaly:false}},
-  {id:"lot",title:"空地",day:3,park:"lot",desc:"栅栏外。地图上没有这里。",
+  {id:"ledger",title:"失物登记簿",day:4,park:"ticket",desc:"第十件的物品栏是空的。",
+    hotspot:{x:40,y:52,id:"ledger:10th",clue:"第十件失物",body:"编号 10。日期是今天。物品栏空着，拾得人签名栏也空着。两个空栏，像在互相等。",anomaly:true}},
+  {id:"lot",title:"空地",day:4,park:"lot",desc:"栅栏外。地图上没有这里。",
     hotspot:{x:50,y:55,id:"lot:gap",clue:"光秃中央",body:"草是干的。风停了一下。屏幕自己亮了一格。",scare:true,face:true,anomaly:true}},
   {id:"p7",title:"侧幕合影残片",day:2,park:"stage",desc:"脸看不清。下面写着全员。",
     hotspot:{x:70,y:40,id:"stage:gap",clue:"人数缺口",body:"写着全员。人却少了一个位置。",anomaly:true}},
-  {id:"p8",title:"夜场余光",day:3,park:"night",desc:"副歌被掐断的那一帧。",hotspot:null},
+  {id:"p8",title:"夜场余光",day:5,park:"night",desc:"副歌被掐断的那一帧。",hotspot:null},
   {id:"p9",title:"删前残留",day:3,park:null,desc:"几乎全黑。文件名：final_?.jpg",
     hotspot:{x:50,y:40,id:"h7",clue:"中央轮廓",body:"中间有一点轮廓。放大以后只剩噪点。",anomaly:true,face:true}}
 ];
@@ -1739,7 +1741,7 @@ function defaultState(){
       safeStopOffered:false, leftPark:false, ended:false, ending:null,
       nightAnomalyStarted:false, faceAlbumDone:false,
       seenContradiction:0, readGlitch:false,
-      dayBriefed:{1:false,2:false,3:false}, disclaimerOk:false,
+      dayBriefed:{1:false,2:false,3:false,4:false,5:false}, disclaimerOk:false,
       refusedCharge:false, chargedCount:0, deadBattery:false,
       missedMsgWindow:false, jumpReduce:false, juyeonHeld:false, softScare:false, alignHints:0, npcMet:[],
       flashSafe:false, tutorialSeen:false, autoSavedAt:0, anomFrac:0,
@@ -1784,6 +1786,30 @@ function gainAnomaly(n){
 
 // —— Time / battery ——
 const DAY_ESSAYS = {
+  4:{
+    sunwoo:"(名字)，睡了吗。我今天把我们的合照数了一遍，数出来一个我不认识的数。你要是也数了，先别告诉我。我想看看，我们数出来的是不是同一个。",
+    q:"(名字)！我把拍你的那张设成壁纸了。然后我发现壁纸里的我，比照片里的我高一点。……当我没说。晚安！",
+    eric:"(名字)！！今天检票口的灯亮了一整天，没人刷卡它自己嘀了一声。我说给哥听，哥说园区的灯都这样。灯都这样？！哪个园区的灯是这样啊！！",
+    new:"(名字)。正经问你一件事：你第一次见到我们，是十个，还是……算了。当我喝多了。早点睡。",
+    sangyeon:"(名字)。今晚巡场，我在检票口坐了一会儿。登记簿摊开着，我没翻。有些页码一旦翻开，就得负责到底。明天见。",
+    jacob:"(名字)，汤我今晚多熬了一份，放在老位置。你明天来的时候它要是还温着，就说明这里有个人还记得你爱吃什么。……是我就最好了。",
+    juyeon:"(名字)。我又去数了木马。今天很正常，十匹。我反而不知道该不该高兴。原来数对的时候，心里也会发空。",
+    younghoon:"(名字)。面包我咬了一口才想起拍照。拍完发现，缺了一块的形状，比完整的更像什么。晚安。别想我这句话。",
+    hyunjae:"(名字)，后台的对讲机今天自己响了。我拔了电池它还在响。我把这事记下来，记完纸还在。可我宁愿它没了。",
+    kevin:"(名字)。妈妈问我这个夏天过得怎么样。我说，像偷来的。她说偷来的也要好好过。……晚安。明天见。一定。"
+  },
+  5:{
+    sunwoo:"(名字)。今天是最后一天。我把我说过的笑话复盘了一遍，想挑一个最不好笑的留在最后。……挑不出来。每一个都舍不得。",
+    q:"(名字)！！发箍给你留在你捡到手机的那张长椅上了。这样木马就认得你啦。别哭。兔子先哭了。",
+    eric:"(名字)。哥说结束的时候要数人数。我数了，十个。……要是哪天有人数出十一个，替我多看那个人一眼。就一眼。",
+    new:"(名字)。最后一天，我不摆姿势了。你随便拍。虚的那半边，这次不用躲。",
+    sangyeon:"(名字)。登记簿我合上了。签名的栏目，我替你写好了。别问我怎么知道你想写什么。园长要有园长的样子。",
+    jacob:"(名字)。最后一锅汤，我开最小火，让它一直温着。你什么时候回来，它什么时候关。……不用赶。真的。",
+    juyeon:"(名字)。木马我今天数了三遍，三遍都是十一。我不想数第四遍了。你来的话，你数。你数出来的，就是我欠你的答案。",
+    younghoon:"(名字)。最后一天，我带了完整的面包来。完整的反而不好看。……你看，有些东西缺着，才是它的样子。回来吧。",
+    hyunjae:"(名字)。对讲机我修好了，今晚它安静得像在听我们说话。……最后一天了。你说的每一句，我都当它会被留下来。",
+    kevin:"(名字)。这张拍给妈妈。她说：替她抱抱你。还说，偷来的夏天也要记得还。……可我想赖账一次。就一次。"
+  },
   1:{
     sunwoo:"(名字)，今天先说到这。\n我知道我话多，你要是已经觉得烦了也正常ㅋㅋ 但我还是想把今天说完。\n你有回我。我看见已读了，就当你还在园区。饮食区的柠檬水挺酸的，别空腹喝。手机电量少了就去充电，别硬撑。\n明天我还找你。不是那种很正式的晚安，就是先睡。",
     q:"(名字)！今天结束了！！\n你回我了，我看见了。谢谢。真的谢谢。\n我今天跑了很多地方，鞋子都是灰。你要是也在园区，别站太里面，出口不好找。\n明天我再发。这次说到做到！",
@@ -1822,7 +1848,7 @@ const DAY_ESSAYS = {
   }
 };
 function deliverDayEssays(day){
-  day=Math.min(Math.max(day||1,1),3);
+  day=Math.min(Math.max(day||1,1),5);
   if(!DAY_ESSAYS[day]) return;
   const key="essay_"+day;
   if(S.flags[key]) return;
@@ -1905,24 +1931,24 @@ function advanceTime(mins, opts){
     S.day++;
   }
   if(S.day > prevDay){
-    for(let d=prevDay; d<S.day && d<=3; d++){
+    for(let d=prevDay; d<S.day && d<=5; d++){
       if(typeof deliverDayEssays==="function") deliverDayEssays(d);
     }
   }
-  if(S.day > prevDay && S.day<=3){
+  if(S.day > prevDay && S.day<=5){
     S.pendingDayCard = S.day;
     S.flags.dayBriefed[S.day] = false;
   }
-  if(S.day>3){
+  if(S.day>5){
     if(!S.flags.ended) tryEnding("timeup");
-    S.day = 3; S.hour = Math.min(S.hour, 23);
+    S.day = 5; S.hour = Math.min(S.hour, 23);
   }
   // Night of day 2+ anomaly start
   if(S.day>=2 && S.hour>=22) S.flags.nightAnomalyStarted=true;
   if(S.day===3 && S.hour>=19 && typeof injectDayEndMemo==='function') injectDayEndMemo(3);
   if(typeof maybeOwnerPing==="function"){
     if(S.day>=2 && !S.flags.ownerPingDay2){ S.flags.ownerPingDay2=true; maybeOwnerPing({force:true}); }
-    if(S.day>=3 && !S.flags.ownerPingDay3){ S.flags.ownerPingDay3=true; maybeOwnerPing({force:true}); }
+    if(S.day>=4 && !S.flags.ownerPingDay3){ S.flags.ownerPingDay3=true; maybeOwnerPing({force:true}); }
     else if(Math.random()<0.45) maybeOwnerPing();
   }
   if(S.day>=3) S.flags.nightAnomalyStarted=true;
@@ -1959,7 +1985,7 @@ function isDeepNight(){ return S.hour>=23 || S.hour<5 || (S.hour===22 && S.minut
 function isLateNight(){ return S.hour>=22 || S.hour<5; }
 function moodName(){
   if(!S || !S.playerName) return "calm";
-  if(S.day>=3 || (S.day>=2 && isLateNight()) || S.battery<28 || (S.flags.anomaliesSeen||0)>=6) return "horror";
+  if(S.day>=4 || (S.day>=3 && isLateNight()) || S.battery<28 || (S.flags.anomaliesSeen||0)>=6) return "horror";
   if(S.day>=2 || (S.flags.anomaliesSeen||0)>=3) return "uneasy";
   return "calm";
 }
@@ -2011,6 +2037,19 @@ function nextStep(){
     if(p.keeps<4) return {title:"再带他走走",sub:"有些纪念品要同行才拿得到。也差不多是时候收尾了。",go:"map",label:"打开地图"};
     return {title:"怎么离开",sub:"放回长椅，带着看到的走，或顺着聊得最多的人。",go:"leave",label:"去结局"};
   }
+  if(day===4){
+    if(!S.flags.g10hot3) return {title:"那张合照又变了",sub:"相册最上面那张。中央那团影子，昨天还没有形状。",go:"album",label:"去相册"};
+    if(!S.flags.sp_calls) return {title:"通话记录不对",sub:"更多里打开电话。里面有几通你没有拨过的电话。",go:"more",label:"打开电话"};
+    if(p.replied.length<9) return {title:"有人想跟你确认一件事",sub:"他说他要你亲口数一遍。已回 "+p.replied.length+" 人。",go:"chat",label:"去回"};
+    if(p.del<2) return {title:"再看一次删除层",sub:"你删掉的东西，今天读起来不一样了。",go:"deleted",label:"去看"};
+    if(!p.empty) return {title:"空地在等",sub:"栅栏外的草今天不是那个颜色。",go:"map",label:"去空地"};
+    return {title:"第四天·还剩一天",sub:"今晚把时间拖过去。明天，所有线索都会说真话。",go:"leave",label:"离开园区"};
+  }
+  if(day>=5){
+    if(p.hot<6) return {title:"把线索串起来",sub:"相册的虚线圆还剩没点完的。已找到 "+p.hot+" 处。",go:"album",label:"去相册"};
+    if(p.replied.length<10) return {title:"最后一句",sub:"还差 "+(10-p.replied.length)+" 个人。今天不回，就没有机会了。",go:"chat",label:"去回"};
+    return {title:"最后的夏日",sub:"放回长椅，或带着它走。今天怎么离开，就是你记得的方式。",go:"leave",label:"去结局"};
+  }
   return {title:"怎么离开",sub:"放回长椅，带着看到的走，或顺着聊得最多的人。",go:"leave",label:"去结局"};
 }
 function doNextStep(){
@@ -2019,6 +2058,7 @@ function doNextStep(){
   else if(s.go==="album") gotoTab("album");
   else if(s.go==="map") gotoTab("map");
   else if(s.go==="deleted") renderDeleted();
+  else if(s.go==="more") renderMore();
   else if(s.go==="play"){ S.tab="play"; startMinigame("spot"); }
   else if(s.go==="suspect") renderSuspectBoard();
   else if(s.go==="puzzle") renderPuzzleBoard();
@@ -2037,7 +2077,9 @@ function anomalyLevel(){
   }
   if(S.flags.nightAnomalyStarted) lv++;
   if(S.day>=2 && isLateNight()) lv++;
-  if(S.day>=3) lv += 1.5;
+  if(S.day>=3) lv += 1;
+  if(S.day>=4) lv += 0.5;
+  if(S.day>=5) lv += 0.5;
   if(isLowBat()) lv++;
   if(isCritBat()) lv++;
   if(S.deletedLayer>=2) lv++;
@@ -3133,9 +3175,9 @@ function ENDING_CATALOG(){
       tease:"电量只剩一格，而你还想再删一层。"},
     {key:"battery", name:"黑屏", hint:"放弃充电或危险区耗尽", badge:"⬛",
       tease:"屏幕黑下去的时候，那边还在打字。"},
-    {key:"true", name:"十种回家方式", hint:"第3天 · 交出证据 · 不替任何人决定", badge:"🕯",
+    {key:"true", name:"十种回家方式", hint:"第4天起 · 交出证据 · 不替任何人决定", badge:"🕯",
       tease:"门口的影子有十一个方向。"},
-    {key:"perfect", name:"完美计划", hint:"第3天 · 日程表 · 一个人都不少", badge:"📋",
+    {key:"perfect", name:"完美计划", hint:"第4天起 · 日程表 · 一个人都不少", badge:"📋",
       tease:"所有人都到了。照片里少了一个。"}
   ];
 }
@@ -7001,6 +7043,28 @@ const COMP_ZONES = {
 };
 
 /* —— 心动彩蛋池：白天聊天小概率触发，第 3 条赠纪念品；深夜不触发，留给惊悚 —— */
+/* ================= 五日制 · D4/D5 新增剧情 ================= */
+(function(){
+  if(typeof DIALOGUE==="undefined") return;
+  const ADD={
+    q:[{id:"qd4",phase:2,minDay:4,lines:[{from:"them",text:"（拍照区，我昨天拍的。你数数几个人。）"},{from:"them",text:"数完告诉我。别数错，也别骗我。"}],replies:[{label:"十个",type:"安抚",att:2,push:0},{label:"十一个",type:"追问",att:3,push:1,anomaly:1,kw:"第十一人"},{label:"我数不出来",type:"质疑",att:2,push:1}]}, {id:"qd5",phase:2,minDay:5,lines:[{from:"them",text:"(名字)。发箍给你留在你捡到手机的那张长椅上了。"},{from:"them",text:"这样木马就认得你啦。别哭。兔子先哭了。"}],replies:[{label:"我不会哭",type:"安抚",att:2,push:0},{label:"木马为什么认得我",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}]}],
+    hyunjae:[{id:"hjd4",phase:2,minDay:4,lines:[{from:"them",text:"你翻翻你的记录。翻到「回拨」那几条，看看日期。"},{from:"them",text:"那些日期，都是我陪你在园区里走的日子。可我们昨天才认识。……这句是我说的。别的话，可不一定。"}],replies:[{label:"记录里还有别的",type:"追问",att:3,push:1,anomaly:1},{label:"什么意思",type:"质疑",att:2,push:1},{label:"我去看",type:"安抚",att:2,push:0}]}, {id:"hjd5",phase:2,minDay:5,lines:[{from:"them",text:"出门之前——把手机放回去之前，最后听我一句。"},{from:"them",text:"别回头数人数。走出去就行。要数，等出去了再数。外面数出来的，才是真的。"}],replies:[{label:"好，我不回头",type:"安抚",att:3,push:0},{label:"里面数出来的是什么",type:"追问",att:3,push:1,anomaly:1,kw:"人数"},{label:"……",type:"忽视",att:0,push:0}]}],
+    younghoon:[{id:"yhd4",phase:2,minDay:4,lines:[{from:"them",text:"昨天那个面包，今天没了。摊主说不进货了。"},{from:"them",text:"最后一天会进的。他这么说了。他要是骗我，我就把他摊子掀了——开玩笑的。大概。"}],replies:[{label:"最后一天？",type:"追问",att:3,push:1},{label:"那就等最后一天",type:"安抚",att:2,push:0},{label:"哦",type:"忽视",att:0,push:0}]}, {id:"yhd5",phase:2,minDay:5,lines:[{from:"them",text:"(名字)。最后一天，我带了完整的面包来。完整的反而不好看。"},{from:"them",text:"……你看，有些东西缺着，才是它的样子。回来吧。"}],replies:[{label:"我会回来的",type:"安抚",att:3,push:0},{label:"缺的是什么",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}]}],
+    sangyeon:[{id:"syd4",phase:2,minDay:4,lines:[{from:"them",text:"登记簿今天少了一件失物。第十件。"},{from:"them",text:"编号在，日期是今天，名字也在。物品栏是空的。像在等一件东西自己走过去登记。"}],replies:[{label:"什么东西会自己登记",type:"追问",att:3,push:1,anomaly:1,kw:"第十件失物"},{label:"别看了",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]}, {id:"syd5",phase:2,minDay:5,lines:[{from:"them",text:"登记簿第十件的物品栏，今天填上了。"},{from:"them",text:"写的是：手机，一部，已归还。拾得人签名那一栏——别翻到那一页。今天之前，别翻。"}],replies:[{label:"翻到会怎样",type:"追问",att:3,push:1,anomaly:1,kw:"已归还"},{label:"我不翻",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]}],
+    kevin:[{id:"kvd4",phase:2,minDay:4,lines:[{from:"them",text:"昨晚的灯串我又数了一遍。八颗。跟你那晚一样。"},{from:"them",text:"我本来以为，数错的人才要小心。现在数对的也……算了。你走的那天，我送你出去。外面的灯不用数。"}],replies:[{label:"外面有几颗",type:"追问",att:2,push:0},{label:"好，你送我",type:"安抚",att:3,push:0},{label:"……",type:"忽视",att:0,push:0}]}, {id:"kvd5",phase:2,minDay:5,lines:[{from:"them",text:"我说过送你出去。灯我在门口数好了，一颗都不会多。"},{from:"them",text:"……刚才数的时候是九颗。我揉揉眼再数，又好了。你走快点。别跑。跑起来灯会闪。"}],replies:[{label:"我走快一点",type:"安抚",att:3,push:0},{label:"为什么是九颗",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}]}],
+    jacob:[{id:"jbd4",phase:2,minDay:4,lines:[{from:"them",text:"昨晚那碗汤，早上我去看，还是满的。"},{from:"them",text:"你昨晚不是说喝了吗。我也记得你喝了。那锅里多出来的那一份，是谁喝的。"}],replies:[{label:"我确实喝了",type:"质疑",att:2,push:1},{label:"别想了",type:"安抚",att:1,push:0},{label:"谁喝的不重要",type:"追问",att:3,push:1,anomaly:1}]}],
+    eric:[{id:"erd4",phase:2,minDay:4,lines:[{from:"them",text:"(名字)！！我哥说结束那天要按入园顺序排队出去。"},{from:"them",text:"可我们那天是一起进来的啊。谁前谁后？我要站你旁边。这事我说了算。"}],replies:[{label:"好，站我旁边",type:"安抚",att:3,push:0},{label:"入园顺序怎么查",type:"追问",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]}],
+    juyeon:[{id:"jyd5",phase:2,minDay:5,lines:[{from:"them",text:"最后一天了。木马我给你留着。第 11 匹。"},{from:"them",text:"……我说错了。这里只有十匹。可昨晚我梦到十一。梦里的那匹鞍上刻着字，我没敢看清。你替我看。"}],replies:[{label:"我会去看的",type:"安抚",att:3,push:0},{label:"刻着什么",type:"追问",att:3,push:1,anomaly:1,kw:"鞍上的名字"},{label:"没有第十一匹",type:"质疑",att:2,push:1}]}],
+    sunwoo:[{id:"swd5",phase:2,minDay:5,lines:[{from:"them",text:"收摊前最后一张自拍。你拿着手机，我站你旁边。"},{from:"them",text:"洗出来只印一张，放你那儿。以后看到这张，记得有一个话很多的人。"}],replies:[{label:"记住了",type:"安抚",att:3,push:0},{label:"为什么只印一张",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}]}],
+    new:[{id:"nwd5",phase:2,minDay:5,lines:[{from:"them",text:"最后一天。这张给你，我不摆姿势了。"},{from:"them",text:"虚的那半边这次不是我了。你要是发现照片里多了谁——别怕。多半是我没站好。"}],replies:[{label:"多的是谁",type:"追问",att:3,push:1,anomaly:1},{label:"好",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]}]
+  };
+  Object.keys(ADD).forEach(function(k){
+    if(!DIALOGUE[k]) return;
+    const have={}; (DIALOGUE[k]||[]).forEach(function(b){ have[b.id]=1; });
+    ADD[k].forEach(function(b){ if(!have[b.id]) DIALOGUE[k].push(b); });
+  });
+})();
+
 const HEART_BEATS = {
   sunwoo:[
     {text:"刚翻相册，翻到你今天在木马前的样子。不是我拍的——大概是你自己按到的。挺好。"},
@@ -9950,6 +10014,7 @@ function renderPhoneApp(){
   screen.innerHTML=`<div>
     <button class="back-btn" onclick="S.tab='more';render()">← 返回</button>
     <h3>电话</h3>
+    ${S.flags.sp_calls?`<div class="card" style="border-left:3px solid var(--crimson)"><p style="margin:0;line-height:1.7;font-size:13px"><b style="color:#e05555">未拨出 · 10 通</b><br>昨天 14:23 · 时长 0:00 · 号码栏空白</p></div>`:""}
     <div class="dial-wrap">
       <div class="dial-num" id="dialNum">${esc(__dial)||"<span style='opacity:.3'>输入号码</span>"}</div>
       <div class="dial-grid">${keys.map(k=>`<button class="dial-key" onclick="dialKey('${k[0]}')">${k[0]}<small>${k[1]||"&nbsp;"}</small></button>`).join("")}</div>
@@ -9994,8 +10059,10 @@ function dialContact(cid){
   drainBattery(2); advanceTime(2);
   toast("呼叫 "+c.name+"……");
   setTimeout(function(){
-    toast("听筒："+(BUSY_LINES[cid]||"忙音。"));
-    phoneLog("给"+c.name+"打了电话。"+(BUSY_LINES[cid]||"忙音。"));
+    let extra="";
+    if((S.day||1)>=4 && Math.random()<0.7) extra="\n（听筒深处，有第二个人的呼吸。不重。像靠着话筒睡着了。）";
+    toast("听筒："+(BUSY_LINES[cid]||"忙音。")+extra);
+    phoneLog("给"+c.name+"打了电话。"+(BUSY_LINES[cid]||"忙音。")+((S.day||1)>=4?"\n那天之后，每一通忙音底下都有两个人的呼吸。":""));
     gainAnomaly(1);
   },1400);
 }
@@ -10167,7 +10234,7 @@ function tapGroupHotspot(id){
   }
   try{ openGroupPhoto(); }catch(e){}
 }
-function group10Version(){ return (S.day>=3||S.flags.ended)?3:(S.day>=2?2:1); }
+function group10Version(){ return (S.day>=4||S.flags.ended)?3:(S.day>=2?2:1); }
 function openGroupPhoto(){
   drainBattery(1); advanceTime(3);
   const v=group10Version();
@@ -10362,6 +10429,21 @@ function carouselBoxStart(){
 function horrorTick(){
   if(!S || !S.playerName || S.flags.ended || S.flags.deadBattery) return;
   const d=S.day||1, h=S.hour||0;
+
+  /* SP4 · 第四天白天：通话记录里多出十通你没拨过的电话 */
+  if(d>=4 && !S.flags.sp_calls){
+    S.flags.sp_calls=1;
+    gainAnomaly(1);
+    addRecord("通话记录 · 十通","未拨出记录里多了十通电话。都是昨天 14:23 拨出的，时长 0:00，号码栏是空的。昨天 14:23 手机在我手里——可这些不是我打的。");
+    setTimeout(function(){ spVeil("通话记录里多了十通电话。\n都是昨天 14:23。\n那个时间，是合照上的日期戳。"); },1500);
+  }
+
+  /* SP5 · 第五天开始：彻底的安静 */
+  if(d>=5 && !S.flags.sp_quiet){
+    S.flags.sp_quiet=1;
+    addRecord("第五天 · 没有消息","今天没有人给你发消息。你把聊天列表翻了三遍。第四遍的时候你才意识到：不是他们没发——是今天，才刚刚开始。");
+    setTimeout(function(){ spVeil("今天没有一条新消息。\n安静得像所有的话都说完了。\n——还没有。还有一天。"); },1500);
+  }
 
   /* SP1 · 第一天夜里：相册多一张你没拍的照片 */
   if(d>=1 && h>=20 && !S.flags.sp_photo){
@@ -10719,7 +10801,7 @@ const ZONE_DAY_EXTRA={
   empty:{2:"风又停了一次。这次你听清了风里那个名字——不是你的。但用的是你熟悉的那个人的声音。",
          3:"草地上多了一行脚印，从栅栏缺口进来，到你站的位置前一步，消失。脚印比你的鞋小半码。"}
 };
-function clampDay(){ return Math.min(S.day||1,3); }
+function clampDay(){ return Math.min(S.day||1,5); }
 /* 失主三层反转 · 第二层：照片里多出来的那只手 */
 function prevPickExtra(pid){
   if(pid!=="p7") return "";

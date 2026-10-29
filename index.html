@@ -1027,7 +1027,10 @@ body.flash-safe .anom-stream .bubble,body.flash-safe .missed-dot{animation:none!
 <script>
 
 
-const PARK_IMG={"stage": "./img/pic_adf06b7bd7.jpg", "bench": "./img/pic_084490ef93.jpg", "food": "./img/pic_866131d372.jpg", "night": "./img/pic_6bf5cb0ce1.jpg", "back": "./img/pic_d0539f3acd.jpg", "lot": "./img/pic_d001f7d655.jpg","game": "./img/pic_f01d26485a.jpg","carousel": "./img/pic_9e6e525eca.jpg","fountain": "./img/pic_b2d43bdaf6.jpg","ticket": "./img/pic_e84e65d65d.jpg","photo": "./img/pic_cc51c61901.jpg"};
+const PARK_IMG={"facecg": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgMTIwIj4KPGRlZnM+CjxyYWRpYWxHcmFkaWVudCBpZD0ibWIiIGN4PSI1MCUiIGN5PSI0MiUiIHI9Ijc1JSI+CjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzJhMTExNCIvPjxzdG9wIG9mZnNldD0iNjAlIiBzdG9wLWNvbG9yPSIjMTUwYTBjIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDYwMzA0Ii8+CjwvcmFkaWFsR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibWciPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2M0MWUzYSIgc3RvcC1vcGFjaXR5PSIuMzgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNjNDFlM2EiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CjxyYWRpYWxHcmFkaWVudCBpZD0ibWUiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmOWE5YSIvPjxzdG9wIG9mZnNldD0iNTUlIiBzdG9wLWNvbG9yPSIjYzQxZTNhIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzAwNjBjIi8+PC9yYWRpYWxHcmFkaWVudD4KPC9kZWZzPgo8cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0idXJsKCNtYikiLz4KPGVsbGlwc2UgY3g9IjYwIiBjeT0iNjAiIHJ4PSI1OCIgcnk9IjU4IiBmaWxsPSJ1cmwoI21nKSIvPgo8ZyBzdHJva2U9InJnYmEoMjU1LDExOCwxMTgsLjUpIiBzdHJva2Utd2lkdGg9IjEiPgo8ZWxsaXBzZSBjeD0iNjAiIGN5PSI2MiIgcng9IjQzIiByeT0iNDkiIGZpbGw9IiMwZDA2MDgiLz4KPHBhdGggZD0iTTE3LDUyIEMyMCwyMCA0MCwxMCA2MCwxMCBDODAsMTAgMTAwLDIwIDEwMyw1MiBDODgsNDAgNzYsMzQgNjAsMzQgQzQ0LDM0IDMyLDQwIDE3LDUyIFoiIGZpbGw9IiMwODA0MDUiIHN0cm9rZT0icmdiYSgyNTUsMTE4LDExOCwuMjgpIi8+CjxlbGxpcHNlIGN4PSI0MyIgY3k9IjU1IiByeD0iOCIgcnk9IjkiIGZpbGw9InVybCgjbWUpIiBzdHJva2U9Im5vbmUiLz4KPGVsbGlwc2UgY3g9Ijc4IiBjeT0iNTQiIHJ4PSI4LjUiIHJ5PSI5IiBmaWxsPSJ1cmwoI21lKSIgc3Ryb2tlPSJub25lIi8+CjxjaXJjbGUgY3g9IjQzIiBjeT0iNTUiIHI9IjIuMiIgZmlsbD0iIzA2MDMwNCIgc3Ryb2tlPSJub25lIi8+CjxjaXJjbGUgY3g9Ijc4IiBjeT0iNTQiIHI9IjEuNSIgZmlsbD0iIzA2MDMwNCIgc3Ryb2tlPSJub25lIi8+CjxwYXRoIGQ9Ik0yMiw3OCBDMzQsOTYgNDYsODggNjAsOTIgQzc0LDg4IDg2LDk2IDk4LDc4IEM5NCwxMDIgODAsMTA4IDYwLDEwOCBDNDAsMTA4IDI2LDEwMiAyMiw3OCBaIiBmaWxsPSIjMGEwNTA3Ii8+CjxwYXRoIGQ9Ik0yNCw4MCBDMzgsOTIgNDgsODYgNjAsOTAgQzcyLDg2IDgyLDkyIDk2LDgwIiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDE1MCwxNTAsLjg1KSIgc3Ryb2tlLXdpZHRoPSIxLjQiLz4KPHBhdGggZD0iTTM0LDg0IEwzNiw5NSBNNDQsODggTDQ1LDk4IE01NCw5MCBMNTQsMTAwIE02Niw5MCBMNjYsMTAwIE03Niw4OCBMNzcsOTggTTg2LDg0IEw4NCw5NSIgc3Ryb2tlPSJyZ2JhKDI1NSwxMTgsMTE4LC40KSIgc3Ryb2tlLXdpZHRoPSIuOCIvPgo8L2c+CjxnIHN0cm9rZT0icmdiYSgyNTUsMTE4LDExOCwuMykiIHN0cm9rZS13aWR0aD0iLjciIGZpbGw9Im5vbmUiPgo8cGF0aCBkPSJNMzAsNDAgTDM2LDUyIE05MiwzOCBMODYsNTAgTTYwLDExMiBMNjAsMTE4IE0yMCw3MCBMMTIsNzQgTTEwMCw3MCBMMTA4LDc0Ii8+CjwvZz4KPC9zdmc+",
+"emptycg": "./img/pic_06f5655d5b.jpg",
+"ledgercg": "./img/pic_bb2d083bb4.jpg",
+"stage": "./img/pic_adf06b7bd7.jpg", "bench": "./img/pic_084490ef93.jpg", "food": "./img/pic_866131d372.jpg", "night": "./img/pic_6bf5cb0ce1.jpg", "back": "./img/pic_d0539f3acd.jpg", "lot": "./img/pic_d001f7d655.jpg","game": "./img/pic_f01d26485a.jpg","carousel": "./img/pic_9e6e525eca.jpg","fountain": "./img/pic_b2d43bdaf6.jpg","ticket": "./img/pic_e84e65d65d.jpg","photo": "./img/pic_cc51c61901.jpg"};
 
 /* Summer-fair music box. Daytime is warm; night only drops notes. */
 (function () {
@@ -1736,7 +1739,11 @@ const PHOTOS = [
     hotspot:{x:70,y:40,id:"stage:gap",clue:"人数缺口",body:"写着全员。人却少了一个位置。",anomaly:true}},
   {id:"p8",title:"夜场余光",day:5,park:"night",desc:"副歌被掐断的那一帧。",hotspot:null},
   {id:"p9",title:"删前残留",day:3,park:null,desc:"几乎全黑。文件名：final_?.jpg",
-    hotspot:{x:50,y:40,id:"h7",clue:"中央轮廓",body:"中间有一点轮廓。放大以后只剩噪点。",anomaly:true,face:true}}
+    hotspot:{x:50,y:40,id:"h7",clue:"中央轮廓",body:"中间有一点轮廓。放大以后只剩噪点。",anomaly:true,face:true}},
+  {id:"ledger2",title:"登记簿 · 补写的那一行",day:4,park:"ledgercg",desc:"有人补写了「已领回」。笔迹不是登记人的。",
+    hotspot:{x:50,y:47,id:"ledger2:fresh",clue:"补写笔迹",body:"这一行的墨没有沉进纸里。写下它的人笔尖是悬着的——像在模仿另一个人的手。物品栏写的是：Empty。领回人一栏：Them。",anomaly:true}},
+  {id:"empty5",title:"空地 · 最后一夜",day:5,park:"emptycg",desc:"木马不在园区里。它在这儿，鞍上没有人。",
+    hotspot:{x:47,y:44,id:"empty5:saddle",clue:"空鞍",body:"鞍是空的。草倒向四面——有什么东西围着你站过一圈，刚刚散开。栅栏的口子是新的，像是特意为你留的。",anomaly:true,face:true}}
 ];
 
 function defaultState(){
@@ -2170,6 +2177,21 @@ function maybeJumpFace(kind, force){
     if(phone) phone.classList.remove("jump-reduced");
   }, dur);
   return true;
+}
+/* —— 图片版贴脸：第四五天的 CG。尊重「突脸减弱」与 5 次上限 —— */
+function imgJumpFace(key, kind){
+  try{
+    if(S.flags.jumpReduce || S.flags.softScare) return false;
+    if((S.jumpFaceCount||0)>=5) return false;
+    const src=(typeof PARK_IMG!=="undefined")?PARK_IMG[key]:null;
+    if(!src) return false;
+    const wrap=document.getElementById("jumpFaceWrap");
+    const prev=wrap?wrap.innerHTML:"";
+    if(wrap) wrap.innerHTML='<img src="'+src+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px">';
+    const ok=maybeJumpFace(kind||"album", true);
+    setTimeout(function(){ const w=document.getElementById("jumpFaceWrap"); if(w) w.innerHTML=prev; },1400);
+    return ok;
+  }catch(e){ return false; }
 }
 /** Easier encounter rules for deep play */
 function tryChatJumpFace(cid){
@@ -2622,12 +2644,34 @@ function saveGame(){
 
 /* —— 自动存档：进对话、换区、切日、切后台都静默写入 —— */
 let __autoSaveTimer=null;
+/* 聊天记录防膨胀：每个角色最多留 max 条（逻辑只读最近消息，裁旧的无副作用） */
+function trimChatLogs(max){
+  max = max || 250;
+  try{
+    const log = S.chatLog || {};
+    Object.keys(log).forEach(function(k){
+      const a = log[k];
+      if(a && a.length > max) log[k] = a.slice(a.length - max);
+    });
+    if(S.records && S.records.length > 400) S.records = S.records.slice(S.records.length - 400);
+  }catch(e){}
+}
 function autoSaveNow(){
   if(!S || !S.playerName) return false;
   if(S.flags && (S.flags.ended || S.flags.deadBattery)) return false;
   try{
     S.flags.autoSavedAt = Date.now();
-    localStorage.setItem(SAVE_KEY, JSON.stringify(S));
+    let payload = JSON.stringify(S);
+    /* 存档看门狗：超过 2.5MB 先瘦身再写，防止 iOS 配额溢出 */
+    if(payload.length > 2621440){ trimChatLogs(120); payload = JSON.stringify(S); }
+    try{
+      localStorage.setItem(SAVE_KEY, payload);
+    }catch(quota){
+      /* 配额失败：紧急裁剪后重试一次 */
+      trimChatLogs(100);
+      try{ S.records = (S.records||[]).slice(-200); }catch(_e){}
+      localStorage.setItem(SAVE_KEY, JSON.stringify(S));
+    }
     return true;
   }catch(e){ return false; }
 }
@@ -8903,6 +8947,22 @@ function gotoTab(tab){
   if(tab==="menu"){ openMenu(); return; }
   if(tab==="day"){ showDayCard(S.day,{instant:true}); return; }
   S.tab=tab; S.chatWith=null;
+  if((tab==="chat"||tab==="album") && S.day>=4 && S.day<5 && (S.hour||0)>=22 && !S.flags.sp_facecg){
+    S.flags.sp_facecg=1;
+    setTimeout(function(){
+      imgJumpFace("facecg","album");
+      try{ gainAnomaly(1); }catch(e){}
+      try{ addRecord("深夜 · 不属于名单的脸","屏幕黑下去之前，有一张脸贴得很近，笑得很用力。十个人的名单里，没有这样一张脸。它笑的时候，像是在替谁练习。"); }catch(e){}
+    },600);
+  }
+  if(tab==="album" && S.day>=5 && (S.hour||0)>=21 && !S.flags.sp_facecg5){
+    S.flags.sp_facecg5=1;
+    setTimeout(function(){
+      imgJumpFace("emptycg","album");
+      try{ gainAnomaly(1); }catch(e){}
+      try{ addRecord("最后一夜 · 木马不在了","相册自己跳了一下。木马不在园区里——它在栅栏外面那块空地上，鞍上没有人。草倒向四面，像刚散场。"); }catch(e){}
+    },600);
+  }
   if(tab==="chat"){ ensureSeedChats(); tryPushNewBeats(); }
   drainBattery(0.5);
   advanceTime(1);
@@ -11822,6 +11882,21 @@ window.onload=()=>{
   S=defaultState();
   if(typeof syncAnomalyAlias==="function") syncAnomalyAlias();
   // 刚被系统回收过（20 分钟内）就直接接回，不再让玩家从标题页重来
+  /* —— 安全网：任何未捕获错误只提示，不让游戏整个崩掉 —— */
+  window.addEventListener("error", function (e) {
+    try{ if(typeof toast==="function") toast("出了点小问题，已自动恢复"); }catch(_e){}
+  });
+  window.addEventListener("unhandledrejection", function (e) {
+    try{ e.preventDefault(); }catch(_e){}
+    try{ if(typeof toast==="function") toast("出了点小问题，已自动恢复"); }catch(_e){}
+  });
+  /* —— CG 预热：提前解码贴脸/空地图，首次触发不卡顿 —— */
+  try{
+    ["facecg","emptycg","ledgercg"].forEach(function(k){
+      const s=(typeof PARK_IMG!=="undefined")?PARK_IMG[k]:null;
+      if(s){ const im=new Image(); im.src=s; }
+    });
+  }catch(e){}
   if(!resumeLastSession()) render();
   // 切后台 / 关页面前强制落盘——iPhone 回收页面是静默的，只能抢在前面存
   const flush=()=>{ try{ flushAutoSave(); }catch(e){} };
@@ -11832,6 +11907,7 @@ window.onload=()=>{
   window.addEventListener("pagehide", leave);
   window.addEventListener("beforeunload", leave);
   setInterval(()=>{
+    if(document.hidden) return; /* 后台休眠：切走时不跑主循环 */
     if(S.flags.ended||!S.playerName) return;
     updateStatus();
     if(typeof tryStatusJumpFace==="function" && S.battery<28 && Math.random()<0.08) tryStatusJumpFace();
@@ -11845,7 +11921,7 @@ window.onload=()=>{
     try{ if(typeof metaStoneTick==="function") metaStoneTick(); }catch(e){}
   }, 4000);
   // 每 45 秒兜底存一次，防止长时间翻备忘录被清掉
-  setInterval(()=>{ if(S.playerName && !S.flags.ended) autoSaveNow(); }, 45000);
+  setInterval(()=>{ if(!document.hidden && S.playerName && !S.flags.ended) autoSaveNow(); }, 45000);
 };
 </script>
 <script>

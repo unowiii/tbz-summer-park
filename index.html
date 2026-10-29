@@ -4138,13 +4138,67 @@ const NPCS = [
     }},
 ];
 
+/* —— 失主轮值（v0.9）——
+   旧毛病有两处：失主是纯随机 1/10，连开几轮极容易撞同一个人；
+   而 leanBad 从 0.28（Sangyeon）到 0.62（Eric）不等，想凑齐同一个人的两条线几乎只能靠运气。
+   现在：失主按「当过次数最少」优先并跳过上一轮那位；阵营在两面凑齐前先补缺的那一边。 */
+function leadHistoryOf(id){
+  try{
+    const m=loadMeta(); const h=(m.leads||{})[id];
+    return { n:(h&&h.n)||0, good:(h&&h.good)||0, bad:(h&&h.bad)||0 };
+  }catch(e){ return {n:0,good:0,bad:0}; }
+}
+function recordLeadRun(leadId, align){
+  try{
+    const m=loadMeta();
+    m.leads=m.leads||{};
+    const e=m.leads[leadId]||{n:0,good:0,bad:0,last:0};
+    e.n=(e.n||0)+1;
+    if(align==="bad") e.bad=(e.bad||0)+1; else e.good=(e.good||0)+1;
+    e.last=Date.now();
+    m.leads[leadId]=e; m.lastLead=leadId;
+    saveMeta(m);
+  }catch(e){}
+}
+function pickLeadId(seedAvoid){
+  const ids=(typeof CHARS!=="undefined")?CHARS.map(function(c){ return c.id; }):[];
+  if(!ids.length) return "";
+  let last="";
+  try{ last=loadMeta().lastLead||""; }catch(e){}
+  const times={}; let min=Infinity;
+  ids.forEach(function(id){
+    times[id]=(leadHistoryOf(id).n)||0;
+    if(times[id]<min) min=times[id];
+  });
+  let pool=ids.filter(function(id){ return times[id]===min; });
+  const avoid=seedAvoid||last;
+  /* 第二轮往后：在同样候选里优先挑「还有一面没见过」的人，别把轮次浪费在已经两面齐全的人身上 */
+  const lacking=pool.filter(function(id){
+    const h=leadHistoryOf(id);
+    return h.n>0 && (h.good===0 || h.bad===0);
+  });
+  if(lacking.length && lacking.length<pool.length) pool=lacking;
+  if(pool.length>1 && avoid){
+    const rest=pool.filter(function(id){ return id!==avoid; });
+    if(rest.length) pool=rest;
+  }
+  return pool[Math.floor(Math.random()*pool.length)];
+}
 function rollOwnerAlign(leadId) {
   const leanBad = { eric: 0.62, kevin: 0.58, new: 0.55, sunwoo: 0.48, hyunjae: 0.5, juyeon: 0.45, younghoon: 0.52, q: 0.35, sangyeon: 0.28, jacob: 0.32 };
-  const p = leanBad[leadId] != null ? leanBad[leadId] : 0.45;
+  let p = leanBad[leadId] != null ? leanBad[leadId] : 0.45;
+  /* 阵营补位：同一个人「往里带」与「劝你走」两面都见过之前，先把缺的那一边补上，
+     免得玩家为了某一条线反复重开。两面齐了之后，回到他原本的性格概率。 */
+  const h = leadHistoryOf(leadId);
+  if(h.good + h.bad > 0){
+    if(h.good === 0) p = 0.12;      // 还没见过他「劝你走」→ 先把这条线补上
+    else if(h.bad === 0) p = 0.88;  // 还没见过他「往里带」→ 先把这条线补上
+  }
   return Math.random() < p ? "bad" : "good";
 }
 
 function assignMaleLead(leadId) {
+  if(!leadId && typeof pickLeadId === "function") leadId = pickLeadId();
   if (!CHARS.find((c) => c.id === leadId)) return false;
   S.ownerId = leadId;
   S.ownerAlign = rollOwnerAlign(leadId);
@@ -4156,6 +4210,7 @@ function assignMaleLead(leadId) {
   addKeyword("失主未明");
   addKeyword("假面入场");
   addRecord("失主未明", "手机的主人有名字，但一直没报。真名与阵营，结局揭晓。");
+  if(!S.flags.leadLogged){ recordLeadRun(leadId, S.ownerAlign); S.flags.leadLogged=1; }
   return true;
 }
 
@@ -6785,8 +6840,7 @@ function unkReply(idx){
   } else {
     S.chatLog.unknown.push({from:"them",text:"手机在响。",type:"text",t:realTime(),read:true});
     S.chatLog.unknown.push({from:"sys",text:"—— 该号码已注销 ——",type:"sys",t:realTime()});
-    const pool=CHARS.map(c=>c.id);
-    const leadId=pool[Math.floor(Math.random()*pool.length)];
+    const leadId=S.ownerId || ((typeof pickLeadId==="function")?pickLeadId():(CHARS.map(c=>c.id)[Math.floor(Math.random()*CHARS.length)]));
     if(typeof assignMaleLead==="function") assignMaleLead(leadId);
     ensureSeedChats();
     S.unread[S.ownerId]=(S.unread[S.ownerId]||0)+1;
@@ -8959,6 +9013,24 @@ function introNoticeHtml(){
   return "";
 }
 /* —— 开场：选长度（简易三天 / 深入五天） —— */
+/* 开局前的一句交代：不剧透这轮是谁，但说清楚「不会重复」这件事 */
+function leadTeaseHtml(){
+  let done=0, lastNm="", nextPool=0;
+  try{
+    done=CHARS.filter(function(c){ return (leadHistoryOf(c.id).n||0)>0; }).length;
+    const last=loadMeta().lastLead||"";
+    if(last){ const c=CHARS.find(function(x){return x.id===last;}); lastNm=c?c.name:""; }
+    const ids=CHARS.map(function(c){return c.id;});
+    const times={}; let min=Infinity;
+    ids.forEach(function(id){ times[id]=(leadHistoryOf(id).n)||0; if(times[id]<min) min=times[id]; });
+    nextPool=ids.filter(function(id){ return times[id]===min && id!==last; }).length || ids.length;
+  }catch(e){}
+  if(done===0) return '<p class="intro-tips" style="margin-top:6px;opacity:.75">十个人都有可能丢这部手机。每一轮换一个人。</p>';
+  return '<p class="intro-tips" style="margin-top:6px;opacity:.75">已经当过失主 '+done+'/10 位'
+    + (lastNm?(" · 这次不会再是 "+esc(lastNm)):"")
+    + (done>=10?" · 一轮走完之后重新开始排。":(" · 下一位从剩下 "+nextPool+" 位里来。"))
+    + '</p>';
+}
 function renderModePick(){
   if(S.mode==="short" || S.mode==="full" || S.playerName){
     if(S.mode!=="short" && S.mode!=="full") S.mode="full";
@@ -8982,6 +9054,7 @@ function renderModePick(){
       <small style="font-weight:400;opacity:.8">第三天就是结局。更短、更集中，适合已经玩过、或者想先尝个味道的人。</small>
     </button>
     <p class="intro-tips" style="margin-top:10px">选完之后不能改——但可以删档重来。</p>
+    ${leadTeaseHtml()}
   </div>`;
 }
 function pickMode(m){
@@ -9218,20 +9291,32 @@ function renderSetup(){
   }
   if(S.view==="setupLead"){
     let cards="";
+    let done=0;
     CHARS.forEach(c=>{
       const hint=(typeof LEAD_HINTS!=="undefined"&&LEAD_HINTS[c.id])||c.style||"";
-      const fake=(typeof fakeRoleOf==="function"?fakeRoleOf(c.id):null)||{};
+      let h={n:0,good:0,bad:0};
+      try{ h=leadHistoryOf(c.id); }catch(e){}
+      if(h.n>0) done++;
+      let tag="还没当过失主";
+      if(h.n>0){
+        tag = (h.good&&h.bad) ? ("当过 "+h.n+" 次 · 两种走向都见过")
+             : h.bad ? ("当过 "+h.n+" 次 · 只见过他往里带")
+                     : ("当过 "+h.n+" 次 · 只见过他劝你走");
+      }
       cards+=`<button class="lead-card ${S.ownerId===c.id?'selected':''}" onclick="S.ownerId='${c.id}';renderSetup()">
         <div class="nm">${c.emoji} ${esc(c.name)}</div>
         <div class="hint">${esc(hint)}</div>
-        <div class="muted" style="margin-top:6px;font-size:10px">真名结局揭晓 · 人设痕迹：${esc(hint)}</div>
+        <div class="muted" style="margin-top:6px;font-size:10px">${esc(tag)}</div>
       </button>`;
     });
+    const newly=CHARS.filter(c=>(leadHistoryOf(c.id).n||0)===0).length;
     screen.innerHTML=`<div class="setup">
-      <h2 class="glitch-text">选择男主</h2>
-      <p class="muted">他今晚话很少，说话方式你未必受得了。<br>真名与好人／坏人——只在大结局揭晓。其余九人仍在聊天里。</p>
+      <h2 class="glitch-text">今晚他是谁</h2>
+      <p class="muted">选一个人当这部手机的主人。<b>真名与好人／坏人——只在大结局揭晓。</b><br>其余九个人照样在聊天里。</p>
+      <p class="muted" style="font-size:11px">${done>=10?"十个人都当过失主了，这一轮重新排。":("已经当过失主 "+done+"/10 · 还有 "+newly+" 位没轮到过")}</p>
       <div class="lead-grid">${cards}</div>
-      <button class="btn primary" onclick="confirmSetup()">进入园区</button>
+      <button class="btn primary" onclick="confirmSetup()">${S.ownerId?"进入园区":"先选一个人"}</button>
+      <button class="btn" onclick="rollRandomLead()">🎲 随一个（不会重复上一轮）</button>
       <button class="btn ghost" onclick="S.view='setup';renderSetup()">返回身份</button>
     </div>`;
     return;
@@ -9271,12 +9356,25 @@ function goLeadPick(){
   if(!v){ toast("请输入名字"); return; }
   if(!S.identity){ toast("请选择身份"); return; }
   S.playerName=v;
-  confirmSetup();
+  if(S.ownerId && !CHARS.find(c=>c.id===S.ownerId)) S.ownerId="";
+  S.view="setupLead"; renderSetup();
+}
+/* 选人页上的随机：交给轮值逻辑，保证不会是上一轮那位 */
+function rollRandomLead(){
+  const id=(typeof pickLeadId==="function")?pickLeadId():(CHARS.map(c=>c.id)[Math.floor(Math.random()*CHARS.length)]);
+  S.ownerId=id;
+  renderSetup();
+  const c=CHARS.find(x=>x.id===id);
+  toast("这次是他：" + (c?c.name:""));
 }
 function confirmSetup(){
   if(typeof ambienceUnlock==="function") ambienceUnlock();
   if(!S.playerName){ toast("请输入名字"); return; }
   if(!S.identity){ toast("请选择身份"); return; }
+  /* 没选人时交给轮值逻辑抽一个，别让「选择男主」这一步变成死胡同 */
+  if(!S.ownerId || !CHARS.find(c=>c.id===S.ownerId)){
+    S.ownerId=(typeof pickLeadId==="function")?pickLeadId():(CHARS.map(c=>c.id)[Math.floor(Math.random()*CHARS.length)]);
+  }
   S.view="phone"; S.tab="home";
   S.day=1; S.hour=18; S.minute=30; S.battery=100;
   S.visitedZones=["stage"]; S.hotspotsFound=[];
@@ -9624,6 +9722,19 @@ function renderRunArchive(){
     const w=Math.max(3,Math.min(100,Math.round(val/Math.max(total,1)*100)));
     return `<div class="arc-row"><span>${esc(label)}</span><b>${val}/${total}</b></div><div class="arc-bar"><i style="width:${w}%"></i></div>`;
   };
+  const leadCells=(function(){
+    let done=0;
+    const cells=CHARS.map(function(c){
+      const h=leadHistoryOf(c.id);
+      if(h.n>0) done++;
+      const tag = h.n===0 ? "还没轮到"
+        : (h.good && h.bad ? "两种走向都见过" : (h.bad ? "只见过他往里带" : "只见过他劝你走"));
+      return `<div class="arc-item ${h.n?"on":"lock"}"><span class="ai-t">${h.n?"🎭":"🔒"} ${esc(c.name)}</span>${esc(tag)} · ${h.n} 次</div>`;
+    }).join("");
+    return `<div style="margin-top:16px;font-size:11px;letter-spacing:.12em;color:#9fb8d2">失主轮值 ${done}/10</div>${cells}`
+      + `<p class="muted" style="margin-top:8px;font-size:12px;line-height:1.7">每一轮开局，失主会从<b>当过次数最少</b>的人里抽，并且<b>不会再是上一轮那位</b>。`
+      + `同一个人的「往里带 / 劝你走」两条线凑齐之后，他才恢复原本的性格概率。</p>`;
+  })();
   let items=NG_DIALOGUES.map(function(d){
     const on=!!seen[d.id];
     return `<div class="arc-item ${on?"on":"lock"}">
@@ -9640,6 +9751,7 @@ function renderRunArchive(){
     ${bar("上一轮的声音",NG_DIALOGUES.filter(d=>!!seen[d.id]).length,NG_DIALOGUES.length)}
     ${bar("跟他们单独走过",pers,10)}
     ${bar("隐藏文件",hidden,6)}
+    ${leadCells}
     <div style="margin-top:14px;font-size:11px;letter-spacing:.12em;color:#9fb8d2">上一轮的声音 · 解锁条件</div>
     ${items}
     <p class="muted" style="margin-top:12px;font-size:12px;line-height:1.7">${n>0?"残页每多通关一次多浮出一条。第五次要走满四轮。":"通关一次 → 残页浮出两条、陌生号码里多出三天前的记录、四个人会开始认出你。"}</p>

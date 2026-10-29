@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<link rel="manifest" href="./manifest.webmanifest"/>
+<meta name="theme-color" content="#0a0a0b"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="TBZ夏日游乐场"/>
+<link rel="apple-touch-icon" href="./icons/icon-180.png"/>
+<link rel="icon" type="image/png" href="./icons/icon-192.png"/>
+<title>官方通关攻略 · TBZ 夏日游乐场</title>
+<style>
+:root{
+  --bg:#0a0a0b; --panel:#111113; --ink:#e8e4dd; --muted:#8f8a84;
+  --line:rgba(255,255,255,.09); --warm:#c9955c; --crimson:#a5342a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15.5px;line-height:1.95;-webkit-font-smoothing:antialiased}
+.page{max-width:660px;margin:0 auto;padding:40px 22px 96px}
+
+.cta{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+.cta a{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  text-decoration:none;font-size:12.5px;letter-spacing:.06em;border-radius:100px;padding:6px 14px}
+.cta .back{color:rgba(232,228,221,.55);border:1px solid var(--line)}
+.cta .back:hover{color:var(--warm);border-color:rgba(201,149,92,.4)}
+.cta .alt{flex:1;color:#cfc9c1;border:1px solid var(--line)}
+.cta .alt:hover{border-color:rgba(201,149,92,.4)}
+.cta .start{flex:1;color:#1a1208;background:var(--warm);font-weight:600}
+.cta .start:hover{filter:brightness(1.08)}
+
+.doc-head{border-bottom:1px solid var(--line);padding-bottom:24px;margin-bottom:6px}
+.doc-head .kicker{font-size:11px;letter-spacing:.26em;color:rgba(232,228,221,.3)}
+.doc-head h1{font-size:23px;font-weight:600;margin:12px 0 10px;letter-spacing:.02em;line-height:1.5}
+.doc-head .meta{color:var(--muted);font-size:12.5px;letter-spacing:.02em;margin:0}
+.doc-head .meta i{font-style:normal;color:rgba(255,255,255,.22);margin:0 8px}
+
+h2{font-size:15px;font-weight:600;color:var(--warm);margin:46px 0 8px;
+  letter-spacing:.04em;display:flex;align-items:baseline;gap:10px}
+h2 .n{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:rgba(201,149,92,.55);letter-spacing:.08em}
+h2::after{content:"";flex:1;height:1px;background:var(--line);transform:translateY(-4px)}
+h3{font-size:14.5px;font-weight:600;color:#fff;margin:26px 0 4px;letter-spacing:.02em}
+h4{font-size:13.5px;font-weight:600;color:rgba(232,228,221,.9);margin:18px 0 2px;letter-spacing:.02em}
+p{margin:11px 0;color:#cfc9c1}
+.g{color:var(--muted);font-size:14px}
+b{font-weight:600;color:#fff}
+.hl{color:var(--warm)}
+em{font-style:normal;color:var(--warm)}
+
+ul.doc{list-style:none;padding:0;margin:10px 0}
+ul.doc li{position:relative;padding-left:16px;margin:8px 0;color:#cfc9c1;font-size:14.8px}
+ul.doc li::before{content:"";position:absolute;left:0;top:.82em;width:5px;height:1px;background:rgba(201,149,92,.55)}
+
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:rgba(232,228,221,.45);font-weight:500;font-size:12px;letter-spacing:.1em;border-bottom-color:rgba(255,255,255,.14)}
+td:first-child{color:#fff;white-space:nowrap;padding-right:16px}
+td.num{font-family:ui-monospace,Menlo,monospace;white-space:nowrap}
+
+.note{background:var(--panel);border:1px solid var(--line);border-radius:6px;
+  padding:14px 17px;margin:16px 0;font-size:14.2px;line-height:1.9;color:#c4beb6}
+.note .lab{display:block;font-size:11px;letter-spacing:.16em;color:rgba(201,149,92,.7);margin-bottom:6px}
+.note.warn{border-color:rgba(165,52,42,.4)}
+.note.warn .lab{color:rgba(200,90,78,.85)}
+.note.key{border-color:rgba(201,149,92,.34)}
+.note.key .lab{color:rgba(201,149,92,.9)}
+.note.lore{background:#0e0d0e;border-color:rgba(255,255,255,.06)}
+.note.lore .lab{color:rgba(232,228,221,.5)}
+.note p:first-of-type{margin-top:0}
+.note p:last-child{margin-bottom:0}
+
+/* 引言块 */
+.lead{border-left:2px solid var(--crimson);padding:2px 0 2px 16px;margin:20px 0;
+  color:#b9b2a9;font-size:14.6px;line-height:2}
+
+/* 規則板 */
+.rule-board{border:1px solid rgba(201,149,92,.22);border-radius:8px;padding:4px 0;margin:16px 0;background:rgba(201,149,92,.03)}
+.rule-item{display:flex;gap:14px;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.05)}
+.rule-item:last-child{border-bottom:none}
+.rule-num{font-size:13px;color:var(--crimson);font-weight:600;flex:none;
+  width:20px;height:20px;line-height:20px;text-align:center;border:1px solid rgba(165,52,42,.45);border-radius:4px;margin-top:3px}
+.rule-tx{font-size:14.6px;color:#e2ddd5;line-height:1.85}
+.rule-tx small{display:block;color:var(--muted);font-size:13.2px;line-height:1.8;margin-top:4px}
+
+/* 步骤 */
+.steps{counter-reset:s;list-style:none;padding:0;margin:14px 0}
+.steps li{counter-increment:s;position:relative;padding-left:36px;margin:14px 0;font-size:14.8px;color:#cfc9c1}
+.steps li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:1px;
+  font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--crimson);letter-spacing:.04em}
+.steps li b{color:#fff}
+.steps li .why{display:block;color:var(--muted);font-size:13.2px;line-height:1.78;margin-top:2px}
+
+/* 勾选清单 */
+.todo{list-style:none;padding:0;margin:12px 0 4px}
+.todo li{position:relative;padding-left:26px;margin:9px 0;color:#cfc9c1;font-size:14.6px}
+.todo li::before{content:"";position:absolute;left:0;top:.42em;width:13px;height:13px;
+  border:1px solid rgba(201,149,92,.5);border-radius:3px}
+.todo li b{color:#fff}
+.todo li .why{display:block;color:var(--muted);font-size:12.8px;line-height:1.7;margin-top:1px}
+
+/* 天数头 */
+.day-hd{border-left:2px solid var(--crimson);padding-left:15px;margin:34px 0 6px}
+.day-hd .t{font-size:14.5px;font-weight:600;color:#fff;letter-spacing:.03em}
+.day-hd .s{font-size:12.8px;color:var(--muted);letter-spacing:.02em}
+
+.code{font-family:ui-monospace,Menlo,monospace;font-size:16px;letter-spacing:.32em;
+  color:var(--warm);background:rgba(201,149,92,.09);border:1px solid rgba(201,149,92,.24);
+  border-radius:5px;padding:3px 11px;display:inline-block}
+
+/* 目录 */
+.toc{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px 20px;margin:20px 0}
+.toc .lab{font-size:11px;letter-spacing:.16em;color:rgba(201,149,92,.7);margin-bottom:10px;display:block}
+.toc .vol{font-size:12.5px;color:rgba(232,228,221,.42);letter-spacing:.14em;margin:12px 0 4px}
+.toc .vol:first-of-type{margin-top:0}
+.toc ol{margin:0;padding-left:18px;color:#cfc9c1;font-size:14.3px;line-height:1.95}
+.toc a{color:#cfc9c1;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.12)}
+.toc a:hover{color:var(--warm);border-color:rgba(201,149,92,.45)}
+
+footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--line);
+  color:rgba(232,228,221,.32);font-size:12px;line-height:1.9}
+footer .row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="cta">
+    <a class="back" href="./"><span>←</span> 返回游戏</a>
+    <a class="alt" href="./guide.html">📘 不想被剧透？玩法指南</a>
+    <a class="start" href="./">▶ 开始玩</a>
+  </div>
+
+  <div class="doc-head">
+    <div class="kicker">TBZ 夏日游乐场 · 官方攻略本</div>
+    <h1>把这部手机还给谁</h1>
+    <p class="meta">第一版 <i>·</i> 含全部剧透与精确数值 <i>·</i> 卡住时再翻开</p>
+  </div>
+
+  <div class="lead">
+    这本册子写给两类人：在长椅上捡起手机之后不知道该按哪里的人，以及想知道这个园区到底在做什么的人。<br>
+    它包含全部答案——密码、每天该做什么、每一种离开方式要满足什么。如果你还没通关过一次，建议先把它关掉。
+  </div>
+
+  <div class="note warn">
+    <span class="lab">先说三句话</span>
+    <b>一、没有死路。</b>这游戏没有「做错了就废掉」的选项，最坏的结果只是一部手机没电，而没电也还能救。<br>
+    <b>二、没有倒计时。</b>时间只在你点了东西之后才动。你可以盯着聊天记录看一整天，游戏里一秒都没过去。<br>
+    <b>三、唯一的失败是整天不充电。</b>其余全部是「你选了哪一种」。
+  </div>
+
+  <div class="toc">
+    <span class="lab">目录</span>
+    <div class="vol">设定篇 · 这个园区在做什么</div>
+    <ol>
+      <li><a href="#a1">三条铁律（入口木牌原文）</a></li>
+      <li><a href="#a2">余场：多出来的那一天</a></li>
+      <li><a href="#a3">这部手机不是谁的</a></li>
+      <li><a href="#a4">他们：假面、岗、以及唯一的园丁</a></li>
+      <li><a href="#a5">五件你迟早会撞见的东西</a></li>
+    </ol>
+    <div class="vol">机制篇 · 在你开始之前</div>
+    <ol start="6">
+      <li><a href="#b1">时间：它只跟着你的手指走</a></li>
+      <li><a href="#b2">电量全解 —— 唯一会真正结束游戏的东西</a></li>
+      <li><a href="#b3">充电的真正规则（95% 的人在这里吃亏）</a></li>
+      <li><a href="#b4">档案、异常值与三种难度的真相</a></li>
+      <li><a href="#b5">两种长度，怎么选</a></li>
+      <li><a href="#b6">开局五个选择逐项说明</a></li>
+    </ol>
+    <div class="vol">流程篇 · 一步一步</div>
+    <ol start="12">
+      <li><a href="#c1">第一天 · 傍晚到夜里</a></li>
+      <li><a href="#c2">第二天 · 开始不对劲</a></li>
+      <li><a href="#c3">第三天 · 密码、空地、三层</a></li>
+      <li><a href="#c4">第四天 · 从黄昏开始</a></li>
+      <li><a href="#c5">第五天 · 最后的夏日</a></li>
+      <li><a href="#c6">密码全解与相册热点清单</a></li>
+    </ol>
+    <div class="vol">收束篇</div>
+    <ol start="18">
+      <li><a href="#d1">你可以怎么离开 · 八种方式全表</a></li>
+      <li><a href="#d2">第四五天的新东西与隐藏文件夹</a></li>
+      <li><a href="#d3">第二个周目开始，世界会改口供</a></li>
+      <li><a href="#d4">常见问题与一张速查卡</a></li>
+    </ol>
+  </div>
+
+  <!-- ============ 设定篇 ============ -->
+  <h2 id="a1"><span class="n">01</span>三条铁律</h2>
+
+  <p>游戏开场之后，你可以在「更多 → 入园守则」里随时回来看这三条。它们不是装饰——<b>后面每一个诡异现象都能对上其中一条</b>。</p>
+
+  <div class="rule-board">
+    <div class="rule-item"><span class="rule-num">一</span>
+      <div class="rule-tx">别答应风里的名字。
+        <small>有人会在你背后轻轻念一遍。你只要应一声，就算签到。<br>——空地那边，一直有人在叫。</small></div></div>
+    <div class="rule-item"><span class="rule-num">二</span>
+      <div class="rule-tx">木马空着的那个座，不要坐。
+        <small>空座是留给「还没到的人」的。你坐下去，就是承认你到了。<br>——那个座，是留给上次没出去的那个人的。</small></div></div>
+    <div class="rule-item"><span class="rule-num">三</span>
+      <div class="rule-tx">灯灭之前，回到有人的地方。
+        <small>不是回到亮的地方。是回到有人的地方——这两件事今晚不一样。<br>——一旦彻底黑了，就会被判定成「留下」。</small></div></div>
+  </div>
+
+  <p class="g">游戏里的原文还有一句：「守则不解释原因。它只记录哪一种人第二天没再出现。笔迹有十个人的。写到最后一行，字迹就断了。」</p>
+
+  <h2 id="a2"><span class="n">02</span>余场：多出来的那一天</h2>
+
+  <p>这座园区每年闭园的最后一夜，会多出一天。<b>日历上没有这一天，门票上也没有。</b></p>
+  <p>灯一盏盏暗下去，散场的人从名单上被划掉，而留下的人第二天醒来，还是同一个傍晚。园里的人把这一夜叫<em>余场</em>。</p>
+
+  <div class="note lore">
+    <span class="lab">出口这件小事</span>
+    园区的闸机在入口，也在出口。它一直在，一直是开的。<b>可是没有一个人走进去过。</b><br>
+    你问十个人「出去以后是什么」，十个人都答得很顺——但他们答的是<em>听说</em>。没有一个人说「我出去过」。<br>
+    你问他们为什么不走，他们会把话题带到别的地方。每次都带得很自然。
+  </div>
+
+  <h2 id="a3"><span class="n">03</span>这部手机不是谁的</h2>
+
+  <p>每晚，失物招领处都会收到一部无人认领的手机。</p>
+  <p>它不属于任何人。它是<b>上一个捡到它的人</b>留下的——寄存的是那个人还没走成的那一部分。谁拿起来，谁就是今晚的失主候选人。</p>
+  <p>而这一次，手机是从你自己手里滑下去的。你不记得了。他们记得。</p>
+
+  <h3>三层：为什么越看越回不去</h3>
+  <p>「更多 → 已删除」里的东西分三层，每恢复一层，园区就多认你一分：</p>
+  <table>
+    <tr><th>层</th><th>是什么</th></tr>
+    <tr><td>第一层</td><td><b>记录</b> —— 他们说过的话</td></tr>
+    <tr><td>第二层</td><td><b>校对</b> —— 同一件事说两遍，第二遍更短</td></tr>
+    <tr><td>第三层</td><td><b>署名</b> —— 有人在念你的名字。需要密码</td></tr>
+  </table>
+  <div class="note warn">
+    <span class="lab">这句话是字面意思，请当真</span>
+    「每往下一层，园区就多认你一分。<b>看到第三层，把手机放回长椅这件事就做不到了。</b>」<br>
+    想要「放回长椅」结局的，恢复层不能超过 1。这是全游戏唯一的硬性互斥。
+  </div>
+
+  <h2 id="a4"><span class="n">04</span>他们：假面、岗、以及唯一的园丁</h2>
+
+  <p>他们不直接告诉你他们是谁。你只看得到一个角色。</p>
+
+  <h3>十个假面</h3>
+  <p>游戏里公开的角色名单：<b>牧羊人、猎人、面包房学徒、弄臣、守卫、弹琴的人、看风向的人、兔子、大声说话的人、拿麦克风的人。</b></p>
+  <p>那不是装饰。<b>角色决定了他们只能用哪种方式接近你</b>——牧羊人只能数人数，猎人只能守着林子口，弄臣只能把真话讲成笑话。所以他们的话总是绕。<em>不是不肯说，是角色不许他们直说。</em></p>
+
+  <div class="note key">
+    <span class="lab">攻略本要保持的分寸</span>
+    十个假面分别对应哪一个人，是本作最后才揭晓的东西。这份攻略<b>不会替它提前说</b>——那句话得由他自己开口。你在游戏里看到的每个人名都是真的，只是不完整。
+  </div>
+
+  <h3>假面 → 岗</h3>
+  <p>他们不是鬼。他们是<b>以前也被这一夜留下过的人</b>。</p>
+  <p>园区给每人一个岗位：广播、检票、取景、充电、木马、副歌。<b>守住岗位，就不会被收走。</b></p>
+  <p>入场时他们给你的是<em>假面</em>——自己起的，还想着当人；结局才会说<em>岗</em>——园区给的，早就不太像人。</p>
+
+  <h3>好与坏，是同一个人</h3>
+  <p>同一个岗位有两种守法：<b>拿它护着你，或者拿它留住你。</b>区别只在他希望你尽快走出去，还是让你再看一层。<em>这一点在结局之前，连他自己都不一定清楚。</em></p>
+
+  <h3>园丁：唯一不领岗的那个</h3>
+  <p>园区里只有一个东西不领岗。它不出现，只维护：<b>剪短副歌、修坏灯牌、擦干净空着的那个座位。</b></p>
+  <p>它要的不是人，是「完整」——一首完整的歌，一张全员照，一个填满的位子。<em>所以凡是缺口，都是它的手笔。</em></p>
+
+  <h2 id="a5"><span class="n">05</span>五件你迟早会撞见的东西</h2>
+
+  <h4>空地</h4>
+  <p>栅栏外那片草地不在地图上，因为它还不是园区，是<b>还没被写成景的空白</b>。进去要四位数字。<em>走进去的人会被写进去，成了明年园里的一处景。</em></p>
+
+  <h4>木马</h4>
+  <p>园区本身其实就是一匹木马。灯在转，座子在转，游客跟着转。看起来每个人都在往前走，其实绕的是同一个圈。</p>
+  <p>铁律说空着的那个座不要坐，但<b>没人说过木马要怎么才停</b>。园里流传两种说法：一种说空位坐满了它就停；另一种说，空着的那个座得先有人坐上去它才肯停——<em>而坐上去的人，不必下来。</em></p>
+
+  <h4>失物登记簿</h4>
+  <p>第四天会在检票口看到。编号第十件的物品栏是空的，拾得人签名栏也是空的。<b>两个空栏，像在互相等。</b></p>
+
+  <h4>14:23</h4>
+  <p>十通电话，全部同一个时间，全部没有接通。通话时长都是 00:00，<em>但电量是按通话扣的</em>。</p>
+
+  <h4>第十一个座位</h4>
+  <p>通关过一次「十种回家方式」之后，你会知道这件事。现在先记着：<b>园区的座位从来不是十个。</b></p>
+
+  <!-- ============ 机制篇 ============ -->
+  <h2 id="b1"><span class="n">06</span>时间：它只跟着你的手指走</h2>
+
+  <ul class="doc">
+    <li><b>你不点，时间不走。</b>不存在「来不及」「错过某个机会」这种事。这是本作最重要的一条安心保险。</li>
+    <li>每做一件事推进几分钟到几十分钟不等：<b>回一句话 4 分钟、走去另一个区 12 分钟、充电 40–70 分钟。</b></li>
+    <li>也可以主动消耗：<b>等着不用（-2% 电，推进约 1 小时）</b>——它是你用来把时间推过夜的主要手段。</li>
+    <li>走到 24:00 之后自动进入下一天，你选的那个人会在凌晨写一封当日随笔。</li>
+  </ul>
+
+  <div class="note">
+    <span class="lab">每天的长度不一样</span>
+    第一天 18:30 才开始（只有五个半小时）；第二三天是整天；<b>第四天 18:00、第五天 17:30 起步</b>。<br>
+    后者不是 bug：园区只在天黑之后才做事，这两天的流速也相应调慢了。这两天一夜只有六小时左右，<b>但内容是够的</b>，跟着主页走就行。
+  </div>
+
+  <h2 id="b2"><span class="n">07</span>电量全解</h2>
+
+  <p>先记住这个定义，它比数值更重要：</p>
+
+  <div class="note lore">
+    <span class="lab">官方设定原文</span>
+    右上角那个数字不是电池。那是<b>今晚你还剩多少「被看清」的额度</b>。充电点是园区允许你慢一点的地方。耗到零，你既放不回去，也带不走。
+  </div>
+
+  <h3>每一件事花多少电</h3>
+  <table>
+    <tr><th>动作</th><th>耗电</th></tr>
+    <tr><td>发一条消息 / 回复</td><td class="num">1–2%</td></tr>
+    <tr><td>打开群聊说一句</td><td class="num">1%</td></tr>
+    <tr><td>点开一张照片</td><td class="num">1%</td></tr>
+    <tr><td>点一个虚线圆（热点）</td><td class="num">2%</td></tr>
+    <tr><td>翻备忘录 / 笔记</td><td class="num">0.5%</td></tr>
+    <tr><td>主动等待约 1 小时</td><td class="num">2%</td></tr>
+    <tr><td>走去另一个区</td><td class="num">独自 3% / 带人同行 2%</td></tr>
+    <tr><td>低电量时进危险区</td><td class="num">5%</td></tr>
+    <tr><td>深夜 + 低电量仍在危险区</td><td class="num">额外 8%</td></tr>
+    <tr><td>玩一次小游戏</td><td class="num">赢了 1–4% / 输了 3–10%</td></tr>
+    <tr><td>输入一次密码</td><td class="num">2%</td></tr>
+    <tr><td>睡过一夜（跨到第二天）</td><td class="num">6%</td></tr>
+  </table>
+
+  <h3>三个会改数值的修正（第四天后特别明显）</h3>
+  <table>
+    <tr><th>修正</th><th>效果</th></tr>
+    <tr><td>身份：临时工</td><td>所有耗电 <b>×0.9</b>，后台充电恢复更多</td></tr>
+    <tr><td>身份：记者</td><td>所有耗电 <b>×1.1</b>，充电恢复更少</td></tr>
+    <tr><td>在夜场 / 空地，且（低电量 或 深夜）</td><td>该次耗电 <b>×1.35</b></td></tr>
+  </table>
+
+  <div class="note warn">
+    <span class="lab">一句话总结数值</span>
+    正常玩一整天大概掉 40–60%。最贵的三件事是：<b>低电量还往夜场跑（每次 5% 起步 ×1.35）</b>、<b>连着输小游戏（最高一次 10%）</b>、<b>睡着过夜（6%）</b>。<br>
+    如果你感觉「没做几件事电就没了」，九成以上都是这三个。
+  </div>
+
+  <h2 id="b3"><span class="n">08</span>充电的真正规则</h2>
+
+  <div class="note key">
+    <span class="lab">最重要的一段，请读完</span>
+    充电<b>不是往上加，是把电量重设到一个新的数值</b>。<br>
+    无论你进去时是 8% 还是 80%，出来一律变成 <b>35%–55%</b>（随机）。<br>
+    也就是说：<em>如果你在 60% 的时候去充电，你会亏掉 5–25%。</em>很多人「电莫名其妙不够用」，正是因为把它当成了补满。
+  </div>
+
+  <h3>充电的完整代价</h3>
+  <ul class="doc">
+    <li>恢复至 <b>35–55%</b>（员工在后台可到 60%；记者最低到 30%）</li>
+    <li>耗时 <b>40–70 分钟</b>游戏时间</li>
+    <li>充电期间<b>会错过一条即时消息的窗口</b>（聊天里会留下一句系统提示）</li>
+    <li>从第二天起、或在夜里充电，<b>异常值 +1</b>（会记下关键词「充电时的静默」）</li>
+  </ul>
+
+  <h3>所以该怎么充</h3>
+  <ol class="steps">
+    <li><b>电量 &gt; 55% 时不要充。</b>你只会亏。这条能解决大部分「电不够」的问题。</li>
+    <li><b>降到 20–35% 区间去充最划算。</b>低于 20% 之后各区 scary 的事开始变多，不要再拖。</li>
+    <li><b>反正要充电，就顺便把它当成推进时间的手段。</b>充电会一下走 40–70 分钟，正好用来把时间推到夜里。</li>
+    <li><b>去夜场和空地之前先充。</b>危险区在低电量时一次走 5%，还会叠 1.35 倍。</li>
+    <li><b>带上人一起走。</b>移动从 3% 降到 2%，而且有些纪念品只有同行才拿得到。</li>
+  </ol>
+
+  <h3>充电点（只有这四个）</h3>
+  <table>
+    <tr><th>地点</th><th>备注</th></tr>
+    <tr><td>饮食区</td><td>最好用，全天可充</td></tr>
+    <tr><td>舞台区</td><td>休息点</td></tr>
+    <tr><td>检票口</td><td>可短暂休息</td></tr>
+    <tr><td>后台</td><td>只有身份是<b>临时工</b>时才额外 +8%</td></tr>
+  </table>
+
+  <h3>真的没电了怎么办</h3>
+  <p>归零会进入黑屏页，此时<b>还有三个充电按钮可以救回来</b>，什么存档都不会丢。</p>
+  <div class="note warn">
+    <span class="lab">唯一的坏结局触发方式</span>
+    只有两件事叠在一起才会真的走到坏结局：<b>拒绝过一次充电，然后在危险区（夜场 / 空地）把电耗尽。</b><br>
+    另外，黑屏页上主动点「放弃充电 · 黑屏结局」也会结束这一局。除此之外，没电只是要你多跑一趟。
+  </div>
+
+  <h2 id="b4"><span class="n">09</span>档案、异常值与难度真相</h2>
+
+  <h3>异常值：这条暗线在决定你看到什么</h3>
+  <p>累计异常越多，界面越失控，深夜里那些话也越不像「他」。它主要由这些行为累加：</p>
+  <table>
+    <tr><th>行为</th><th>涨多少</th></tr>
+    <tr><td>点对相册热点、夜里的某些事件</td><td class="num">1</td></tr>
+    <tr><td>输对密码（空地 / 第三层）</td><td class="num">1 / 2</td></tr>
+    <tr><td>夜里或第二天起充电</td><td class="num">1</td></tr>
+    <tr><td>回复到带异常的内容</td><td class="num">按内容 1–3</td></tr>
+    <tr><td>恢复更深的删除层、部分夜间抉择</td><td class="num">2–3</td></tr>
+  </table>
+  <p class="g">第一天会刻意减半结算：正常的一天要先立住，错位感从第二天才密集起来。</p>
+  <p class="g">注：第一天会刻意减半——正常的一天要先立住，错位感从第二天才密集起来。</p>
+
+  <h3>身份其实不是难度选择，是口味选择</h3>
+  <table>
+    <tr><th>身份</th><th>影响</th></tr>
+    <tr><td>普通路人</td><td>基准。推荐第一次玩</td></tr>
+    <tr><td>临时工作人员</td><td>耗电 ×0.9、后台充电更多、<b>异常来得晚一些</b>。通关压力最小</td></tr>
+    <tr><td>记者</td><td>耗电 ×1.1、充电更少、别人态度更防备，<b>但异常来得最早最猛</b>。适合二周目</td></tr>
+  </table>
+  <p class="g">三个都能通关，不存在「选错就要重开」。它改变的是节奏，不是结局的可达性。</p>
+
+  <h2 id="b5"><span class="n">10</span>两种长度，怎么选</h2>
+
+  <table>
+    <tr><th>版本</th><th>说明</th></tr>
+    <tr><td>深入版 · 五天</td><td>完整结构：温情 → 疑点 → 恐怖 → 推翻认知 → 真相。有第四五天：隐藏文件夹、午夜来电、两张 CG。<b>第一次玩选这个</b></td></tr>
+    <tr><td>简易版 · 三天</td><td>第三天就是结局日。节奏紧、惊吓集中。<b>不会有第四五天的内容</b>。适合二刷速通</td></tr>
+  </table>
+
+  <div class="note warn">
+    <span class="lab">选了不能改</span>
+    确定之后要到<b>删掉存档重开</b>才能换。第一次玩请慢慢点，别手快。
+  </div>
+  <div class="note">
+    <span class="lab">简易版不会被亏待</span>
+    需要「第 4 天」才能达成的结局条件，在简易版里会<b>自动压缩到第三天</b>。所有内容都能拿到，只是取消了第三到五天之间的那段路。<br>
+    另外突脸配额也不同：简易版上限 5 次，深入版 7 次。
+  </div>
+
+  <h2 id="b6"><span class="n">11</span>开局五个选择，逐项说明</h2>
+
+  <ol class="steps">
+    <li><b>免责声明。</b>点「我看过」。害怕突脸的话，进游戏后到<b>设置 · 音量与突脸</b>调成「减弱」——它会安静，但不会消失。</li>
+    <li><b>今晚要多长。</b>见上一节。第一次玩选深入版。</li>
+    <li><b>名字。</b>随便填，它会真实出现在十个人的聊天里。夜里有人叫你名字的时候，你会后悔填得这么普通。</li>
+    <li><b>身份。</b>见上一节。第一次建议临时工或路人。</li>
+    <li>
+      <b>选一个人。</b>十个人任选，<b>不影响能不能通关</b>。
+      <span class="why">决定的是：每天凌晨那封《今日随笔》是谁写的、以及最后那句告别出自谁口。唯一的功能性影响是——如果你整局只回他一个人，把「关注」堆得很高，最后会自动走进他的角色专属结局。这是有意设计的。</span>
+    </li>
+  </ol>
+  <p>名单：Sunwoo 🎤 / Q 🐰 / Eric 🌟 / New 🌷 / Sangyeon 🧭 / Jacob ☕ / Juyeon 🐱 / Younghoon 🍞 / Hyunjae 😄 / Kevin 🎹。</p>
+
+  <!-- ============ 流程篇 ============ -->
+  <h2 id="c1"><span class="n">12</span>第一天 · 傍晚到夜里</h2>
+  <div class="day-hd"><div class="t">第 1 天 · 18:30 开始</div><div class="s">园区还开着。他们都记得你，你却想不起他们。</div></div>
+
+  <p>第一天是「正常的一天」。它的作用是先把温情立住，所以异常来得极少——<b>这是故意的，不代表游戏没开始。</b></p>
+
+  <ol class="steps">
+    <li><b>聊天里只有一条未知号码。</b>点开，回一句。这是全部剧情的开头。</li>
+    <li><b>回你选的那个人。</b>只回一句就行，其他人先不用全看。</li>
+    <li><b>再回两个人。</b>主页会提示「已经回了 X 人」。故意挑说话风格差别大的两个——<span class="why">一个话很多，一个话很少。第二天你要用来比对「谁不像他自己」。</span></li>
+    <li><b>相册点一个虚线圆。</b>拍照区或舞台那两张，点一下圆圈即可。</li>
+    <li><b>去一个地方。</b>地图选饮食区或拍照区，走一处。顺手充电（此时电量还高，<b>只在低于 55% 时才值得充</b>）。</li>
+    <li><b>把时间推过夜。</b>主页会写「今天可以停」。跨到第二天时，你选的那个人会写一封当日随笔。</li>
+  </ol>
+
+  <div class="note">
+    <span class="lab">今天值得记一下的</span>
+    三个人的说话方式：谁话多、谁话少、谁总在圆场。<b>第二天你会再见他们一次</b>，那时候口吻会变。谁变了，是这一作最重要的一条线索。
+  </div>
+
+  <h2 id="c2"><span class="n">13</span>第二天 · 开始不对劲</h2>
+  <div class="day-hd"><div class="t">第 2 天 · 全天</div><div class="s">解锁：已删除、小游戏、嫌疑板。错位感从这里开始密集。</div></div>
+
+  <ol class="steps">
+    <li>
+      <b>「更多 → 已删除」，恢复一层。</b>
+      <span class="why">先只恢复一层。想要「放回长椅」结局的话，这里不能超过 1 层。</span>
+    </li>
+    <li><b>回够五个人。</b>第二天解锁的人都出来讲话了。重点不是内容，是<b>口吻</b>——看谁「不像他自己」。</li>
+    <li><b>去一趟夜场。</b>地图里「夜场」，字只亮一半的那个。<span class="why">进去之前确认电量高于 55%：低电量进危险区一次就是 5%，还会叠 1.35 倍。</span></li>
+    <li><b>玩一局「找出不一样的那一格」。</b>主页按钮会带你去。赢一局就行。</li>
+    <li><b>标一个嫌疑。</b>「更多 → 嫌疑板」。标「不对」可以，标「相信他没事」也可以。</li>
+    <li><b>相册再找两处。</b>今天相册里多了新东西，虚线圆变多了。</li>
+    <li><b>带一个人去走走。</b>地图上选「同行」。同行时有人会把小东西塞给你，那是纪念品。</li>
+  </ol>
+
+  <div class="note key">
+    <span class="lab">今天的关键词</span>
+    「<b>同一件事，第二遍比第一遍短。</b>」这就是设定里说的第二层「校对」。今天你会陆续捡到<b>四个密码数字</b>，明天要用。看到「密码数字 +X」的浮字，说明拿到了。
+  </div>
+
+  <div class="note warn">
+    <span class="lab">想要「放回长椅」的，今天之内必须走</span>
+    条件是：<b>第 1–2 天内离场</b>、恢复删除层 &lt; 2、累计异常 &lt; 6。<br>
+    一旦到了第三天、异常满 6、或者恢复了两层，它就<b>永久关闭</b>，后面再也拿不回来。<br>
+    要么今天拿到，要么干脆放弃它去做更深的结局——<b>唯独不要拖着</b>，拖着就是两头空。
+  </div>
+
+  <h2 id="c3"><span class="n">14</span>第三天 · 密码、空地、三层</h2>
+  <div class="day-hd"><div class="t">第 3 天 · 全天</div><div class="s">解锁：密码板、空地闸机。当夜起界面开始失控。</div></div>
+
+  <ol class="steps">
+    <li><b>凑齐四个数字</b>（来源见第 17 节），然后在<b>背包 → 密码板</b>输入 <span class="code">2947</span>。</li>
+    <li><b>闸机开了，去一趟空地。</b>地图最下面会多出一个原本没有的地方。<span class="why">空地的白天和夜里不一样，建议夜里再去一次。</span></li>
+    <li><b>恢复删除的第二层。</b>第三层要密码，见第 17 节。</li>
+    <li><b>把对话回够八个。</b>「今晚到此为止」之前，把想说的话说完。</li>
+    <li><b>再带他走走。</b>同行四次以上——有些纪念品只有同行才拿得到。</li>
+  </ol>
+
+  <div class="note">
+    <span class="lab">简易版玩家看这里</span>
+    简易版的第三天<b>就是结局日</b>，主页最后一步会变成「怎么离开」。所有天数条件都压缩到第三天，你不需要多做什么。
+  </div>
+
+  <h2 id="c4"><span class="n">15</span>第四天 · 从黄昏开始</h2>
+  <div class="day-hd"><div class="t">第 4 天 · 18:00 起</div><div class="s">只有深入版有。这一天推翻你之前所有的理解。</div></div>
+
+  <ol class="steps">
+    <li><b>先去相册最上面那张合照。</b>它变了。中央那团影子，昨天还没有形状。点它。</li>
+    <li><b>「更多 → 电话」。</b>通话记录里有几通你<b>没有拨过</b>的电话。看清时间。</li>
+    <li><b>回够九个人。</b>今天有人要你亲口确认一件事。</li>
+    <li><b>再看一次已删除。</b>你删掉的东西，今天读起来不一样了。</li>
+    <li><b>重访空地。</b>栅栏外的草今天不是那个颜色。</li>
+    <li><b>解锁隐藏文件夹。</b>下一节讲，它很容易漏。</li>
+    <li><b>入夜后留意。</b>今晚有一次<b>提前写好的剧情惊吓</b>，不受突脸次数限制，一定会来。</li>
+  </ol>
+
+  <div class="note key">
+    <span class="lab">今晚十个人都会找你</span>
+    第四五天入夜后，<b>十个人</b>都会给你发不该发的消息。他们不是同一秒一起响的——<b>谁最久没说话，谁就下一个</b>。数一数一晚上有几个人找过你。
+  </div>
+
+  <h2 id="c5"><span class="n">16</span>第五天 · 最后的夏日</h2>
+  <div class="day-hd"><div class="t">第 5 天 · 17:30 起</div><div class="s">所有线索开始说真话。今天怎么离开，就是你怎么记得它。</div></div>
+
+  <ol class="steps">
+    <li><b>相册线索补到六处。</b>把虚线圆里剩的几处点完。<span class="why">第六处是结算的主要条件之一。相册总数更多，但你需要的是六处。</span></li>
+    <li><b>把十个人都回一遍。</b>「还差 X 个人。今天不回，就没有机会了。」这句是真的，别留人。</li>
+    <li><b>解锁最后一个隐藏文件</b>：《给下一个捡到它的人》。只在第五天给看。</li>
+    <li><b>选怎么离开。</b>主页最后一步。条件齐的话会列出好几个选项，可以慢慢读每一个的解释再决定。</li>
+  </ol>
+
+  <div class="note">
+    <span class="lab">离开之前</span>
+    结局页面每个选项下面那行小字就是它的<b>未达成条件说明</b>。哪一项是灰的，照着补齐回来再选也来得及——第五天的时间是够的。
+  </div>
+
+  <h2 id="c6"><span class="n">17</span>密码全解与相册热点清单</h2>
+
+  <h3>两个密码</h3>
+  <table>
+    <tr><th>用途</th><th>密码</th><th>结果</th></tr>
+    <tr><td>空地闸机</td><td><span class="code">2947</span></td><td>地图上多出「空地」，异常 +1</td></tr>
+    <tr><td>删除第三层</td><td><span class="code">5836</span></td><td>最深的记录，异常 +2，<b>并触发一次贴脸</b></td></tr>
+  </table>
+
+  <h3>四个数字打哪儿来</h3>
+  <p>园区自己的说法是这么一句：</p>
+  <div class="note lore">
+    <span class="lab">《这个园区的规矩》原文</span>
+    进去要四位数字，四个数从不放在一起：<b>柜台的水渍里一个，灯牌静音时停住的那一格一个，夜巡老人哼的拍子里一个，玻璃擦开血雾的那一角一个。</b><br>
+    要按「先水、再灯、再拍子、最后擦」的顺序填。顺序错了它不响，只是当你没来过。
+  </div>
+  <p>实际拿到的途径有四种：<b>相册热点</b>、<b>小游戏通关</b>、<b>某个区域二次进入</b>、<b>聊天里主动追问</b>。拿到时屏幕会浮出「密码数字 +X」。</p>
+
+  <div class="note warn">
+    <span class="lab">两个坑</span>
+    ① 捡到的数字里会有 <b>0 和 1</b>。这两个是<b>干扰项</b>，别把它们填进最终组合。<br>
+    ② 每输入一次密码 <b>耗电 2%</b>，失败也要扣。别把它当免费的抽奖机。
+  </div>
+
+  <div class="note key">
+    <span class="lab">二周目请务必看这条</span>
+    从<b>第二次通关开始</b>，锁是<b>倒着咬的</b>：你必须反着输，否则会卡死在密码板前。<br>
+    空地 → 输 <span class="code">7482</span>　｜　删除第三层 → 输 <span class="code">6385</span><br>
+    输对了，它会提示「这一次，是倒着咬的」。
+  </div>
+
+  <h3>相册的虚线圆都在哪</h3>
+  <p>一共十来张照片，带热点的按下面顺序出现。<b>你需要六处，不是全部。</b></p>
+  <table>
+    <tr><th>出现</th><th>照片 · 线索</th></tr>
+    <tr><td>第1天</td><td>舞台侧幕 · 空支架 ｜ 拍照区长椅 · 凹陷 ｜ 饮食区柜台 · 水渍</td></tr>
+    <tr><td>第2天</td><td>夜场灯牌 · 残缺的灯 ｜ 后台通道 · 擦掉的名字 ｜ 侧幕合影残片 · 人数缺口</td></tr>
+    <tr><td>第3天</td><td>删前残留 · 中央轮廓</td></tr>
+    <tr><td>第4天</td><td>失物登记簿 · 第十件失物 ｜ 空地 · 光秃中央 ｜ 登记簿 · 补写的那一行</td></tr>
+    <tr><td>第5天</td><td>夜场余光 ｜ 空地 · 最后一夜（空鞍）</td></tr>
+  </table>
+  <p class="g">点过之后圆心会填上。重复打开同一张照片没有新东西，别一直在相册里刷。</p>
+
+  <!-- ============ 收束篇 ============ -->
+  <h2 id="d1"><span class="n">18</span>你可以怎么离开 · 八种方式全表</h2>
+
+  <table>
+    <tr><th>方式</th><th>达成条件</th></tr>
+    <tr><td>🌙 放回长椅</td><td><b>第 1–2 天内</b>离场，恢复删除层 &lt; 2，累计异常 &lt; 6。<b>到第三天自动关闭</b></td></tr>
+    <tr><td>🔎 走出园区</td><td>异常 ≥ 4，或已到第 2 天。几乎必然可选，<b>这是保底结局</b></td></tr>
+    <tr><td>💬 顺着某个人</td><td>有一个人的关注明显压过别人。若最高 ≥ 10、领先 ≥ 5、异常 ≥ 2，<b>不管怎么离开都会自动变成他的结局</b></td></tr>
+    <tr><td>🕯 十种回家方式</td><td>第 4 天起（简易版第 3 天）· 恢复 ≥ 2 层 · 记下至少 <b>2 条「不对劲」</b></td></tr>
+    <tr><td>📋 完美计划</td><td>第 4 天起（简易版第 3 天）· 挖到底层 · 看过 <b>6 处</b>异常</td></tr>
+    <tr><td>👁 被盖住</td><td>满足下方 8 条全部条款。<b>满足后任何离场都会被它劫持</b></td></tr>
+    <tr><td>⬛ 黑屏</td><td>电量耗尽后选择「放弃充电」</td></tr>
+    <tr><td>🪑 第十一个座位</td><td>拿到过「十种回家方式」之后，下一轮起才会出现</td></tr>
+  </table>
+
+  <h3>「被盖住」的八条（要全中）</h3>
+  <ul class="todo">
+    <li>电量低于 45%<span class="why">字面意思：别急着充电</span></li>
+    <li>处于深夜</li>
+    <li>恢复过<b>深层</b>记录（至少第二层）</li>
+    <li>回复过至少 2 次带异常的话</li>
+    <li>主动追问 / 质疑至少 3 次</li>
+    <li>去过<b>夜场</b>或<b>空地</b></li>
+    <li>无视过至少 2 次警告</li>
+    <li>累计异常 ≥ 6</li>
+  </ul>
+
+  <h2 id="d2"><span class="n">19</span>第四五天的新东西与隐藏文件夹</h2>
+
+  <h3>隐藏文件夹 —— 最容易漏的一个</h3>
+  <p>第四天开始，「更多」页里会出现一个<b>没有图标的空白格子</b>。它不会有任何提示，就是一行空的位置，点它。</p>
+  <table>
+    <tr><th>文件</th><th>第几天</th></tr>
+    <tr><td>使用报告</td><td rowspan="5">第 4 天起</td></tr>
+    <tr><td>草稿箱 · 未发送</td></tr>
+    <tr><td>通话记录 · 14:23</td></tr>
+    <tr><td>最近删除 · 照片</td></tr>
+    <tr><td>系统日志</td></tr>
+    <tr><td>给下一个捡到它的人</td><td><b>第 5 天</b></td></tr>
+  </table>
+  <p class="g">《使用报告》会统计你这一局的真实行为：打开过多少次、回去重看谁的聊天页最多、在哪个地方停得最久。挺狠的，建议最后再看。</p>
+
+  <h3>两次一定会来的惊吓</h3>
+  <p><b>第四天入夜后</b>（约 19 点之后）切到聊天或相册，<b>第五天入夜后</b>打开相册——各有一次写定的 CG。<em>它们不吃突脸次数上限，也不会被前面用光的次数挡住。</em></p>
+  <p class="g">设置里的「突脸减弱」会让它减弱，但不会让它消失。</p>
+
+  <h2 id="d3"><span class="n">20</span>第二个周目开始，世界会改口供</h2>
+
+  <ul class="doc">
+    <li><b>密码反着咬。</b>第二周目起必须反输。这是重玩时被卡住的第一名。</li>
+    <li><b>四段只给熟人的话。</b>触发时点分别是：回过任意一个人之后 / 恢复过删除记录之后 / 第三天入夜后 / 第四天撞见那张脸之后。它们只说「我记得你上次」。</li>
+    <li><b>照片的描述变了。</b>同一张照片，第一周目和第二周目的文字不一样。</li>
+    <li><b>残页逐次浮出。</b>通关 1 次浮出 2 条，2 次 3 条……走满四轮才 5 条全开。</li>
+    <li><b>轮次档案。</b>「更多 → 轮次档案」，第一轮也能打开当预告看。里面列出所有结局的收集进度与未解锁项的条件——<em>只写条件，不剧透台词</em>。</li>
+  </ul>
+
+  <h2 id="d4"><span class="n">21</span>常见问题与一张速查卡</h2>
+
+  <h3>不知道该点哪里</h3>
+  <p>看主页那张「<b>现在做这一件</b>」。它的按钮会把你直接送到该去的地方；下面那张「本局进度」会告诉你哪一项还差几个。</p>
+
+  <h3>一直停在同一天，是不是卡死了</h3>
+  <p>大概率没卡。跨天要把时间推过夜：多做几次动作，或用「等待约 1 小时」。<br>
+  另外——<b>看右上角状态栏的钟点，不要看大时钟</b>。电量极低时大时钟会「报错」显示错的天数，那是演出，不是 bug。</p>
+
+  <h3>电掉得太快</h3>
+  <p>按顺序检查这四条：① <b>电量高于 55% 就别充电</b>（充了会倒扣）；② 低电量时不进夜场 / 空地；③ 小游戏别连着输（最贵一次 10%）；④ 移动时带上人同行。</p>
+
+  <h3>选项是灰的</h3>
+  <p>灰的项下面那行小字就是缺什么。最常缺的三个：<b>删除层不够</b>、<b>「不对劲」没记够 2 条</b>、<b>异常没到 6</b>。</p>
+
+  <h3>可以几个人一起玩吗</h3>
+  <p>可以。每个人的进度存在各自的浏览器里，互不干扰。</p>
+
+  <h3>想重来 / 换长度</h3>
+  <p>设置里有存档管理。<b>换长度（简易 ↔ 深入）只能删档重开。</b></p>
+
+  <h3>速查卡</h3>
+  <table>
+    <tr><th>我想……</th><th>那就</th></tr>
+    <tr><td>知道下一步</td><td>看主页「现在做这一件」</td></tr>
+    <tr><td>开空地</td><td>密码板输 <span class="code">2947</span>（二周目 7482）</td></tr>
+    <tr><td>看最深的记录</td><td>密码板输 <span class="code">5836</span>（二周目 6385）</td></tr>
+    <tr><td>拿保底结局</td><td>第五天直接「走出园区」</td></tr>
+    <tr><td>拿「放回长椅」</td><td>第二天结束前离场，别恢复第二层</td></tr>
+    <tr><td>救回没电的手机</td><td>去饮食区 / 舞台区 / 后台充电</td></tr>
+    <tr><td>找到隐藏文件夹</td><td>第四天起，「更多」页最下面那个空格子</td></tr>
+  </table>
+
+  <div class="note key" style="margin-top:30px">
+    <span class="lab">最后</span>
+    这部手机从来不是丢的。<br>
+    你选怎么离开，就是你这一局记得它的方式。第一遍照着攻略走没问题——但如果有一次时间，建议把这本册子关掉，只跟着主页那张卡片走一遍。你会发现它在说同一件事，只是那时候没人提前剧透过你。
+  </div>
+
+  <footer>
+    <div class="row">
+      <span>TBZ 夏日游乐场 · 捡手机</span>
+      <span>攻略本第一版 · 含全部剧透</span>
+    </div>
+    <p style="margin:8px 0 0">
+      <a href="./guide.html" style="color:rgba(232,228,221,.5);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.14)">← 不想被剧透？回去看《玩法指南》</a>
+    </p>
+  </footer>
+
+</div>
+<script>
+(function(){
+  if(location.search.indexOf("embed")<0) return;
+  function bind(){
+    document.querySelectorAll(".cta a").forEach(function(a){
+      a.addEventListener("click", function(e){ e.preventDefault(); try{ parent.postMessage("closeGuide","*"); }catch(_){} });
+    });
+  }
+  if(document.readyState!=="loading") bind(); else document.addEventListener("DOMContentLoaded", bind);
+})();
+</script>
+</body>
+</html>

@@ -8758,6 +8758,7 @@ function renderEnding(kind){
     </div>
     <button class="btn primary" onclick="renderEndingGallery()">结局图鉴</button>
     <button class="btn" onclick="openGuide()">📘 玩法指南</button>
+    <button class="btn" onclick="openWalkthrough()">🧭 通关攻略</button>
     <button class="btn" onclick="makeEndingCard()">📷 生成本局卡片</button>
     <button class="btn" onclick="afterEnd()">再玩一次</button>
     <button class="btn" onclick="saveGame();toast('已保存本局结局进度')">保存本局</button>
@@ -8812,6 +8813,7 @@ function renderHiddenSettlement(){
     </div>
     <button class="btn primary" onclick="renderEndingGallery()">结局图鉴</button>
     <button class="btn" onclick="openGuide()">📘 玩法指南</button>
+    <button class="btn" onclick="openWalkthrough()">🧭 通关攻略</button>
     <button class="btn" onclick="makeEndingCard()">📷 生成本局卡片</button>
     <button class="btn" onclick="afterEnd()">再玩一次</button>
     <button class="btn" onclick="saveGame()">保存本局</button>
@@ -9440,15 +9442,16 @@ function renderMore(){
         <button class="more-cell" onclick="renderLoreBook()"><span>📖</span><b>园区规矩</b></button>
         <button class="more-cell" onclick="renderRunArchive()"><span>🔁</span><b>轮次档案${ngRunNo()>0?"<i>新</i>":""}</b></button>
         <button class="more-cell" onclick="openGuide()"><span>📘</span><b>玩法指南</b></button>
+        <button class="more-cell" onclick="openWalkthrough()"><span>🧭</span><b>通关攻略<i>剧透</i></b></button>
         <button class="more-cell more-exit" onclick="tryLeavePark()"><span>🚪</span><b>离开园区</b></button>
       </div>
     </div>
   </div>`;
 }
-/* —— 玩法指南：独立页面 guide.html，游戏内开新窗口 —— */
-function openGuide(){
+/* —— 玩法指南 / 通关攻略：独立页面，游戏内以浮层 iframe 打开 —— */
+function openDocPage(file){
   const q=location.search.replace(/^\?/,"");
-  const u=new URL("guide.html"+(q?"?"+q+"&embed=1":"?embed=1"), location.href).href;
+  const u=new URL(file+(q?"?"+q+"&embed=1":"?embed=1"), location.href).href;
   if(!document.getElementById("guideDynStyle")){
     const st=document.createElement("style"); st.id="guideDynStyle";
     st.textContent=''
@@ -9482,6 +9485,8 @@ function openGuide(){
   ov.style.display="flex";
 }
 function closeGuide(){ const ov=document.getElementById("guideOverlay"); if(ov) ov.style.display="none"; }
+function openGuide(){ openDocPage("guide.html"); }
+function openWalkthrough(){ openDocPage("walkthrough.html"); }
 function guideNudge(){
   try{ if(loadMeta().guideSeen) return ""; }catch(e){}
   return '<div class="guide-nudge" id="guideNudge">'
@@ -9689,6 +9694,7 @@ function renderHome(){
       <button class="app-icon" onclick="renderSaveApp()"><span class="ico">🗂</span><span class="lab">存档</span></button>
     </div>
     <div class="home-guide-bar" onclick="openGuide()">📘 玩法指南 · 首次游玩建议先阅读</div>
+    <div class="home-guide-bar" onclick="openWalkthrough()" style="border-color:rgba(165,52,42,.4);color:rgba(214,138,128,.95)">🧭 卡住了？一步一步通关攻略（含剧透）</div>
   </div>`;
 }
 
@@ -11968,6 +11974,7 @@ function renderSecondPlay(){
     <button class="btn primary" onclick="render()">合上</button>
     <button class="btn" onclick="renderRunArchive()">🔁 轮次档案</button>
     <button class="btn" onclick="openGuide()">📘 玩法指南</button>
+    <button class="btn" onclick="openWalkthrough()">🧭 通关攻略</button>
   </div>`;
 }
 /* —— 园区守则（入口木牌）—— */

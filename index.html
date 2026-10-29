@@ -1716,10 +1716,13 @@ const DAY_INFO = {
 };
 const PHOTOS = [
   {id:"stage",title:"舞台侧幕",day:1,park:"stage",desc:"五个支架。最边上那个是空的。",
+    runDesc:"五个支架。最边上那个还是空的。上一轮你数过一遍——这一轮，它在你数之前就先空好了。",
     hotspot:{x:62,y:58,id:"stage:mic",clue:"空支架",body:"从左边数，第五个支架是空的。没有脚印。",chain:"eric",chainText:"那个支架！！我站过！！我也没站过！！",anomaly:false}},
   {id:"bench",title:"拍照区长椅",day:1,park:"bench",desc:"你捡到手机的地方。坐垫还陷着。",
+    runDesc:"凹陷比上一轮深。你还没坐下来，它已经替你坐过了。椅背上的便签还在：别答应风里的名字。这次的墨迹是新的。",
     hotspot:{x:46,y:62,id:"bench:dent",clue:"凹陷",body:"凹陷还在。椅背上有张便签：别答应风里的名字。",chain:"new",chainText:"你听到了吗",scare:true,face:true,anomaly:true}},
   {id:"food",title:"饮食区柜台",day:1,park:"food",desc:"水渍的大小像一部手机。",
+    runDesc:"水渍还在，大小不变。上一轮你亲眼看着它干掉的地方，这一轮湿得更早。",
     hotspot:{x:54,y:68,id:"food:phone",clue:"水渍",body:"柜台上有一圈水。你手里已经有一部手机。所以这圈水是谁留下的？",chain:"jacob",chainText:"There was only one phone. I think.",anomaly:false}},
   {id:"night",title:"夜场灯牌",day:2,park:"night",desc:"字只亮了一半。",
     hotspot:{x:50,y:34,id:"night:sign",clue:"残缺的灯",body:"灯牌只亮一半。歌也像从中间开始。",chain:"kevin",chainText:"灯牌上的字不该少。歌也不该少一截。",anomaly:true}},
@@ -8052,6 +8055,8 @@ function openPhoto(pid){
   const screen=document.getElementById("screen");
   const hs=p.hotspot;
   const pe=photoExtraFor(p.id);
+  let rdesc=p.desc;
+  try{ if((loadMem().runs||0)>=1 && p.runDesc) rdesc=p.runDesc; }catch(e){}
   const img = (p.park && typeof PARK_IMG!=="undefined" && PARK_IMG[p.park]) ? PARK_IMG[p.park] : "";
   const stageStyle = img
     ? `background-image:url('${img}');background-size:cover;background-position:center;min-height:240px;border-radius:12px;position:relative`
@@ -8060,7 +8065,7 @@ function openPhoto(pid){
     <button class="btn ghost close" onclick="S.tab='album';render()">关闭</button>
     <h3 style="margin-bottom:8px">${esc(p.title)}</h3>
     <div class="photo-stage big" id="photoBig" style="${stageStyle}">
-      <div class="desc" style="position:absolute;left:10px;right:10px;bottom:10px;background:rgba(0,0,0,.55);padding:8px;border-radius:8px;font-size:12px">${esc(p.desc)}</div>
+      <div class="desc" style="position:absolute;left:10px;right:10px;bottom:10px;background:rgba(0,0,0,.55);padding:8px;border-radius:8px;font-size:12px">${esc(rdesc)}</div>
       ${hs?`<button class="hotspot" style="left:${hs.x}%;top:${hs.y}%" onclick="tapHotspot('${p.id}')" title="热点"></button>`:""}
     </div>
     ${pe?`<button class="btn primary" style="margin:8px 0" onclick="tapPhotoRe('${p.id}')">🔍 今天再看一眼 · 有新东西</button>`:""}
@@ -10809,11 +10814,13 @@ const MONOLOGUES = {
   sunwoo: { mask:"拿着麦克风的人", lines:[
     "喇叭里的声音传得远。所以我只说给你一个人听的时候，会压得很低。",
     "我以为我在播通知。后来才发现我一直在念名单——念还有几个人没走出去。",
-    "你是最后一个还肯应声的。所以我把灯举低了一点，让你看不清我的脸。"] },
+    "你是最后一个还肯应声的。所以我把灯举低了一点，让你看不清我的脸。"],
+    secret:"最后一条通知不是播的，是问的。问出去这么多轮，一直没有人应——直到这一轮，你应了一声。" },
   q: { mask:"兔子", lines:[
     "我总是很赶。你慢一步，我就得回头找你。上次回头的时候你已经不在了。",
     "我提前跑掉的那几段路，全是你会出事的那几段。",
-    "跑得越多，我越怕停下来——一停下来就要数人。"] },
+    "跑得越多，我越怕停下来——一停下来就要数人。"],
+    secret:"规则我全试过一遍，试到最后一条的时候，园子重置了一次。现在替你数人头的这只兔子，是重置之后剩下的部分。" },
   eric: { mask:"大声说话的人", lines:[
     "我嗓门大，不是想吓你。是我怕你听不见——上次你就是没听见我叫你。",
     "台上灯一转，十张脸我只找得到九张。少的那张，我喊了整晚。",
@@ -10825,7 +10832,8 @@ const MONOLOGUES = {
   sangyeon: { mask:"牧羊人", lines:[
     "我数羊，是为了知道狼吃了几只。",
     "名单每晚都短一点。我从来没念错过一个名字。",
-    "除了那个我故意念错的。"] },
+    "除了那个我故意念错的。"],
+    secret:"名单改到最后一版的时候，字迹会平静下来。前面几版的涂改不是马虎——每一版，都在试着少写一个名字。" },
   jacob: { mask:"好心的猎人", lines:[
     "林子口这堆火，我生了很久了。柴是够的，人不够。",
     "我放走过一个。他说自己认得路。我信了。",
@@ -10833,11 +10841,13 @@ const MONOLOGUES = {
   juyeon: { mask:"沉默的守卫", lines:[
     "我不是话少。我是站的位置不能说话——门那一块，说一个字，松一分。",
     "上次门关上的时候，声音很小。我到现在还在听。",
-    "我不送你。我到这儿为止。你走出去，替我多看一眼外面。"] },
+    "我不送你。我到这儿为止。你走出去，替我多看一眼外面。"],
+    secret:"守卫只能守，不能走。走出去的那条路，是拿门换的——上一任换过了。门现在还开得动，是因为他还没走远。" },
   younghoon: { mask:"面包房的学徒", lines:[
     "还热着，先吃。凉了就不是这个味了。",
     "你拍我吧。拍不进去的——底片上那块空，早就不是我的了。",
-    "有时候我觉得，站在那块空里的那位，比你先认识我。"] },
+    "有时候我觉得，站在那块空里的那位，比你先认识我。"],
+    secret:"你手里的照片一张比一张缺细节，不是拍坏了。是有人照着底片，把细节一件一件收走。收齐的那天，就该收拍照的人了。" },
   hyunjae: { mask:"爱开玩笑的弄臣", lines:[
     "我先笑，你跟着笑。这样听起来就像这里什么都没发生过。",
     "有几件事我讲成了笑话。你笑完就别再问了——问了我可能就笑不出来了。",
@@ -10845,7 +10855,8 @@ const MONOLOGUES = {
   kevin: { mask:"弹琴的人", lines:[
     "这段你听——手停了，声音还在。不是我弹的。是它记得。",
     "那首歌断在最高的那句。上次有人听完了，然后就没有然后了。",
-    "所以我停在这儿。你别让我弹完。"] }
+    "所以我停在这儿。你别让我弹完。"],
+    secret:"那封信里没有一句责备。写它的手清楚：弹错的从来不是琴。只是听完整首歌的人，一个都没有回来过。" }
 };
 function monoUnlocked(cid){
   if(S.flags && S.flags.compUsed && S.flags.compUsed.indexOf(cid)>=0) return true;
@@ -10885,7 +10896,9 @@ function renderMonologue(cid){
     <div class="mono-cap">${esc(m.mask)}</div>
     <div class="mono-body">
       ${m.lines.map(function(l,i){return `<p style="animation-delay:${i*0.45}s">${esc(l)}</p>`;}).join("")}
+      ${m.secret&&(S.day>=4||S.flags.ended)?`<p style="animation-delay:${m.lines.length*0.45}s;color:#c9955c;opacity:.92">${esc(m.secret)}</p>`:""}
     </div>
+    ${m.secret&&!(S.day>=4||S.flags.ended)?'<p class="muted" style="font-size:11px;text-align:center;opacity:.65">（面具还有半句，含在嘴里没说。还早。）</p>':""}
     <p class="muted" style="font-size:11px;text-align:center">你听完，面具就正回去了。像什么都没发生。</p>
   </div>`;
 }

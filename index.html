@@ -1698,6 +1698,20 @@ const DAY_INFO = {
     tone:"第三天。你知道得够多了，可以选了。",
     goal:"把手机放回长椅（让循环继续）、就这样离开，或找聊得最多的那个人把话说破。",
     tip:"说破之后，他会坦白这三天为什么绕着说话。那不是告白，是解释。"
+  },
+  4:{
+    title:"第4天",
+    short:"第4天 · 推翻认知",
+    tone:"第四天。你开始怀疑自己看到的东西——包括昨天看到的。",
+    goal:"重看那张合照；看一通没有来电人的电话；把四天的话对一遍。",
+    tip:"今天白天的园区也不安稳了。昨天确定的事，今天读起来不一样。"
+  },
+  5:{
+    title:"第5天",
+    short:"第5天 · 真相",
+    tone:"最后一天。园区比来的时候安静。",
+    goal:"把前四天记下的东西翻出来。今天说什么，都不算晚。",
+    tip:"安静不是结束，是还有话没说完。"
   }
 };
 const PHOTOS = [
@@ -2090,10 +2104,10 @@ function anomalyLevel(){
 }
 function dayLabel(d){
   d = d==null ? S.day : d;
-  return "第"+Math.min(Math.max(d,1),3)+"天";
+  return "第"+Math.min(Math.max(d,1),5)+"天";
 }
 function dayBrief(d){
-  return DAY_INFO[Math.min(Math.max(d||S.day,1),3)] || DAY_INFO[1];
+  return DAY_INFO[Math.min(Math.max(d||S.day,1),5)] || DAY_INFO[1];
 }
 function charPhase(id){
   // 0 early, 1 mid, 2 late — day-gated
@@ -2940,7 +2954,7 @@ function dismissDayCard(el){
   render();
 }
 function showDayCard(day, opts){
-  day = Math.min(Math.max(day||S.day,1),3);
+  day = Math.min(Math.max(day||S.day,1),5);
   opts = opts || {};
   S.pendingDayCard = null;
   const info = DAY_INFO[day];
@@ -8994,6 +9008,118 @@ function confirmSetup(){
   setTimeout(()=>showDayCard(1), 400);
 }
 
+/* —— 隐藏模式：第四天起，手机里浮上来一个没有图标的东西 —— */
+function hiddenUnlocked(){ return (S.day>=4||S.flags.hiddenForced) && !S.flags.ended; }
+const HIDDEN_FILES=[
+  {id:"usage",  icon:"📋", title:"使用报告",            sub:"它一直在数。", need:4},
+  {id:"drafts", icon:"✉️", title:"草稿箱 · 未发送",     sub:"三封。收件人一栏全是空的。", need:4},
+  {id:"calls",  icon:"📼", title:"通话记录 · 14:23",    sub:"十通。都没有接通。", need:4},
+  {id:"trash",  icon:"🖼", title:"最近删除 · 照片",     sub:"恢复按钮是灰的。", need:4},
+  {id:"log",    icon:"🖥️", title:"系统日志",            sub:"园区已关闭 · 进程还在跑。", need:4},
+  {id:"letter", icon:"🪑", title:"给下一个捡到它的人",  sub:"最后一天才给看。", need:5},
+];
+function renderHiddenApp(){
+  if(!hiddenUnlocked()){ toast("还打不开"); return; }
+  const first=!S.flags.hiddenOpened;
+  S.flags.hiddenOpened=true;
+  const draw=function(){
+    if(!S.flags.hiddenRecorded){
+      S.flags.hiddenRecorded=true;
+      try{ addRecord("隐藏文件夹","第四天以后才浮上来的东西。它给的东西，第五天也没给完。"); }catch(e){}
+    }
+    const screen=document.getElementById("screen");
+    let html=`<div>
+      <button class="back-btn" onclick="S.tab='more';render()">← 更多</button>
+      <h3 style="margin:10px 0 4px">？？？？？</h3>
+      <p class="muted">这里本来什么都没有。你看得足够多、待得足够久，它才敢出来。<br>这些不是App。是它攒下来的。</p>`;
+    HIDDEN_FILES.forEach(function(f){
+      const ok=S.day>=(f.need||4);
+      const read=(S.flags.hiddenRead||{})[f.id];
+      html+=`<div class="card" style="padding:10px 12px;margin-top:8px;cursor:pointer;${ok?"":"opacity:.45"}" onclick="${ok?`renderHiddenFile('${f.id}')`:`toast('还差一天。它自己也急。')`}">
+        <b>${f.icon} ${f.title}</b>${read?' <span style="color:#8a7f6f;font-size:11px">已读</span>':""}
+        <small class="muted" style="display:block;margin-top:2px">${ok?f.sub:"还差一天"}</small>
+      </div>`;
+    });
+    html+=`<p class="muted" style="margin-top:12px;text-align:center;font-size:11px">看完可以删掉。删掉没有用。</p></div>`;
+    screen.innerHTML=html;
+  };
+  if(first){
+    spVeil("你在「更多」的角落里摸到一块没有图标的地方。它一直在那儿。", draw);
+  } else draw();
+}
+function renderHiddenFile(fid){
+  const f=HIDDEN_FILES.filter(function(x){return x.id===fid;})[0];
+  if(!f || S.day<(f.need||4)) return;
+  if(!S.flags.hiddenRead) S.flags.hiddenRead={};
+  const fr=!S.flags.hiddenRead[fid];
+  S.flags.hiddenRead[fid]=true;
+  const m=(typeof loadMem==="function")?loadMem():{};
+  const screen=document.getElementById("screen");
+  let body="";
+  if(fid==="usage"){
+    let topCid="",topN=0;
+    Object.keys(S.reread||{}).forEach(function(k){ if((S.reread[k]||0)>topN){topN=S.reread[k];topCid=k;} });
+    const c=CHARS.filter(function(x){return x.id===topCid;})[0];
+    let topZone="",topSec=0;
+    try{
+      if(typeof __zoneSecMap!=="undefined"&&__zoneSecMap){
+        Object.keys(__zoneSecMap).forEach(function(k){ if((__zoneSecMap[k]||0)>topSec){topSec=__zoneSecMap[k];topZone=k;} });
+      }
+    }catch(e){}
+    const z=ZONES.filter(function(x){return x.id===topZone;})[0];
+    const priedSum=Object.keys(S.flags.pried||{}).reduce(function(a,k){return a+(S.flags.pried[k]||0);},0);
+    body=`<div class="card"><p style="line-height:2;margin:0">
+    打开这部手机：<b>${m.loads||0}</b> 次<br>
+    删掉过什么：<b>${m.deletes||0}</b> 次<br>
+    关掉屏幕：<b>${m.exits||0}</b> 次<br>
+    同一个人的聊天页回去看最多：<b>${c?c.name:"—"} · ${topN} 遍</b><br>
+    停得最久的地方：<b>${z?z.name:"—"} · ${Math.round(topSec/60)} 分钟</b><br>
+    问了又问、没发出去的问题：<b>${priedSum} 次</b>
+    </p><p class="muted" style="margin-top:8px">报告没有落款。最底下一行小字：数据仅用于改进你的体验。</p></div>`;
+  } else if(fid==="drafts"){
+    body=`<div class="card"><p style="line-height:2;margin:0">
+    ① 「明天闭园以后，你能不能最后一个走。就一个请求。」<br><span class="muted">——「最后一个走」删掉又打上，删掉又打上。停在这里。</span><br><br>
+    ② 「你有没有发现今天没有广播。不是没放。是放了，没有人听见。」<br><br>
+    ③ 「别在灯灭的时候数座位。」<br><span class="muted">——这封发出去了吗。发件箱里没有它。</span></p></div>`;
+  } else if(fid==="calls"){
+    body=`<div class="card"><p style="line-height:2;margin:0">
+    不是录音，是记录。十通。都是 <b>14:23</b>。都没有接通。<br><br>
+    第七通的备注：<span class="muted">响了很久。响的人没有挂。</span><br>
+    第九通的备注：<span class="muted">拨号的人不在号码那头。</span><br>
+    第十通只有一行：<b>这一次，手机在接的人手里。</b></p>
+    <p class="muted" style="margin-top:8px">通话时长全部为 00:00。但电量是按通话扣的。</p></div>`;
+  } else if(fid==="trash"){
+    body=`<div class="card"><p style="line-height:2;margin:0">
+    照片七张。恢复按钮是灰的。<br><br>
+    第 1 张：合照。十个人，都在笑。拍照的人不在照片里，<b>影子在</b>。<br>
+    第 2 张：同一个角度。人还是十个。笑的位置不一样了。<br>
+    第 3～6 张：长椅。空椅子。空椅子。空椅子。长椅上有一部手机，屏幕亮着。<br>
+    第 7 张：删除时间是<b>明天</b>。</p></div>`;
+  } else if(fid==="log"){
+    const runs=(m.runs||0)+1;
+    body=`<div class="card"><p style="line-height:1.9;margin:0;font-size:12px">
+    [boot ] 巡更模式启动 · 园区已关闭<br>
+    [sens ] 座位压力感应 · 10/11 正常<br>
+    [stor ] 余场清理完成 · 本轮寄存：1 件<br>
+    [net  ] 广播已发出 · 收听人数：1<br>
+    [warn ] 第十一份名单没有名字 · 占位符：<b>你</b><br>
+    ${S.day>=5?`[cron ] 循环维持正常 · 已运行 ${runs} 轮<br>`:"<span class='muted'>[cron ] ████████ · 明天解锁</span><br>"}
+    </p>
+    <p class="muted" style="margin-top:8px">日志没有结束符。滚动条到底了，它还在写。</p></div>`;
+  } else if(fid==="letter"){
+    body=`<div class="card"><p style="line-height:2.1;margin:0">
+    如果你在读这个，说明你也是拖到最后一天才找到这里的。他们都这样。<br><br>
+    不用怕，也不用急着还。它选了你，说明你坐下来的时候，<b>椅子没有反对</b>。<br><br>
+    只有一个规矩，三条里没写的那条：<br>
+    把手机放回长椅之前，把你想留的话留着。<br>
+    下一个捡到的人，会替你读完。</p></div>`;
+  }
+  let html=`<div>
+    <button class="back-btn" onclick="renderHiddenApp()">← 返回</button>
+    <h3 style="margin:10px 0 4px">${f.icon} ${f.title}</h3>${body}</div>`;
+  screen.innerHTML=html;
+  if(fr){ try{ toast("它记下你看过了。"); }catch(e){} }
+}
 function renderMore(){
   const day=S.day||1;
   const screen=document.getElementById("screen");
@@ -9021,6 +9147,7 @@ function renderMore(){
         <button class="more-cell" onclick="renderPhoneApp()"><span>📞</span><b>电话</b></button>
         <button class="more-cell" onclick="renderGardenerScene()"><span>🌿</span><b>园丁</b></button>
         <button class="more-cell" onclick="renderMonologueApp()"><span>🎭</span><b>假面独白</b></button>
+        ${(S.day>=4&&!S.flags.ended)?`<button class="more-cell" onclick="renderHiddenApp()"><span>🕳️</span><b>${S.flags.hiddenOpened?"隐藏文件夹":"？？？"}</b>${S.flags.hiddenOpened?"":"<i>新</i>"}</button>`:""}
         <button class="more-cell" onclick="showDayCard(S.day,{instant:true})"><span>📅</span><b>日程</b></button>
       </div>
     </div>
@@ -10963,18 +11090,33 @@ const CROOK_WHISPERS = {
     {t:"我一直在看你。你回头看的时候我没躲。", k:"看"},
     {t:"照片拍好了吗。我这边是空的。", k:"照片", mark:"tell"},
     {t:"别站在我前面。光会穿过去。", k:"光", mark:"tell2"},
+    {t:"刚才那阵风是从我这边过去的。可我没动。", k:"风"},
+    {t:"你数过闸机口的影子吗。数出来别告诉我。", k:"影子"},
+    {t:"我今天量过身高。和早上不一样。长了。", k:"身高"},
+    {t:"别怕。站到我的影子里来，它就数不到你。", k:"影子里"},
+    {t:"我的影子刚才先我一步进了闸机。它没等我。", k:"先走", mark:"tell2"},
   ],
   kevin: [
     {t:"你听，刚才那一拍。", k:"一拍"},
     {t:"我手停了，声音还在。你听见没有。", k:"声音"},
     {t:"我不是在弹。我只是记得它该响。", k:"弹", mark:"tell"},
     {t:"后面那段不是我的。别再往下听了。", k:"后面", mark:"tell2"},
+    {t:"钢琴今天自己调过音了。调成了没有人弹过的调。", k:"调音"},
+    {t:"谱架上多了一页谱子。记的不是音符，是时间。14:23。", k:"谱子"},
+    {t:"琴盖合上以后还有声音。我贴着听过。是有人换气。", k:"换气"},
+    {t:"如果哪天音乐停在中途，别回头，也别替它接下去。", k:"中途"},
+    {t:"刚才那首曲子是为你弹的。全园只有一个人听得见。", k:"只给你", mark:"tell2"},
   ],
   juyeon: [
     {t:"在。", k:"在"},
     {t:"我在检票口。我一直在这儿。", k:"检票口"},
     {t:"你要走就现在走。过了二十步我送不了。", k:"二十步", mark:"tell2"},
     {t:"我不累。我也不饿。你别问了。", k:"不累", mark:"tell"},
+    {t:"今天检票口过了一次闸。没有人进来。闸开了两次。", k:"闸机"},
+    {t:"闭园广播响过了。我没走。你也没走。对吧。", k:"广播"},
+    {t:"票根上的日期是今天的。印的时候我还不知道你会来。", k:"票根"},
+    {t:"你在名单上。不在游客那一页。别翻到那一页看。", k:"名单"},
+    {t:"检票口数人头，十一个。我数了三遍。我不敢数第四遍。", k:"十一", mark:"tell2"},
   ],
 };
 function crookWhisper(cid){
@@ -10983,8 +11125,18 @@ function crookWhisper(cid){
   if(!pool) return;
   if(!S.flags.crookIdx) S.flags.crookIdx={};
   const i=S.flags.crookIdx[cid]||0;
-  const w=pool[Math.min(i,pool.length-1)];
+  let w;
+  if(i<pool.length){ w=pool[i]; }
+  else{
+    /* 池子说完就不再复读：三次里只漏一句，且不和上一句重复 */
+    if((i-pool.length)%3!==0){ S.flags.crookIdx[cid]=i+1; return; }
+    const _last=(S.flags.crookLast||{})[cid];
+    const _cand=pool.filter(function(x){ return x.t!==_last; });
+    w=_cand[Math.floor(Math.random()*_cand.length)];
+  }
   S.flags.crookIdx[cid]=i+1;
+  if(!S.flags.crookLast) S.flags.crookLast={};
+  S.flags.crookLast[cid]=w.t;
   const line={from:"them",text:w.t,type:"text",t:realTime(),read:false};
   if(!S.chatLog[cid]) S.chatLog[cid]=[];
   S.chatLog[cid].push(line);
@@ -11370,11 +11522,13 @@ function renderNotes(){
   sorted.forEach(c=>{ html+=`<div>${c.emoji} ${c.name} · ${S.attention[c.id]||0}</div>`; });
   html+=`<p class="muted" style="margin-top:8px">异常感知 ${S.flags.anomaliesSeen} · 无视警告 ${S.flags.warningsIgnored} · 主动/追问 ${S.flags.proactiveCount}</p></div>`;
   // safe leave hint
-  html+=`<div class="card" style="margin-top:10px"><p class="muted">三日结构</p>
+  html+=`<div class="card" style="margin-top:10px"><p class="muted">五日结构</p>
     <p style="font-size:12px;line-height:1.65;margin-top:6px">
     <b>第1天</b> ${DAY_INFO[1].tone}<br>
     <b>第2天</b> ${DAY_INFO[2].tone}<br>
-    <b>第3天</b> ${DAY_INFO[3].tone}
+    <b>第3天</b> ${DAY_INFO[3].tone}<br>
+    <b>第4天</b> ${DAY_INFO[4].tone}<br>
+    <b>第5天</b> ${DAY_INFO[5].tone}
     </p></div>`;
   if(S.flags.safeStopOffered){
     html+=`<div class="alert-banner">你可以选择现在离开游乐场（菜单 / 主页），走向安全向结局。</div>`;

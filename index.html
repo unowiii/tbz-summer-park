@@ -8763,6 +8763,50 @@ function makeEndingCard(){
     document.getElementById("phone").appendChild(wrap);
   }catch(e){ toast("卡片生成失败"); }
 }
+/* —— v74 结局归因：从本局真实行为生成一句「为什么走到这里」，不剧透假面 —— */
+function endingWhyHtml(){
+  try{
+    const clauses=[];
+    const lead=attentionLead();
+    let totalMe=0, leadMe=0;
+    Object.keys(S.chatLog||{}).forEach(function(cid){
+      (S.chatLog[cid]||[]).forEach(function(m){ if(m.from!=="me") return; totalMe++; if(cid===lead) leadMe++; });
+    });
+    if(lead && leadMe>=4 && leadMe*2>=totalMe){
+      const c=CHARS.find(function(x){return x.id===lead;});
+      clauses.push("你回了 "+totalMe+" 条消息，其中 "+leadMe+" 条都给了"+(c?c.name:"同一个人"));
+    }
+    const wi=S.flags.warningsIgnored||0;
+    if(wi>=3) clauses.push("有人劝过你 "+wi+" 次，你没有停下来");
+    if((S.deletedLayer||0)>=2) clauses.push("你把已删除翻到了第 "+S.deletedLayer+" 层");
+    if((S.flags.anomaliesSeen||0)>=6) clauses.push("你亲眼数出了 "+S.flags.anomaliesSeen+" 处不对劲");
+    if(S.flags.refusedCharge) clauses.push("你拒绝过充电");
+    else if((S.flags.chargedCount||0)>=3) clauses.push("你充了 "+S.flags.chargedCount+" 次电，一直把自己撑在亮着的地方");
+    if((S.jumpFaceCount||0)>=3) clauses.push("它已经贴到你面前 "+S.jumpFaceCount+" 次");
+    if((triGet().paranoia||0)>=70) clauses.push("你怀疑得越多，园子替你改了路");
+    if(!clauses.length) return "";
+    return '<p class="muted" style="margin:8px 0 0;font-size:12px;line-height:1.8">为什么走到这里：'+clauses.slice(0,3).join("。")+'。</p>';
+  }catch(e){ return ""; }
+}
+/* —— v74 今日重点：叙事层的一天目标，一天一换，点了「知道了」当天不再出现 —— */
+function dayFocusHtml(){
+  if(S.flags.ended) return "";
+  const day=S.day||1;
+  if((S.flags.dayFocusSeen||0)===day) return "";
+  const info=(typeof isShortMode==="function" && isShortMode() && day===3)?DAY_INFO_SHORT_3:(DAY_INFO[day]||DAY_INFO[1]);
+  return '<div class="step-card" id="dayFocusCard" style="border-color:rgba(165,52,42,.5)">'
+    +'<div class="sk">今日重点</div>'
+    +'<h3>'+esc(info.short||info.title)+'</h3>'
+    +'<p>'+esc(info.goal)+'</p>'
+    +'<p class="muted" style="font-size:12px">'+esc(info.tip)+'</p>'
+    +'<button class="btn" onclick="dismissDayFocus()">知道了</button>'
+    +'</div>';
+}
+function dismissDayFocus(){
+  S.flags.dayFocusSeen=S.day||1;
+  try{ autoSaveNow(); }catch(e){}
+  render();
+}
 function renderEnding(kind){
   try{ if(typeof metaStoneFinish==="function") metaStoneFinish(kind); }catch(e){}
   document.getElementById("dock").style.display="none";
@@ -8865,6 +8909,7 @@ function renderEnding(kind){
         <div><b>${S.jumpFaceCount}/${jumpCap()}</b><span>突脸</span></div>
       </div>
       <p class="settle-note">危险区域：${esc(dangerStr)} · 身份：${esc(({staff:"工作人员",reporter:"记者",passerby:"路人"})[S.identity]||"—")}</p>
+      ${endingWhyHtml()}
     </div>
     ${monsterPanelHtml()}
     ${endingExtraPanels()}
@@ -8920,6 +8965,7 @@ function renderHiddenSettlement(){
         <div><b>${S.jumpFaceCount}/${jumpCap()}</b><span>突脸</span></div>
       </div>
       <p class="settle-note">危险区域：${esc(dangerBits.length?dangerBits.join("、"):"未踏入")} · ${esc(identityAttitudeHint())}</p>
+      ${endingWhyHtml()}
     </div>
     ${monsterPanelHtml()}
     ${endingExtraPanels()}
@@ -9862,6 +9908,7 @@ function renderHome(){
       <span class="rs-t">入园守则 · 三条</span>
       <span class="rs-l">别答应风里的名字 · 木马空着的那个座不要坐 · 灯灭之前回有人的地方</span>
     </button>
+    ${dayFocusHtml()}
     <div class="step-card">
       <div class="sk">现在做这一件</div>
       <h3>${esc(step.title)}</h3>
@@ -11862,6 +11909,9 @@ function crookWhisper(cid){
   else{
     /* 池子说完就不再复读：三次里只漏一句，且不和上一句重复 */
     if((i-pool.length)%3!==0){ S.flags.crookIdx[cid]=i+1; return; }
+    if(!S.flags.crookRepDay) S.flags.crookRepDay={};
+    if(S.flags.crookRepDay[cid]===(S.day||1)){ S.flags.crookIdx[cid]=i+1; return; }
+    S.flags.crookRepDay[cid]=S.day||1;
     const _last=(S.flags.crookLast||{})[cid];
     const _cand=pool.filter(function(x){ return x.t!==_last; });
     w=_cand[Math.floor(Math.random()*_cand.length)];

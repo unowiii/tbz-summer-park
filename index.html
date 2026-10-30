@@ -6394,7 +6394,7 @@ younghoon:[{id:"yh1",phase:0,minDay:1,lines:[{from:"them",text:"谢谢。手机�
 {id:"yh5b",phase:2,minDay:3,lines:[{from:"them",text:"……收图。"},{from:"them",text:"别把右下角当入口。听我的。"}],replies:[{label:"好",type:"安抚",att:2,push:0},{label:"入口？",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}],reqNight:true}],
 hyunjae:[
 {id:"hj_unread",phase:0,minDay:1,reqAtt:2,lines:[{from:"them",text:"对了，趁我想起来。"},{from:"them",text:"你捡到手机的时候，里面有几条未读消息？"}],replies:[{label:"十几条吧，怎么了",type:"追问",att:2,push:0},{label:"为什么这么问？",type:"质疑",att:2,push:0},{label:"（先不回）",type:"忽视",att:0,push:0}]},{id:"hj1",phase:0,minDay:1,lines:[{from:"them",text:"谢啦～今天真的乱成一锅了。你还帮忙捡手机，人很好，我记着。"},{from:"them",text:"翻别人手机要付精神损失费。开玩笑的ㅋㅋ说真的，你吃东西了吗？饮食区的炸物还不错。"}],replies:[{label:"还没吃，求推荐",type:"安抚",att:2,push:0,zoneHint:"food"},{label:"方便说下怎么丢的吗",type:"追问",att:2,push:0},{label:"嗯",type:"忽视",att:0,push:0}]},
-{id:"hj2",phase:0,minDay:1,lines:[{from:"them",text:"手机怎么丢的？这个嘛……我也没太注意。只记得刚才手机还在，后来就不见了。"},{from:"them",text:"语音也行，文字也行，反正我话多。要是听到杂音，先当麦的问题哈哈。饿了就去吃，别硬撑着听恐怖故事。"}],replies:[{label:"好，等你",type:"安抚",att:1,push:0},{label:"什么杂音？",type:"追问",att:2,push:1,kw:"杂音"},{label:"哈哈",type:"忽视",att:0,push:0}],reqAtt:1},
+{id:"hj2",phase:0,minDay:1,lines:[{from:"them",text:"手机怎么丢的？这个嘛……我也没太注意。只记得刚才手机还在，后来就不见了。"}],replies:[{label:"好，等你",type:"安抚",att:1,push:0},{label:"再想想，真没印象？",type:"追问",att:2,push:1,kw:"杂音"},{label:"哈哈",type:"忽视",att:0,push:0}],reqAtt:1},
 {id:"hj2b",phase:0,minDay:2,lines:[{from:"them",text:"舞台侧走廊回声怪，别在那儿待太久。"},{from:"them",text:"待太久会饿。饿了判断力下降——别笑，我认真的。"}],replies:[{label:"好的",type:"安抚",att:1,push:0},{label:"为什么怪",type:"追问",att:2,push:0},{label:"哦",type:"忽视",att:0,push:0}],reqAtt:2},
 {id:"hj3",phase:1,minDay:2,lines:[{from:"them",text:"喂，你在吗？我刚才本来想问你要不要一起吃宵夜，结果打出来的东西完全看不懂，估计是信号出了点问题。"},{from:"them",text:"你要是听见电流声，记得先把免提关掉。"}],replies:[{label:"你还好吗？",type:"追问",att:3,push:1,anomaly:1,kw:"语音噪声"},{label:"我关免提了",type:"安抚",att:1,push:0},{label:"信号不好吧",type:"忽视",att:0,push:0,warnIgnore:1}]},
 {id:"hj3b",phase:1,minDay:2,lines:[{from:"them",text:"认真说一句玩笑：这里最可怕的事情不是怪声，是热食窗口居然提前关了。"},{from:"them",text:"……好吧，怪声也挺烦人的。"}],replies:[{label:"哈哈哈",type:"安抚",att:2,push:0},{label:"你在用玩笑盖什么",type:"质疑",att:2,push:1,anomaly:1},{label:"好，我挪",type:"追问",att:2,push:0}],reqAtt:4},
@@ -6861,7 +6861,7 @@ function chatUnlockedIds(){
   CHARS.forEach(c=>{ if(c.id!==S.ownerId) order.push(c.id); });
   const replied=CHARS.filter(c=>(S.chatLog[c.id]||[]).some(m=>m.from==="me")).length;
   let cap=S.day>=3?10:S.day>=2?7:3;
-  cap=Math.min(10, cap+replied);
+  if((S.day||1)>=2) cap=Math.min(10, cap+replied);
   return order.slice(0, cap);
 }
 function ensureSeedChats(){
@@ -8277,7 +8277,7 @@ function renderArea(zid){
     })()}
     <button class="btn" onclick="openCamera('${z.id}')">📷 打开相机 · 有些东西只有取景框里看得见</button>
     <button class="btn" onclick="saveAreaRecord('${z.id}')">📎 保存到记录</button>
-    ${z.charge && (isCritBat()||S.flags.deadBattery||S.battery<30)?`<button class="btn primary" onclick="chargeAtSafeZone('${z.id}')">🔌 在此充电</button>`:""}
+    ${z.charge ? ((isCritBat()||S.flags.deadBattery||S.battery<30)?`<button class="btn primary" onclick="chargeAtSafeZone('${z.id}')">🔌 在此充电</button>`:`<button class="btn" disabled style="opacity:.55">🔌 在此充电（电量还多 · 现在充会重设为35~55%，可能不划算）</button>`) : ""}
     <button class="btn ${z.charge?"":"primary"}" onclick="S.tab='map';render()">返回地图</button>
   </div>`;
 }
@@ -11790,7 +11790,6 @@ const CROOK_WHISPERS = {
     {t:"名单我念到第七个就停了。第八个不是名字，是呼吸声。", k:"第八个"},
     {t:"你别接电话。我这边拨出去的，接的人声音都跟你一样。", k:"电话"},
     {t:"我数了下，今晚园里比白天多一个人。多的那个不走路，是滑过来的。", k:"多一个"},
-    {t:"如果我突然 rap 得很慢，那不是忘词。是我在听后面有没有人跟着唱。", k:"跟着"},
     {t:"你把耳朵贴在手机上。我在这头，替你数到十。", k:"数到十"},
   ],
   q: [

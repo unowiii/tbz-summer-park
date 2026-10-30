@@ -6904,6 +6904,7 @@ function tryPushNewBeats(){
 }
 function applyReply(cid, reply){
   S.chatLog[cid].push({from:"me",text:reply.label,type:"text",t:realTime()});
+  try{ replyFeedbackNote(cid); }catch(e){}
   if(cid==="jacob" && /水渍|柜台|饮食|手机/.test(reply.label||"")){ S.flags.toldJacobWater=true; if(typeof checkQuestProgress==="function") checkQuestProgress(); }
   S.attention[cid]=(S.attention[cid]||0)+(reply.att||0);
   /* v3：安抚=靠近他，追问/质疑=你开始不信他。两者都会让他记住你 */
@@ -8763,6 +8764,65 @@ function makeEndingCard(){
     document.getElementById("phone").appendChild(wrap);
   }catch(e){ toast("卡片生成失败"); }
 }
+/* —— v75 选择反馈层：让玩家看见自己的选择在记账（文案用户供稿） —— */
+const REPLY_FEEDBACK=[
+  "他回得比刚才长了一点。",
+  "他停顿了一下才回。",
+  "他回得很短，像在等你先说完。",
+  "他没有立刻把话题岔开。",
+  "他先问你为什么要问这个。",
+  "他没有否认，只是不接话了。"
+];
+/* 回复后的短反馈：每段对话按顺序各给一次，六条说完即止，不复读 */
+function replyFeedbackNote(cid){
+  try{
+    if(!S.flags.fbIdx) S.flags.fbIdx={};
+    const i=S.flags.fbIdx[cid]||0;
+    if(i>=REPLY_FEEDBACK.length) return;
+    S.flags.fbIdx[cid]=i+1;
+    S.chatLog[cid].push({from:"sys",text:"（"+REPLY_FEEDBACK[i]+"）",type:"sys",t:realTime()});
+  }catch(e){}
+}
+/* 第2天晚上之后：根据行为给一句观察（一局最多一次） */
+function runObsHtml(){
+  if(S.flags.ended||S.flags.obsShown) return "";
+  const day=S.day||1;
+  if(!(day>=2 && (day>2 || (S.hour||0)>=21))) return "";
+  let line="";
+  const rep=function(cid){ try{ return (S.chatLog[cid]||[]).some(function(m){return m.from==="me";}); }catch(e){ return false; } };
+  if(day>=2 && !rep("younghoon")) line="你最近总是在看 Younghoon 的照片，也很少回他的消息。";
+  else if((S.attention.kevin||0)>=4) line="Kevin 今天对你说的话比平时多。";
+  else if((S.attention.juyeon||0)>=4) line="你问了 Juyeon 好几次，他每次都停在同一个地方。";
+  else if(!(S.suspectMark&&Object.keys(S.suspectMark).length)) line="你很少质疑他们，他们也很少拦你。";
+  if(!line) return "";
+  S.flags.obsShown=true;
+  return '<div class="today-tip"><div class="tt">它注意到了</div>'+esc(line)+'</div>';
+}
+/* 第3天日切：把这一局积累的选择说给他听（一次） */
+function day3FeedbackHtml(){
+  if((S.day||1)!==3 || S.flags.ended || S.flags.d3fbDone) return "";
+  const t=triGet();
+  let line="";
+  const pried=Object.keys(S.flags.pried||{}).some(function(k){return (S.flags.pried[k]||0)>=3;});
+  const susSum=Object.keys(t.sus||{}).reduce(function(a,k){return a+(t.sus[k]||0);},0);
+  const notes=Object.keys(t.seenTells||{}).reduce(function(a,k){return a+((t.seenTells[k]||[]).length);},0);
+  const lead=attentionLead();
+  if(pried) line="你这几天一直在追问同一个人。他开始防你了。";
+  else if(lead && (t.sus[lead]||0)>=3) line="你离他很近，也怀疑他。两件事叠在一起了。";
+  else if(notes>=2) line="你记下了几件不对的事。园子开始跟着变。";
+  else if(susSum<3) line="你很少质疑他们。他们也很少拦你。";
+  else if(!(S.suspectMark&&Object.keys(S.suspectMark).length)) line="你还没怎么标记谁。他们还在按原来的方式说话。";
+  if(!line) return "";
+  S.flags.d3fbDone=true;
+  return '<div class="today-tip"><div class="tt">第三天</div>'+esc(line)+'</div>';
+}
+/* 第4天日切（深入版）：（一次） */
+function day4FeedbackHtml(){
+  if((S.day||1)!==4 || S.flags.ended || S.flags.d4fbDone) return "";
+  if(typeof isShortMode==="function" && isShortMode()) return "";
+  S.flags.d4fbDone=true;
+  return '<div class="today-tip"><div class="tt">第四天</div>你开始分不清谁在拦你，谁在推你。<br>有些话你听过不止一遍。</div>';
+}
 /* —— v74 结局归因：从本局真实行为生成一句「为什么走到这里」，不剧透假面 —— */
 function endingWhyHtml(){
   try{
@@ -8793,11 +8853,53 @@ function dayFocusHtml(){
   if(S.flags.ended) return "";
   const day=S.day||1;
   if((S.flags.dayFocusSeen||0)===day) return "";
-  const info=(typeof isShortMode==="function" && isShortMode() && day===3)?DAY_INFO_SHORT_3:(DAY_INFO[day]||DAY_INFO[1]);
+  const short=(typeof isShortMode==="function")&&isShortMode();
+  if(day===1){
+    const p=routeSnapshot();
+    const ck=function(on){ return on?"✓":"○"; };
+    if(!(p.lead&&p.hot>=1&&p.sawPlace)){
+      return '<div class="step-card" style="border-color:rgba(165,52,42,.5)">'
+        +'<div class="sk">今晚先做完这三件事</div>'
+        +'<p style="margin:3px 0">'+ck(p.lead)+' 回那条「在吗」。</p>'
+        +'<p style="margin:3px 0">'+ck(p.hot>=1)+' 打开相册，看第一张照片。</p>'
+        +'<p style="margin:3px 0">'+ck(p.sawPlace)+' 去地图，走进一个区。</p>'
+        +'<p class="muted" style="font-size:12px">做完再往下看。不对劲、假面独白、园丁的第一现场，第二天才开。今天先把人认熟。</p>'
+        +'</div>';
+    }
+    return '<div class="step-card" style="border-color:rgba(165,52,42,.5)">'
+      +'<div class="sk">今晚的目标已经做完</div>'
+      +'<p>剩下的时间，你可以继续看他们说话。</p>'
+      +'<button class="btn" onclick="dismissDayFocus()">知道了</button>'
+      +'</div>';
+  }
+  if(day===4 && !short){
+    const p=routeSnapshot();
+    const marked=(S.suspectMark&&Object.keys(S.suspectMark).length)||0;
+    if(!((S.deletedLayer||0)>=2 && p.empty && marked>=1)){
+      return '<div class="step-card" style="border-color:rgba(165,52,42,.5)">'
+        +'<div class="sk">第4天 · 三件事</div>'
+        +'<p style="margin:3px 0">'+((S.deletedLayer||0)>=2?"✓":"○")+' 把删掉的内容再往下翻一层。</p>'
+        +'<p style="margin:3px 0">'+(p.empty?"✓":"○")+' 去一次空地。</p>'
+        +'<p style="margin:3px 0">'+(marked>=1?"✓":"○")+' 把你最常看的那个人，标成好人或者坏人。</p>'
+        +'</div>';
+    }
+  }
+  if(day>=5){
+    return '<div class="step-card" style="border-color:rgba(165,52,42,.5)">'
+      +'<div class="sk">最后一天</div>'
+      +'<p style="margin:3px 0">○ 放回长椅。</p>'
+      +'<p style="margin:3px 0">○ 带着它离开。</p>'
+      +'<p style="margin:3px 0">○ 或者找聊得最多的那个人，把这几天说清楚。</p>'
+      +'<p class="muted" style="font-size:12px">今天怎么离开，就是你记得的方式。</p>'
+      +'<button class="btn" onclick="dismissDayFocus()">知道了</button>'
+      +'</div>';
+  }
+  const info=short&&day===3?DAY_INFO_SHORT_3:(DAY_INFO[day]||DAY_INFO[1]);
+  const extra=day===2?'<p class="muted" style="font-size:12px">现在可以开始记不对的地方了。你看见的、你觉得奇怪的，都会被记下来。</p>':'';
   return '<div class="step-card" id="dayFocusCard" style="border-color:rgba(165,52,42,.5)">'
     +'<div class="sk">今日重点</div>'
     +'<h3>'+esc(info.short||info.title)+'</h3>'
-    +'<p>'+esc(info.goal)+'</p>'
+    +'<p>'+esc(info.goal)+'</p>'+extra
     +'<p class="muted" style="font-size:12px">'+esc(info.tip)+'</p>'
     +'<button class="btn" onclick="dismissDayFocus()">知道了</button>'
     +'</div>';
@@ -9909,6 +10011,9 @@ function renderHome(){
       <span class="rs-l">别答应风里的名字 · 木马空着的那个座不要坐 · 灯灭之前回有人的地方</span>
     </button>
     ${dayFocusHtml()}
+    ${runObsHtml()}
+    ${day3FeedbackHtml()}
+    ${day4FeedbackHtml()}
     <div class="step-card">
       <div class="sk">现在做这一件</div>
       <h3>${esc(step.title)}</h3>
@@ -10365,7 +10470,9 @@ function renderChatList(){
   ensureSeedChats();
   ensureGroupSeed();
   const screen=document.getElementById("screen");
+  if(!S.flags.chatHintShown){ S.flags.chatHintShown=true; S.flags._chatHint=true; }
   let html=`<h3 style="margin-bottom:8px">聊天</h3><p class="muted" style="margin-bottom:8px">${S.ownerId?"没说话的在下面。过了凌晨，他会在聊天里给你写一段很长的话。":"只有一个号码。别的，还没有出现。"}</p>`;
+  if(S.flags._chatHint){ S.flags._chatHint=false; html+=`<p class="muted" style="margin:-2px 0 8px;font-size:11px">安抚会让他多说几句。追问和质疑会让他开始防你。两种都会被记下。</p>`; }
   // 未知号码和所有成员一起排队：按最后一条消息的时间倒序，没消息的沉底
   const rows=[];
   if((S.chatLog.unknown||[]).length) rows.push({id:"unknown", key:chatSortKey("unknown")});
@@ -11976,7 +12083,8 @@ function paranoiaHint(){
   if(p<45) return "灯比刚才暗了一点。你说不清是不是错觉。";
   if(p<70) return "走廊尽头那盏灯，灭的位置比刚才靠前。";
   if(p<90) return "你现在看谁，都觉得他在等你先说话。";
-  return "你开始怀疑自己是不是记错了。这才是最糟的。";
+  if(p<100) return "你开始怀疑自己是不是记错了。这才是最糟的。";
+  return "你一路问下来，把它问成了这样。你越不信，它就越像你以为的那个样子。";
 }
 
 /* ==========================================================
@@ -12078,7 +12186,7 @@ function crookMark(cid, which){
     t.seenTells[cid].push(which);
     triSuspect(cid,2);
     gainAnomaly(1);
-    toast("你记下了这件事。");
+    toast("你记下了这件事。「"+which+"」已加入「不对劲」。这件事会留到后面。");
   }
 }
 

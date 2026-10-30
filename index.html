@@ -1743,23 +1743,26 @@ const DAY_INFO = {
   3:{
     title:"第3天",
     short:"第3天 · 灯灭之后",
-    tone:"第三天。园区开始回应你了。",
-    goal:"收集空地密码的四个数字；夜里去一趟夜场；声音不对的时候，别应。",
-    tip:"先记下，别急着说破。今天说话最短的那个人，明天会再说一遍。"
+    tone:"园区的灯从早上开始就有些不对劲。你发现，有些变化似乎只发生在你注意到它们之后。",
+    goal:"找齐空地密码的四个数字，去夜场确认昨晚留下的线索。留意聊天记录里的异常，尤其是那些你已经读过的消息。",
+    tip:"今天会有一些熟悉的声音。听见有人叫你时，先确认消息是谁发来的。",
+    open:"昨晚的事情没有随着天亮过去。<br><br>手机里多了几条未读消息，时间却停留在你睡前。你逐条点开，聊天记录看起来和平时没有区别。只是有几个人的头像旁边，始终显示着正在输入。"
   },
   4:{
     title:"第4天",
     short:"第4天 · 推翻认知",
-    tone:"第四天。你开始怀疑自己看到的东西——包括昨天看到的。",
-    goal:"重看那张合照；看一通没有来电人的电话；把四天的话对一遍。",
-    tip:"今天白天的园区也不安稳了。昨天确定的事，今天读起来不一样。"
+    tone:"昨天留下的线索，今天有了另一种解释。",
+    goal:"重看入园时的十人合照，查看一通没有来电人的电话，把前三天的聊天记录和备忘录重新对照。",
+    tip:"有些消息的发送时间对不上，有些人的说法也不一致。先把它们放在一起看看。",
+    open:"第四天，你醒得比前几天早。窗外已经有了声音。园区广播正在播放开园通知，语气和前三天没有区别。<br><br>你拿起手机，发现桌面上多了一个之前没有见过的文件夹。没有图标，也没有名称。点进去时，屏幕短暂地闪了一下。里面有几份文件，创建日期都显示为今天。你还没来得及逐个打开，手机先收到了一条消息。"
   },
   5:{
     title:"第5天",
     short:"第5天 · 真相",
-    tone:"最后一天。园区比来的时候安静。",
-    goal:"把前四天记下的东西翻出来。今天说什么，都不算晚。",
-    tip:"安静不是结束，是还有话没说完。"
+    tone:"最后一天。园区今天格外安静。",
+    goal:"把前几天记下的东西翻出来。隐藏文件夹里那封信，今天可以打开了。今天说什么，都不算晚。",
+    tip:"有人还在等你。该说的话，今天都说完吧。",
+    open:"园区今天格外安静。手机屏幕亮起时，时间已经过了早上九点。<br><br>你翻看前几天的聊天记录，发现有些对话停在了很久以前，有些消息却像是刚刚才发来。日期和顺序全都对得上，唯独内容让你越来越难以确定，自己究竟经历过什么。<br><br>失物登记簿上的第十件物品已经有了记录。隐藏文件夹里，还有一封迟迟没有打开的信。你想起第一天捡到手机时，屏幕上显示的那条消息。今天，你终于可以把它看完了。"
   }
 };
 const PHOTOS = [
@@ -3113,6 +3116,7 @@ function showDayCard(day, opts){
     <div class="day-num">${big}</div>
     <h2>${info.title}</h2>
     <div class="when">${when}</div>
+    ${info.open?`<div style="margin:10px 0;text-align:left;font-size:13px;line-height:1.9;opacity:.92">${info.open}</div>`:""}
     <div class="tone">${info.tone}</div>
     <div class="goal"><b>今日目标</b><br>${info.goal}</div>
     <p class="tip">${info.tip}</p>
@@ -3684,19 +3688,19 @@ function charStageOf(cid) {
 const ENDING_BLURB_REF = {
   safe: {
     title: "放回去",
-    body: ["你把手机放回长椅，没有再打开。", "没有人来认领。"],
+    body: ["你终于走出了游乐场。手机被放回长椅，屏幕上的时间停在一个再普通不过的时刻。园区广播已经结束，工作人员开始收拾散落在地上的宣传单。旋转木马停止了转动，最后一盏灯也熄灭了。","你回头看了一眼。那些人还在各自的位置上。有人朝你挥手，有人低头整理东西，还有人站在远处，似乎想说些什么。你没有等。","离开园区以后，你试着拨打手机主人的电话。无人接听。失物招领处的工作人员告诉你，这部手机已经登记过很多次了。你问，之前捡到它的人呢？对方翻了翻登记簿，说没有找到相关记录。"],
   },
   deep: {
     title: "出园",
-    body: ["你带着手机出了园区。", "屏幕亮过一下，上面是空的。你还是不知道它是谁的。"],
+    body: ["你没有按照他们的建议离开。那些被反复删改的记录、日期对不上的通话、合照里始终无法解释的影子，终于在最后一天有了共同的指向。","你把手机里的内容全部导出，试着整理成一份完整的记录。文件保存成功了。可当你再次打开时，里面只剩下前四天的聊天记录。第五天的内容全部消失，连你自己写下的备注也不见了。","你走出园区时，天已经亮了。手机在口袋里震动了一下：「不用等我了。你们先回家。」","这条消息没有署名。你不知道它究竟发给谁，也不知道自己是否应该回复。"],
   },
   blackout: {
     title: "黑屏",
-    body: ["电用完了。", "手机打不开。你没能放回去，也没能带走。"],
+    body: ["屏幕暗了。你按下电源键，没有反应。再按一次，仍然没有反应。","园区里的灯一盏接一盏熄灭。广播声中断，旋转木马停在半圈的位置。你终于看清了长椅上的那部手机。屏幕上没有锁屏，也没有壁纸。只有一行字：请归还失物。","你想起自己最初捡到它的地方。长椅还在那里。手机也还在那里。只是这一次，长椅上多了一个人。"],
   },
   hidden: {
     title: "被盖住",
-    body: ["没有头像的对话一直在发你的名字。", "结局页被盖掉了。失主没有出来。"],
+    body: ["你终于打开了那条没有头像的对话。里面没有新的消息，只有一些被删除过很多次的残页。","你看见了上一个捡到手机的人留下的记录。他也曾经坐在那张长椅上，也曾经收到那些消息，也曾经试图确认究竟有多少个人在游乐场里。他留下了一句话：我已经按照他们说的做了。","再往下，什么也没有。你重新翻开失物登记簿。那部手机的认领记录已经被覆盖，最后一行写着一个你熟悉的名字。你突然明白，这部手机从来没有真正离开过那张长椅。","屏幕暗下去之前，最后一条消息出现了。这次，轮到你了。"],
   },
   char: {
     sunwoo: {
@@ -6345,11 +6349,11 @@ sunwoo:[
 {id:"sw4",phase:1,minDay:2,lines:[{from:"them",text:"你要是发现自己反复打开同一条聊天，可以先停下来歇一会儿。"},{from:"them",text:"刚才有句笑声不像是我发的，我看了好几遍，还是觉得奇怪。你先别回复那条消息了，有什么想说的就来找我吧。"}],replies:[{label:"……你在说什么",type:"质疑",att:3,push:1,anomaly:1,kw:"知道刷新"},{label:"可能是错觉",type:"忽视",att:1,push:0,warnIgnore:1},{label:"那我先不看了",type:"安抚",att:1,push:0}],reqNight:true},
 {id:"sw4b",phase:1,minDay:2,lines:[{from:"them",text:"夜场风大，冷了就告诉我，我不会笑你的。"},{from:"them",text:"我知道自己有时候挺啰嗦的，不过你先照顾好自己。今天也别玩得太晚。"}],replies:[{label:"有点怕",type:"安抚",att:2,push:0},{label:"你可靠吗",type:"质疑",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}],reqNight:true,reqAtt:5},
 {id:"sw5",phase:2,minDay:2,lines:[{from:"them",text:"别跟着屏幕里那个笑。"},{from:"them",text:"不是说你。是有张脸不该出现。"},{from:"them",text:"你要是怕，就去人多的地方。我陪你聊。"}],replies:[{label:"谁在笑？",type:"追问",att:3,push:1,anomaly:1},{label:"（安静）",type:"忽视",att:1,push:0},{label:"我听你的",type:"安抚",att:2,push:0}]},
-{id:"sw5b",phase:2,minDay:3,lines:[{from:"them",text:"这句话我打了又删，还是发吧。"},{from:"them",text:"想走就走。不用为了听我说话留下来。我话多，可这儿晚上不太对。"}],replies:[{label:"你终于说人话了",type:"质疑",att:2,push:1},{label:"我会小心",type:"安抚",att:2,push:0},{label:"再陪我一会儿",type:"追问",att:2,push:0}],reqAtt:6},
+{id:"sw5b",phase:2,minDay:3,lines:[{from:"them",text:"这句话我打了又删，还是想发给你。"},{from:"them",text:"你想走就走，不用特地留下来陪我聊天。"}],replies:[{label:"你终于说人话了",type:"质疑",att:2,push:1},{label:"我会小心",type:"安抚",att:2,push:0},{label:"再陪我一会儿",type:"追问",att:2,push:0}],reqAtt:6},
 {id:"sw6",phase:2,minDay:3,lines:[{from:"them",text:"你还在的话，回我一声就好。"},{from:"them",text:"这次不开玩笑。去充个电。"},{from:"them",text:"到了跟我说一声。"}],replies:[{label:"到了（去充电）",type:"安抚",att:2,push:0},{label:"你到底是谁在用这号",type:"质疑",att:3,push:1,anomaly:1,kw:"冒用"},{label:"……",type:"忽视",att:0,push:0}]},
 {id:"sw7",phase:2,minDay:3,lines:[{from:"them",text:"你要是觉得我烦，直接说。我能少说两句。"},{from:"them",text:"空地先别去。这句是认真的。"}],replies:[{label:"……你真的很烦",type:"质疑",att:2,push:0},{label:"好，我听你的",type:"安抚",att:3,push:0},{label:"空地怎么了",type:"追问",att:3,push:1,anomaly:1}],reqNight:true}
 ],
-q:[{id:"q1",phase:0,minDay:1,lines:[{from:"them",text:"哇！你真的捡到了吗？谢谢谢谢！！我刚刚还在找，差点把练习室翻过来了ㅋㅋ"},{from:"them",text:"先别到处说我手机没锁，有点丢脸。"}],replies:[{label:"好的，我会保密",type:"安抚",att:1,push:0},{label:"为什么不能声张？",type:"追问",att:2,push:1,kw:"别声张"},{label:"（点头）",type:"忽视",att:0,push:0}]},{id:"q2",phase:0,minDay:1,lines:[{from:"them",text:"对了，如果你经过后台，记得走外面那条走廊。里面有两道门，第二道门今天好像又出问题了。"},{from:"them",text:"我也不知道为什么会绕。之前明明一直往前走，出来的时候却到了另一边。反正你别进去就对了！！"}],replies:[{label:"第二道门有什么？",type:"追问",att:2,push:1,kw:"第二道门"},{label:"明白",type:"安抚",att:1,push:0},{label:"有点神神叨叨",type:"质疑",att:1,push:0,warnIgnore:1}],reqAtt:1},{id:"q2b",phase:0,minDay:1,lines:[{from:"them",text:"行程表里夹了张纸条，不是我写的。"},{from:"them",text:"我一般直接说啊。你看到的话……别照着做。我有点毛。"}],replies:[{label:"写了什么",type:"追问",att:2,push:1},{label:"我不翻",type:"安抚",att:1,push:0},{label:"……",type:"忽视",att:0,push:0}],reqAtt:2},{id:"q3",phase:1,minDay:2,lines:[{from:"them",text:"别回复太多次啦。"},{from:"them",text:"……我平时不会这样说话的。刚才那几句话看起来明明是我发的，可我自己读了一遍，又觉得有点奇怪。它好像在学我的笑。"}],replies:[{label:"「它」是谁？",type:"追问",att:3,push:1,anomaly:1,kw:"它会学"},{label:"好，我少回",type:"安抚",att:1,push:0},{label:"恐吓小技巧？",type:"质疑",att:2,push:1,warnIgnore:1}]},{id:"q4",phase:1,minDay:2,lines:[{from:"them",text:"电量低的时候……我好像也会变得不爱说话。"},{from:"them",text:"这可不像我。你先休息一会儿吧，趁我现在还能用感叹号，多跟你说几句。"}],replies:[{label:"我再看一点",type:"质疑",att:2,push:1,warnIgnore:1,anomaly:1},{label:"……好",type:"安抚",att:1,push:0},{label:"你在警告我？",type:"追问",att:2,push:1,kw:"警告"}],reqNight:true},{id:"q5",phase:2,minDay:3,lines:[{from:"them",text:"…………"},{from:"sys",text:"（Q 不再追着发消息。省略号不像他。像一张别人塞进来的纸条。）"}],replies:[{label:"Q？你还在吗",type:"追问",att:2,push:0,anomaly:1},{label:"（离开聊天）",type:"忽视",att:0,push:0}]},
+q:[{id:"q1",phase:0,minDay:1,lines:[{from:"them",text:"哇！你真的捡到了吗？谢谢谢谢！！我刚刚还在找，差点把练习室翻过来了ㅋㅋ"},{from:"them",text:"先别到处说我手机没锁，有点丢脸。"}],replies:[{label:"好的，我会保密",type:"安抚",att:1,push:0},{label:"为什么不能声张？",type:"追问",att:2,push:1,kw:"别声张"},{label:"（点头）",type:"忽视",att:0,push:0}]},{id:"q2",phase:0,minDay:1,lines:[{from:"them",text:"对了，如果你经过后台，记得走外面那条走廊。里面有两道门，第二道门今天好像又出问题了。"},{from:"them",text:"我也不知道为什么会绕。之前明明一直往前走，出来的时候却到了另一边。反正你别进去就对了！！"}],replies:[{label:"第二道门有什么？",type:"追问",att:2,push:1,kw:"第二道门"},{label:"明白",type:"安抚",att:1,push:0},{label:"有点神神叨叨",type:"质疑",att:1,push:0,warnIgnore:1}],reqAtt:1},{id:"q2b",phase:0,minDay:1,lines:[{from:"them",text:"行程表里夹了张纸条，不是我写的。"},{from:"them",text:"我一般直接说啊。你看到的话……别照着做。我有点毛。"}],replies:[{label:"写了什么",type:"追问",att:2,push:1},{label:"我不翻",type:"安抚",att:1,push:0},{label:"……",type:"忽视",att:0,push:0}],reqAtt:2},{id:"q3",phase:1,minDay:2,lines:[{from:"them",text:"别回复太多次啦。"},{from:"them",text:"……我平时不会这样说话的。刚才那几句话看起来明明是我发的，可我自己读了一遍，又觉得有点奇怪。它好像在学我的笑。"}],replies:[{label:"「它」是谁？",type:"追问",att:3,push:1,anomaly:1,kw:"它会学"},{label:"好，我少回",type:"安抚",att:1,push:0},{label:"恐吓小技巧？",type:"质疑",att:2,push:1,warnIgnore:1}]},{id:"q4",phase:1,minDay:2,lines:[{from:"them",text:"电量低的时候……我好像也会变得不爱说话。"},{from:"them",text:"这可不像我。你先休息一会儿吧，趁我现在还能用感叹号，多跟你说几句。"}],replies:[{label:"我再看一点",type:"质疑",att:2,push:1,warnIgnore:1,anomaly:1},{label:"……好",type:"安抚",att:1,push:0},{label:"你在警告我？",type:"追问",att:2,push:1,kw:"警告"}],reqNight:true},{id:"q5",phase:2,minDay:3,lines:[{from:"them",text:"…………"},{from:"sys",text:"（对方已读，但很久没有回复。）"}],replies:[{label:"Q？你还在吗",type:"追问",att:2,push:0,anomaly:1},{label:"（离开聊天）",type:"忽视",att:0,push:0}]},
 {id:"q3b",phase:1,minDay:2,lines:[{from:"them",text:"……你还在翻呀。"},{from:"them",text:"我再给你写张纸条好了。虽然不知道你能不能看到，不过还是想提醒你，去亮一点的地方待着吧。"}],replies:[{label:"谢谢",type:"安抚",att:2,push:0},{label:"纸条写了什么",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}],reqAtt:4},
 {id:"q5b",phase:2,minDay:3,lines:[{from:"them",text:"……最后一次。"},{from:"them",text:"别回太多。……它会学你的句号。"}],replies:[{label:"我少回",type:"安抚",att:2,push:0},{label:"它是谁",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}],reqNight:true}],
 eric:[
@@ -6360,9 +6364,9 @@ eric:[
 {id:"er3b",phase:1,minDay:2,lines:[{from:"them",text:"今天有没有好好吃饭？别只喝柠檬水。"},{from:"them",text:"我不是在管你，就是看到你会下意识想提醒一下，已经习惯了。你不会嫌我烦吧？"}],replies:[{label:"吃了，谢谢",type:"安抚",att:2,push:0},{label:"你很关心人",type:"追问",att:2,push:0},{label:"嗯",type:"忽视",att:0,push:0}],reqAtt:4},
 {id:"er4",phase:1,minDay:2,lines:[{from:"them",text:"白天我是邀过你来夜场。"},{from:"them",text:"现在我想改口。不是吓你，是我不确定夜场还干不干净。你听着别乱。"}],replies:[{label:"你今天邀请过我",type:"追问",att:2,push:1,anomaly:1},{label:"那我就不去了",type:"安抚",att:1,push:0},{label:"（截图存记录）",type:"质疑",att:2,push:0,saveRec:["Eric改口邀请","先邀夜场后劝停"]}],reqNight:true},
 {id:"er4b",phase:1,minDay:2,lines:[{from:"them",text:"气球绳那件事是我开玩笑的，别真的跟着别人走。"},{from:"them",text:"记得看灯。灯亮的时候再走。"},{from:"them",text:"我还在。发这条的时候，还是我。"}],replies:[{label:"那就多说两句",type:"追问",att:2,push:0},{label:"好，我去亮处",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}],reqNight:true,reqAtt:5},
-{id:"er5",phase:2,minDay:3,lines:[{from:"them",text:"有人在用我的口吻打哈哈。"},{from:"them",text:"不是我。真笑的时候我不会打那么多感叹号——你会分清的吧？"},{from:"them",text:"你还在看就回我一句「在」。只要这个。"}],replies:[{label:"在",type:"安抚",att:2,push:0},{label:"这不像你了",type:"质疑",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}]},
-{id:"er5b",phase:2,minDay:3,lines:[{from:"them",text:"优先回我——不对，优先离开危险区。顺序我搞清楚了。"},{from:"them",text:"你要是觉得我烦，也行。烦总比没人吵你好。"}],replies:[{label:"不烦",type:"安抚",att:2,push:0},{label:"你到底想让我怎样",type:"追问",att:2,push:1},{label:"先忙",type:"忽视",att:0,push:0}],reqAtt:6},
-{id:"er6",phase:2,minDay:3,lines:[{from:"them",text:"最后认真一次：亮的地方，充电，别空地。"},{from:"them",text:"说完了我还可以再吵两句——但你先动。"}],replies:[{label:"我这就去",type:"安抚",att:3,push:0},{label:"空地为什么",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}],reqNight:true}
+{id:"er5",phase:2,minDay:3,lines:[{from:"them",text:"刚才有人用了我的口吻打哈哈。"},{from:"them",text:"你看见了吧？我平时笑起来可没那么多感叹号。"},{from:"them",text:"你还在看消息吗？回我一个「在」。"}],replies:[{label:"在",type:"安抚",att:2,push:0},{label:"这不像你了",type:"质疑",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}]},
+{id:"er5b",phase:2,minDay:3,lines:[{from:"them",text:"优先回我。等一下，还是先顾好你自己。"},{from:"them",text:"我刚才想了半天，觉得这句话应该排在前面。"}],replies:[{label:"不烦",type:"安抚",att:2,push:0},{label:"你到底想让我怎样",type:"追问",att:2,push:1},{label:"先忙",type:"忽视",att:0,push:0}],reqAtt:6},
+{id:"er6",phase:2,minDay:3,lines:[{from:"them",text:"我想起来还有件事。"},{from:"them",text:"去亮一点的地方，手机也记得充电。空地今晚先放一放。"}],replies:[{label:"我这就去",type:"安抚",att:3,push:0},{label:"空地为什么",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}],reqNight:true}
 ],
 new:[{id:"nw1",phase:0,minDay:1,lines:[{from:"them",text:"……谢谢。屏幕别按太用力，会留下指纹。"},{from:"them",text:"外面风大。头发会乱。……我是说你的。算了，没什么。"}],replies:[{label:"谢谢关心",type:"安抚",att:1,push:0},{label:"你怎么知道我在外面？",type:"追问",att:2,push:1},{label:"嗯",type:"忽视",att:0,push:0}]},{id:"nw2",phase:0,minDay:1,lines:[{from:"them",text:"游乐场当然有风。你不是在外面吗？……我猜的。"},{from:"them",text:"拍照区那张长椅，光线不太好。如果你要坐，换另一边。……没有别的意思。"}],replies:[{label:"长椅怎么了？",type:"追问",att:2,push:1,kw:"长椅",zoneHint:"photo"},{label:"好的",type:"安抚",att:1,push:0},{label:"神神秘秘的",type:"质疑",att:1,push:0}],reqAtt:1},{id:"nw2b",phase:0,minDay:1,lines:[{from:"them",text:"我说话轻，不代表你能装听不见。"},{from:"them",text:"听不清就问。别自己脑补。……那样更烦。"}],replies:[{label:"我听得见",type:"安抚",att:1,push:0},{label:"为什么当没听到",type:"追问",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}],reqAtt:2},{id:"nw3",phase:1,minDay:2,lines:[{from:"them",text:"你听到了吗……"},{from:"them",text:"不是耳机里的声音。是更远的地方。"}],replies:[{label:"听到什么？",type:"追问",att:3,push:1,anomaly:1,kw:"你听到了吗"},{label:"也许是夜场音乐",type:"安抚",att:1,push:0},{label:"没有",type:"忽视",att:0,push:0}]},{id:"nw4",phase:1,minDay:2,lines:[{from:"them",text:"……名字。"},{from:"them",text:"有人在念，声音很轻。"}],replies:[{label:"念谁的名字？",type:"追问",att:3,push:1,anomaly:1},{label:"别吓我",type:"质疑",att:2,push:0,warnIgnore:1},{label:"我去安静的地方",type:"安抚",att:1,push:0}],reqNight:true},{id:"nw5",phase:2,minDay:3,lines:[{from:"them",text:"…………风停了。"},{from:"them",text:"可是还有声音。……你那边。"},{from:"them",text:"……别答应。"}],replies:[{label:"我这边没有",type:"质疑",att:2,push:1,anomaly:1},{label:"……我先放下手机",type:"安抚",att:1,push:0},{label:"（不回）",type:"忽视",att:0,push:0}]},
 {id:"nw3b",phase:1,minDay:2,lines:[{from:"them",text:"……你今天有没有听到风停？"},{from:"them",text:"风停下来的时候，先不要出声。"}],replies:[{label:"好",type:"安抚",att:2,push:0},{label:"风停时有什么",type:"追问",att:2,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}],reqAtt:4},
@@ -6383,7 +6387,7 @@ juyeon:[
 {id:"jy4b",phase:1,minDay:2,lines:[{from:"them",text:"夜风有点凉。"},{from:"them",text:"拉链记得拉好，别着凉了。"}],replies:[{label:"谢谢",type:"安抚",att:2,push:0},{label:"你看到我了？",type:"追问",att:2,push:1,anomaly:1},{label:"嗯",type:"忽视",att:0,push:0}],reqNight:true,reqAtt:5},
 {id:"jy5",phase:2,minDay:3,lines:[{from:"them",text:"……"},{from:"them",text:"看完就好。"},{from:"them",text:"删不删随你。我只是……不想你一直盯着吓人的地方。"}],replies:[{label:"删什么？",type:"追问",att:2,push:1,anomaly:1,kw:"看完就删"},{label:"好，我滑走了",type:"安抚",att:2,push:0},{label:"（不删）",type:"质疑",att:2,push:0,warnIgnore:1}]},
 {id:"jy5b",phase:2,minDay:3,lines:[{from:"them",text:"在。"},{from:"them",text:"你先走也没关系。我会……慢慢跟在灯亮的方向。不催你。"}],replies:[{label:"一起走？",type:"追问",att:2,push:0},{label:"那我先走了",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}],reqAtt:6},
-{id:"jy6",phase:2,minDay:3,lines:[{from:"them",text:"最后一句。"},{from:"them",text:"空地那边……别去。木马可以转，人不用跟着转进暗处。"},{from:"them",text:"……晚安。就算现在不是晚上。"}],replies:[{label:"晚安",type:"安抚",att:3,push:0},{label:"空地有什么",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}],reqNight:true}
+{id:"jy6",phase:2,minDay:3,lines:[{from:"them",text:"还有一件事。"},{from:"them",text:"空地那边今晚先别去。"},{from:"them",text:"……晚安。"}],replies:[{label:"晚安",type:"安抚",att:3,push:0},{label:"空地有什么",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}],reqNight:true}
 ],
 younghoon:[{id:"yh1",phase:0,minDay:1,lines:[{from:"them",text:"谢谢。手机里的相册可以看。"},{from:"them",text:"不过，第一张照片……先别放大。"}],replies:[{label:"我看看",type:"安抚",att:1,push:0},{label:"有不能看的吗",type:"追问",att:2,push:1},{label:"好",type:"忽视",att:0,push:0}]},{id:"yh2",phase:0,minDay:1,lines:[{from:"them",text:"不是不能看。只是那张照片拍得不太好。我本来想重拍的，后来没拍成。"},{from:"them",text:"长椅那张。你看着不觉得奇怪吗？……算了，可能是光线的问题。"}],replies:[{label:"哪里怪？",type:"追问",att:2,push:1,kw:"构图",zoneHint:"photo"},{label:"挺好看的",type:"安抚",att:1,push:0},{label:"嗯",type:"忽视",att:0,push:0}],reqAtt:1},{id:"yh2b",phase:0,minDay:1,lines:[{from:"them",text:"饮食区还有面包。"},{from:"them",text:"你要的话。……就这些。"}],replies:[{label:"面包怎么了",type:"追问",att:2,push:0},{label:"好",type:"安抚",att:1,push:0},{label:"……",type:"忽视",att:0,push:0}],reqAtt:2},{id:"yh3",phase:1,minDay:2,lines:[{from:"them",text:"别放大看。"},{from:"them",text:"像素会骗人，真的。"}],replies:[{label:"你在怕什么",type:"追问",att:2,push:1,anomaly:1},{label:"好，不放大",type:"安抚",att:1,push:0},{label:"我偏要看",type:"质疑",att:2,push:1,warnIgnore:1,anomaly:1}]},{id:"yh4",phase:1,minDay:2,lines:[{from:"them",text:"……"},{from:"them",text:"右下角那一块，先别点，好不好？"}],replies:[{label:"点了会怎样",type:"追问",att:3,push:1,anomaly:1},{label:"不点",type:"安抚",att:1,push:0},{label:"（去点）",type:"质疑",att:2,push:0,warnIgnore:1}],reqNight:true},{id:"yh5",phase:2,minDay:3,lines:[{from:"them",text:"……"},{from:"sys",text:"（一条图片消息，几乎全黑）"},{from:"them",text:"[几乎全黑的照片：中央有淡淡轮廓]",type:"image"}],replies:[{label:"这是什么",type:"追问",att:3,push:1,anomaly:1,kw:"黑图轮廓"},{label:"我滑走了",type:"安抚",att:1,push:0},{label:"……吓人",type:"质疑",att:2,push:0}]},
 {id:"yh3b",phase:1,minDay:2,lines:[{from:"them",text:"有张新图。"},{from:"them",text:"你先别急着打开，等我确认一下。"}],replies:[{label:"在",type:"安抚",att:2,push:0},{label:"图里有什么",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}],reqAtt:4},
@@ -6396,9 +6400,9 @@ hyunjae:[
 {id:"hj3b",phase:1,minDay:2,lines:[{from:"them",text:"认真说一句玩笑：这里最可怕的事情不是怪声，是热食窗口居然提前关了。"},{from:"them",text:"……好吧，怪声也挺烦人的。"}],replies:[{label:"哈哈哈",type:"安抚",att:2,push:0},{label:"你在用玩笑盖什么",type:"质疑",att:2,push:1,anomaly:1},{label:"好，我挪",type:"追问",att:2,push:0}],reqAtt:4},
 {id:"hj4",phase:1,minDay:2,lines:[{from:"them",text:"（语音残片：呼吸声，远处传来一阵笑声。）"},{from:"them",text:"不是我笑的。还有，如果有人叫你，先别急着答应，好吗？"},{from:"them",text:"答应我一件事，去饮食区待一会儿，我有点不放心。"}],replies:[{label:"你叫我了？",type:"追问",att:3,push:1,anomaly:1},{label:"好，我去饮食区",type:"安抚",att:2,push:0},{label:"这是后期剪辑？",type:"质疑",att:2,push:1,warnIgnore:1}],reqNight:true},
 {id:"hj4b",phase:1,minDay:2,lines:[{from:"them",text:"夜场可以看，不过别空着肚子去。"},{from:"them",text:"如果你觉得有点害怕，就边走边跟我吐槽两句吧。"}],replies:[{label:"那我吐槽给你听",type:"安抚",att:2,push:0},{label:"你一直在开玩笑吗",type:"追问",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}],reqNight:true,reqAtt:5},
-{id:"hj5",phase:2,minDay:3,lines:[{from:"them",text:"有些哼唱不是我。井底那种——别点开长语音。"},{from:"them",text:"想点什么都行，别点开那种长语音。"},{from:"sys",text:"（对方似乎在用玩笑把你往安全处推）"}],replies:[{label:"把手机放下",type:"安抚",att:1,push:0},{label:"这不是人声",type:"质疑",att:3,push:1,anomaly:1,kw:"井底哼唱"},{label:"……",type:"忽视",att:0,push:0}]},
-{id:"hj5b",phase:2,minDay:3,lines:[{from:"them",text:"回我一句你还好吗。文字就行。"},{from:"them",text:"我还想请你吃东西呢——得你人还在亮处才请得成。"}],replies:[{label:"我还好",type:"安抚",att:3,push:0},{label:"你真的只想吃？",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}],reqAtt:6},
-{id:"hj6",phase:2,minDay:3,lines:[{from:"them",text:"最后玩笑：逃生路线上如果有小吃摊，允许减速三秒。"},{from:"them",text:"最后认真：关免提，回安全区，别答气音。我还是会开玩笑的那个——别信气音里的名字。"}],replies:[{label:"收到，我去亮处",type:"安抚",att:3,push:0},{label:"气音是什么",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}],reqNight:true}
+{id:"hj5",phase:2,minDay:3,lines:[{from:"them",text:"有些哼唱不是我。你听见了吗？"},{from:"them",text:"我刚才还想听清楚一点，结果越听越不舒服。"},{from:"them",text:"长语音先放着吧。"}],replies:[{label:"把手机放下",type:"安抚",att:1,push:0},{label:"这不是人声",type:"质疑",att:3,push:1,anomaly:1,kw:"井底哼唱"},{label:"……",type:"忽视",att:0,push:0}]},
+{id:"hj5b",phase:2,minDay:3,lines:[{from:"them",text:"你还好吗？回我一句就行，打字也可以。"}],replies:[{label:"我还好",type:"安抚",att:3,push:0},{label:"你真的只想吃？",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}],reqAtt:6},
+{id:"hj6",phase:2,minDay:3,lines:[{from:"them",text:"把免提关掉，回安全区。"},{from:"them",text:"如果听见有人用气声叫你，先别急着回应。"}],replies:[{label:"收到，我去亮处",type:"安抚",att:3,push:0},{label:"气音是什么",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}],reqNight:true}
 ],
 kevin:[{id:"kv1",phase:0,minDay:1,lines:[{from:"them",text:"谢谢你。……不好意思，我打字有点慢。"},{from:"them",text:"今天傍晚写了一首没完成的曲子。等我把前面几小节弹顺，再发给你听。不急。"}],replies:[{label:"好呀，想听",type:"安抚",att:2,push:0},{label:"你是音乐负责人吗",type:"追问",att:1,push:0},{label:"嗯",type:"忽视",att:0,push:0}]},{id:"kv2",phase:0,minDay:1,lines:[{from:"them",text:"♪ 分享：Summer Loop (demo)"},{from:"them",text:"这是还没完成的版本。你可以听听看。如果听到副歌，告诉我你的感觉。"}],replies:[{label:"好听",type:"安抚",att:2,push:0},{label:"副歌好像少了一句",type:"追问",att:2,push:1,kw:"副歌缺失"},{label:"稍后再听",type:"忽视",att:0,push:0}],reqAtt:1},{id:"kv2b",phase:0,minDay:1,lines:[{from:"them",text:"……你说副歌少了一句？我还以为是我没写完。不过，那一段我记得自己已经写过了。"},{from:"them",text:"还有，夜场那首……和这个 demo 不一样。别搞混了。"}],replies:[{label:"好的",type:"安抚",att:1,push:0},{label:"有什么差别",type:"追问",att:2,push:0},{label:"哦",type:"忽视",att:0,push:0}],reqAtt:2},{id:"kv3",phase:1,minDay:2,lines:[{from:"them",text:"先把音乐关掉，好吗？"},{from:"them",text:"如果它还在播放，就暂时不要继续听了。"}],replies:[{label:"为什么？",type:"追问",att:2,push:1,anomaly:1,kw:"关音乐"},{label:"关了",type:"安抚",att:1,push:0},{label:"我偏要听完",type:"质疑",att:2,push:1,warnIgnore:1,anomaly:1}]},{id:"kv4",phase:1,minDay:2,lines:[{from:"them",text:"夜场广播里的歌……好像不是我们放的那首。"},{from:"them",text:"你先别跟着哼，好不好？"}],replies:[{label:"我好像已经听到了",type:"追问",att:3,push:1,anomaly:1},{label:"我不哼",type:"安抚",att:1,push:0},{label:"迷信吧",type:"质疑",att:1,push:0,warnIgnore:1}],reqNight:true},{id:"kv5",phase:2,minDay:3,lines:[{from:"them",text:"♪ Summer Loop (demo) — 正在异常循环"},{from:"them",text:"你听得见。……就算拔了耳机。"},{from:"them",text:"对不起。"}],replies:[{label:"怎么停下来",type:"追问",att:3,push:1,anomaly:1,kw:"异常循环"},{label:"我会离开这里",type:"安抚",att:1,push:0},{label:"……继续放",type:"质疑",att:3,push:1,warnIgnore:1,anomaly:1}]},
 {id:"kv3b",phase:1,minDay:2,lines:[{from:"them",text:"你外放关了吗？"},{from:"them",text:"关了以后回我一声就好。"}],replies:[{label:"关了",type:"安抚",att:2,push:0},{label:"循环怎么了",type:"追问",att:2,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}],reqAtt:4},
@@ -6482,7 +6486,7 @@ const ENDING_TEXT = {
   }
 };
 const CHAR_ENDING_BASE = {
-  sunwoo: `他把手机往你手里一塞，说拿好，别再丢了。说完自己先顿了一下——这句好像轮不到他讲。
+  sunwoo: `他把手机递回你手里，提醒你拿好。说完自己先笑了一下，似乎也觉得这句话有点多余。
 后半段路他一直在说话，讲套圈摊老板手抖，讲柠檬水太酸，讲今天笑了几次。你听着，发现他每句话都留着半句没说。
 到闸机口他忽然停下，往后退了半步，把手插进兜里。
 「你走吧。」他抬了下下巴，像在赶人，「我站这儿看。」
@@ -6495,7 +6499,7 @@ const CHAR_ENDING_BASE = {
 纸上只有一句：明天我还在这儿。你别换手机。
 背面还有一行，写得很挤，像犹豫了很久才加上去：我说话吵，你要是嫌，我就小声一点。`,
 
-  eric: `他在门口比了个很大的手势，怕你看不见——其实你就在他面前三步远。
+  eric: `他在门口比了个很大的手势。明明只有几步远，还是怕你看不见。
 「你先走。」他说得很用力，「我不抢了。这次真的不抢。」
 你走了两步，他追上来，把一串气球绳塞给你，说拿着，路上亮一点。塞完自己先红了耳朵，补一句这不算礼物，算借的。
 出园以后气球一只只瘪下去，最后只剩一根绳。
@@ -6506,19 +6510,19 @@ const CHAR_ENDING_BASE = {
 你说不用。他还是把纸巾塞过来，说擦了再坐，我看你坐下再走。
 他真的站在那儿看完你坐下，才慢慢转身。走出三步，回头：「头发上有东西。」伸手替你拿掉，指尖在你耳后停了半秒，收回去了。
 「路上别听歌。」他停了一下，「要听也行，音量小一点。」
-你点头。他好像还想说什么，最后只留下一句：「明天别坐别的位置。」`,
+你点头。他好像还有话没说，最后只问：「下次拍照，还坐这个位置吗？」`,
 
   sangyeon: `他先问的不是结局，是你吃了没。
 你说不饿。他说不行，先吃。然后真的带你绕了一段路，去那个还开着的窗口，买了一份热的，看着你吃完一半才开口。
 「回去以后，晚上别一个人走。」他把餐巾纸折成方块放在你手边，「给我发个消息，一个字也行。」
 到门口他站定，没有多余的话，只抬手在你头顶按了一下。
 「人齐了。」他说，「走吧。」
-你走到马路对面回头，他还站在原地清点人数——那时候门口只有你一个人。`,
+你走到马路对面回头，他还站在原地清点人数。那时候门口只有你一个人。`,
 
   jacob: `他把热饮塞到你手里，说小心烫，说完自己先吹了一下才递过来。
 「今天辛苦你了。」声音放得很低，「真的。不是客套。」
 你说要走了。他点头，没有拦，只是跟着你走了几步，像不好意思开口，到最后才问：「我可以送到门口吗？就到这里为止。」
-门口风大。他把围巾解下来给你，说不用还，下次——他说到一半停住，笑了一下：「没有下次也没关系。今天就够了。」
+门口风大。他把围巾解下来给你，说不用还。说到下次两个字的时候他停住，笑了一下：「没有下次也没关系。今天就够了。」
 你走远以后，围巾上还留着他身上的温度。手机亮起：잘 자. 到家跟我说一声，我会等的。`,
 
   juyeon: `他等在闸机旁边，没有招手。
@@ -6546,19 +6550,19 @@ const CHAR_ENDING_BASE = {
   kevin: `他把一边耳机递给你，说只写了一半，别嫌。
 你们听完那半首，中间有一段是空的。他说那段还没想好，想好了第一个给你听。
 「你下次来，」他说得很慢，「我可能就写完了。」
-你把耳机还给他。他没接，说拿着吧，路上听——然后补了一句，音量小一点。
+你把耳机还给他。他没接，说拿着吧，路上听。然后补了一句，音量小一点。
 出园的时候，耳机里那段空白忽然有了声音。很轻的一小段，像刚刚被人补上。
 他发来消息：听见了吗。那半句是给你的。`,
 };
 
 const CHAR_ENDING_KEEP = {
   sunwoo: `闸机响了一声，没有开。
-他很自然地伸手，把你的手腕圈住。力道刚刚好——不疼，但抽不出来。他说，急什么，还有一场没看。
+他很自然地伸手，把你的手腕圈住。力道刚刚好，不疼，但抽不出来。他说，急什么，还有一场没看。
 你想说闭园了。他先你一步，用你的声音说了同一句话，语气一模一样，然后笑：「你看，我学得像吧。」
 他从口袋里摸出你的手机，屏幕亮着，壁纸是他。你从来没设过这个壁纸。
 「别走了。」他低下头，声音很轻，「我话这么多，你走了，我说给谁听。」
 这一夜又从头开始。每一轮他都讲同样的笑话，每一轮都笑到一半停住，看你的反应。
-你数到第七轮，发现自己也在笑，笑到一半，收住了。`,
+你数到第七轮，发现自己也在笑。只是这一次，你不知道自己为什么笑。`,
 
   q: `他站在走廊尽头，脸一半在灯下，一半不在。
 「别回太多。」他说。声音是他的，语气不像。
@@ -6566,10 +6570,10 @@ const CHAR_ENDING_KEEP = {
 他抬起手，学你刚才撩头发的样子，连停顿都学对了：「你看，我记得比你自己清楚。」
 他拿过你的手机，输了四个数字，锁屏开了。「密码我改好了。」他把手机贴回你掌心，「现在只有我能找到你。」
 走廊很长。灯一盏盏亮起来，都是他按的。
-「往前走。」他说，「我在前面等你。」——声音是从你身后传来的。`,
+「往前走。」他说，「我在前面等你。」声音是从你身后传来的。`,
 
   eric: `他笑着把你拦在门口，笑得很大声：「No ranking，对吧？」
-你说是。他点头，手搭在你肩上，力气一点点加上去：「既然没有排名——那就都别走了。」
+你说是。他点头，手搭在你肩上，力气一点点加上去：「既然没有排名，那就都别走了。」
 说这句话的时候，他声音里混进了别人的调子，像有第二个人在同一副嗓子里跟着念。
 广播开始报闭园通知。他跟着一起念，一个字不差，连气口都对。
 念完他转过头看你，眼睛亮得不太正常：「你看，我终于是第一了。」
@@ -6578,7 +6582,7 @@ const CHAR_ENDING_KEEP = {
 
   new: `他让你坐直。
 你问为什么。他说，因为我在看。
-灯灭到只剩一盏，他还在原地，位置一点没变。你站起来，他说坐下——声音很轻，轻到你差点以为自己想坐。
+灯灭到只剩一盏，他还在原地，位置一点没变。你站起来，他说坐下。声音很轻，轻到你差点以为自己想坐。
 「你刚才那句话，」他忽然开口，「我替你说完了。你发现了吗。」
 你确实还没说。
 他把你的手机抽走，用袖子把屏幕擦了两遍，才还给你：「现在干净了。以后别让别人碰。」
@@ -6588,7 +6592,7 @@ const CHAR_ENDING_KEEP = {
   sangyeon: `「点名。」他说。
 你问点谁。他说，点你。
 后台的灯全亮着，桌上摊着一张名单，最上面一行是你的名字，字迹是他的。日期是今天，也是去年的今天。
-「别看了。」他说。这句话他今天说过很多次，这次语气不对——像在哄小孩。
+「别看了。」他说。这句话他今天说过很多次，这次语气不对，像在哄小孩。
 他把你带到最里面那张椅子前，说坐下，等我收工。你坐下以后，他蹲下来，很仔细地把你的鞋带重新系了一遍，系得很紧。
 「这样就不会走丢了。」他站起来，拍了拍你的头顶，「人齐了。」
 门外传来集合的声音。他走出去，把门带上，从外面锁了。
@@ -6650,7 +6654,7 @@ function keepLedgerLine(){
     || (S.records||[]).some(r=>/上一个失主/.test((r.title||"")+(r.kw||"")));
   const nm = S.playerName || "你";
   if(found){
-    return "\n\n后来你又翻到那本失物登记表。\n最新的一行是新的，墨还没干：名字写着「"+nm+"」，日期是今天。\n物品栏那一格：「手机（一部），未领回」。\n笔迹很端正——不是你的。\n\n你忽然想起来，上一行也是这么被划掉的。";
+    return "\n\n后来你又翻到那本失物登记表。\n最新的一行是新的，墨还没干：名字写着「"+nm+"」，日期是今天。\n物品栏那一格：「手机（一部），未领回」。\n笔迹很端正，不是你的。\n\n你忽然想起来，上一行也是这么被划掉的。";
   }
   return "\n\n后来你在失物登记表上看见最新的一行。\n名字是「"+nm+"」，日期是今天，字迹很端正，不是你的。\n物品栏写着：手机（一部），未领回。";
 }
@@ -6677,7 +6681,7 @@ function pickEndingBody(kind){
   }
   if(kind==="perfect"){
     const _pn=S.ownerId?((CHARS.find(c=>c.id===S.ownerId)||{}).name||"失主"):"失主";
-    return "【THE PERFECT PLAN · 完美计划】\n\n你照着"+_pn+"的日程表，把每一个人都送到了出口。\n没有人迟到。没有人走错。没有人吵起来。这一路上所有的岔路，你都提前替他们选好了。\n\n所有人都在道谢。只有最后一张照片不对——\n十个人站在门口，笑得很整齐。\n拍照的人不在照片里。手机屏幕朝上摆在长椅上，联系人备注只有一个：失主。\n\n你低头看那行字。\n备注栏里的名字，是你自己的。\n\n（木马转完了一圈。座还是那个座。）";
+    return "【THE PERFECT PLAN · 完美计划】\n\n你照着"+_pn+"的日程表，把每一个人都送到了出口。\n没有人迟到。没有人走错。没有人吵起来。这一路上所有的岔路，你都提前替他们选好了。\n\n所有人都在道谢。只有最后一张照片不对。\n十个人站在门口，笑得很整齐。\n拍照的人不在照片里。手机屏幕朝上摆在长椅上，联系人备注只有一个：失主。\n\n你低头看那行字。\n备注栏里的名字，是你自己的。\n\n（木马转完了一圈。座还是那个座。）";
   }
   if(kind==="battery"){
     return "【黑屏】\n电用完了。\n\n不是手机没电。是灯放完了——你在里面看见的那些，一张一张回到最前面那一张。\n最前面那张没有人。椅子是空的，光还在。\n\n"
@@ -6692,8 +6696,7 @@ function pickEndingBody(kind){
         : `（结局：想让你离开的是 ${on}。）\n\n`);
     }
     let out=preface+t.replace(/\{n\}/g, n);
-    if(kind==="safe") out+="\n\n——\n回到标题画面的时候，通知栏里多了一条没有头像的消息：\n「今天玩得开心吗？」\n\n（这个结局很温和。这也是它最不对的地方。）";
-    if(kind==="deep") out+="\n\n——\n手机在你口袋里安静下来，最后一次震动像一句道别：\n「不用等我了。你们先回家。」";
+    if(kind==="safe") out+="\n\n回到标题画面的时候，通知栏里多了一条没有头像的消息：\n「今天玩得开心吗？」\n\n（这个结局很温和。这也是它最不对的地方。）";
     return out;
   }
   if(kind && kind.startsWith("char_")){
@@ -6705,9 +6708,10 @@ function pickEndingBody(kind){
     const ledger = keep ? keepLedgerLine() : "";
     const selfish=SELFISH_LINE[cid]||"";
     const conf = selfish
-      ? "\n\n—— 最后他停下来，说了一句不像台词的话 ——\n「"+selfish+"」\n\n这不是告白。这是他在解释：这几天里他每一次绕开的话，都是为了这句。"
+      ? "\n\n最后他停下来，说了一句不像台词的话。\n「"+selfish+"」\n\n这不是告白。这是他在解释：这几天里他每一次绕开的话，都是为了这句。"
       : "";
-    return preface+base+ledger+coda+conf+"\n\n（终局将揭晓失主与阵营。）";
+    const sysMsg = keep ? "\n\n失物登记已更新。\n物品名称：手机（一部）\n当前持有人："+n+"\n认领状态：未领回\n登记日期：第五天\n\n请勿再次遗失。\n\nTHE END" : "";
+    return preface+base+ledger+coda+conf+"\n\n（终局将揭晓失主与阵营。）"+sysMsg;
   }
   return preface+"你离开了游乐场。手机是谁的，到这里还没说完。";
 }
@@ -7301,16 +7305,16 @@ const COMP_ZONES = {
 (function(){
   if(typeof DIALOGUE==="undefined") return;
   const ADD={
-    q:[{id:"qd4",phase:2,minDay:4,lines:[{from:"them",text:"（拍照区，我昨天拍的。你数数几个人。）"},{from:"them",text:"数完告诉我。别数错，也别骗我。"}],replies:[{label:"十个",type:"安抚",att:2,push:0},{label:"十一个",type:"追问",att:3,push:1,anomaly:1,kw:"第十一人"},{label:"我数不出来",type:"质疑",att:2,push:1}]}, {id:"qd5",phase:2,minDay:5,lines:[{from:"them",text:"(名字)。发箍给你留在你捡到手机的那张长椅上了。"},{from:"them",text:"这样木马就认得你啦。别哭。兔子先哭了。"}],replies:[{label:"我不会哭",type:"安抚",att:2,push:0},{label:"木马为什么认得我",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}]}],
-    hyunjae:[{id:"hjd4",phase:2,minDay:4,lines:[{from:"them",text:"你翻翻你的记录。翻到「回拨」那几条，看看日期。"},{from:"them",text:"那些日期，都是我陪你在园区里走的日子。可我们昨天才认识。……这句是我说的。别的话，可不一定。"}],replies:[{label:"记录里还有别的",type:"追问",att:3,push:1,anomaly:1},{label:"什么意思",type:"质疑",att:2,push:1},{label:"我去看",type:"安抚",att:2,push:0}]}, {id:"hjd5",phase:2,minDay:5,lines:[{from:"them",text:"出门之前——把手机放回去之前，最后听我一句。"},{from:"them",text:"别回头数人数。走出去就行。要数，等出去了再数。外面数出来的，才是真的。"}],replies:[{label:"好，我不回头",type:"安抚",att:3,push:0},{label:"里面数出来的是什么",type:"追问",att:3,push:1,anomaly:1,kw:"人数"},{label:"……",type:"忽视",att:0,push:0}]}],
-    younghoon:[{id:"yhd4",phase:2,minDay:4,lines:[{from:"them",text:"昨天那个面包，今天没了。摊主说不进货了。"},{from:"them",text:"最后一天会进的。他这么说了。他要是骗我，我就把他摊子掀了——开玩笑的。大概。"}],replies:[{label:"最后一天？",type:"追问",att:3,push:1},{label:"那就等最后一天",type:"安抚",att:2,push:0},{label:"哦",type:"忽视",att:0,push:0}]}, {id:"yhd5",phase:2,minDay:5,lines:[{from:"them",text:"(名字)。最后一天，我带了完整的面包来。完整的反而不好看。"},{from:"them",text:"……你看，有些东西缺着，才是它的样子。回来吧。"}],replies:[{label:"我会回来的",type:"安抚",att:3,push:0},{label:"缺的是什么",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}]}],
-    sangyeon:[{id:"syd4",phase:2,minDay:4,lines:[{from:"them",text:"登记簿今天少了一件失物。第十件。"},{from:"them",text:"编号在，日期是今天，名字也在。物品栏是空的。像在等一件东西自己走过去登记。"}],replies:[{label:"什么东西会自己登记",type:"追问",att:3,push:1,anomaly:1,kw:"第十件失物"},{label:"别看了",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]}, {id:"syd5",phase:2,minDay:5,lines:[{from:"them",text:"登记簿第十件的物品栏，今天填上了。"},{from:"them",text:"写的是：手机，一部，已归还。拾得人签名那一栏——别翻到那一页。今天之前，别翻。"}],replies:[{label:"翻到会怎样",type:"追问",att:3,push:1,anomaly:1,kw:"已归还"},{label:"我不翻",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]}],
-    kevin:[{id:"kvd4",phase:2,minDay:4,lines:[{from:"them",text:"昨晚的灯串我又数了一遍。八颗。跟你那晚一样。"},{from:"them",text:"我本来以为，数错的人才要小心。现在数对的也……算了。你走的那天，我送你出去。外面的灯不用数。"}],replies:[{label:"外面有几颗",type:"追问",att:2,push:0},{label:"好，你送我",type:"安抚",att:3,push:0},{label:"……",type:"忽视",att:0,push:0}]}, {id:"kvd5",phase:2,minDay:5,lines:[{from:"them",text:"我说过送你出去。灯我在门口数好了，一颗都不会多。"},{from:"them",text:"……刚才数的时候是九颗。我揉揉眼再数，又好了。你走快点。别跑。跑起来灯会闪。"}],replies:[{label:"我走快一点",type:"安抚",att:3,push:0},{label:"为什么是九颗",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}]}],
-    jacob:[{id:"jbd4",phase:2,minDay:4,lines:[{from:"them",text:"昨晚那碗汤，早上我去看，还是满的。"},{from:"them",text:"你昨晚不是说喝了吗。我也记得你喝了。那锅里多出来的那一份，是谁喝的。"}],replies:[{label:"我确实喝了",type:"质疑",att:2,push:1},{label:"别想了",type:"安抚",att:1,push:0},{label:"谁喝的不重要",type:"追问",att:3,push:1,anomaly:1}]}],
-    eric:[{id:"erd4",phase:2,minDay:4,lines:[{from:"them",text:"(名字)！！我哥说结束那天要按入园顺序排队出去。"},{from:"them",text:"可我们那天是一起进来的啊。谁前谁后？我要站你旁边。这事我说了算。"}],replies:[{label:"好，站我旁边",type:"安抚",att:3,push:0},{label:"入园顺序怎么查",type:"追问",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]}],
-    juyeon:[{id:"jyd5",phase:2,minDay:5,lines:[{from:"them",text:"最后一天了。木马我给你留着。第 11 匹。"},{from:"them",text:"……我说错了。这里只有十匹。可昨晚我梦到十一。梦里的那匹鞍上刻着字，我没敢看清。你替我看。"}],replies:[{label:"我会去看的",type:"安抚",att:3,push:0},{label:"刻着什么",type:"追问",att:3,push:1,anomaly:1,kw:"鞍上的名字"},{label:"没有第十一匹",type:"质疑",att:2,push:1}]}],
-    sunwoo:[{id:"swd5",phase:2,minDay:5,lines:[{from:"them",text:"收摊前最后一张自拍。你拿着手机，我站你旁边。"},{from:"them",text:"洗出来只印一张，放你那儿。以后看到这张，记得有一个话很多的人。"}],replies:[{label:"记住了",type:"安抚",att:3,push:0},{label:"为什么只印一张",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}]}],
-    new:[{id:"nwd5",phase:2,minDay:5,lines:[{from:"them",text:"最后一天。这张给你，我不摆姿势了。"},{from:"them",text:"虚的那半边这次不是我了。你要是发现照片里多了谁——别怕。多半是我没站好。"}],replies:[{label:"多的是谁",type:"追问",att:3,push:1,anomaly:1},{label:"好",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]}]
+    q:[{id:"qd4",phase:2,minDay:4,lines:[{from:"them",text:"我翻到昨天拍的那张照片了。"},{from:"them",text:"你帮我数一下人，好不好？"},{from:"them",text:"数完告诉我。我自己数了好几遍，每次都不太一样。"}],replies:[{label:"十个",type:"安抚",att:2,push:0},{label:"十一个",type:"追问",att:3,push:1,anomaly:1,kw:"第十一人"},{label:"我数不出来",type:"质疑",att:2,push:1}]}, {id:"qd5",phase:2,minDay:5,lines:[{from:"them",text:"(名字)，我把发箍放在你捡到手机的那张长椅上了。"},{from:"them",text:"你记得去拿哦。这样木马就认得你啦。别哭，兔子先哭了。"}],replies:[{label:"我不会哭",type:"安抚",att:2,push:0},{label:"木马为什么认得我",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}]}],
+    hyunjae:[{id:"hjd4",phase:2,minDay:4,lines:[{from:"them",text:"你有空的话，帮我看一下通话记录。"},{from:"them",text:"找到「回拨」那几条，看看日期。"},{from:"them",text:"我记得那几天都陪你在园区里走过。可是按我们现在的聊天记录，我们应该是昨天才认识的。你不觉得奇怪吗？"}],replies:[{label:"记录里还有别的",type:"追问",att:3,push:1,anomaly:1},{label:"什么意思",type:"质疑",att:2,push:1},{label:"我去看",type:"安抚",att:2,push:0}]}, {id:"hjd5",phase:2,minDay:5,lines:[{from:"them",text:"出门之前，最后听我一句。"},{from:"them",text:"别回头数人数。直接走出去就好。等到了外面，再慢慢数。"},{from:"them",text:"我知道你会想确认里面还有谁，但先出去，好不好？"}],replies:[{label:"好，我不回头",type:"安抚",att:3,push:0},{label:"里面数出来的是什么",type:"追问",att:3,push:1,anomaly:1,kw:"人数"},{label:"……",type:"忽视",att:0,push:0}]}],
+    younghoon:[{id:"yhd4",phase:2,minDay:4,lines:[{from:"them",text:"昨天给你的面包，今天去问已经没有了。"},{from:"them",text:"摊主说最后一天还会做。我跟他说一定要留一个给你。他答应了。"},{from:"them",text:"要是到时候没有，我真的要去找他算账了。"}],replies:[{label:"最后一天？",type:"追问",att:3,push:1},{label:"那就等最后一天",type:"安抚",att:2,push:0},{label:"哦",type:"忽视",att:0,push:0}]}, {id:"yhd5",phase:2,minDay:5,lines:[{from:"them",text:"(名字)，我今天拿到面包了。这次是完整的。"},{from:"them",text:"我看了半天，还是觉得之前那个缺了一块的比较好看。你还记得它长什么样吗？"},{from:"them",text:"我记得。"}],replies:[{label:"我会回来的",type:"安抚",att:3,push:0},{label:"缺的是什么",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}]}],
+    sangyeon:[{id:"syd4",phase:2,minDay:4,lines:[{from:"them",text:"我今天去看了登记簿。"},{from:"them",text:"失物登记里多了一条，第十件。编号、日期和拾得人姓名都有，只有物品栏是空的。"},{from:"them",text:"我查过今天的记录，没有人登记过这件东西。"}],replies:[{label:"什么东西会自己登记",type:"追问",att:3,push:1,anomaly:1,kw:"第十件失物"},{label:"别看了",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]}, {id:"syd5",phase:2,minDay:5,lines:[{from:"them",text:"名单改到最后一版了。一共十一行。"},{from:"them",text:"我没有继续往下数。第十行以后，我就停住了。这样至少还能确认，大家都在。"}],replies:[{label:"第十一行是谁",type:"追问",att:3,push:1,anomaly:1,kw:"十一行"},{label:"别数了",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]}],
+    kevin:[{id:"kvd4",phase:2,minDay:4,lines:[{from:"them",text:"昨晚那串灯，我又数了一遍。八颗，和你那天看到的一样。"},{from:"them",text:"我本来觉得自己记得很清楚。今天再数，还是八颗。"},{from:"them",text:"等你要离开的时候，我送你到门口。外面的灯不用数了。"}],replies:[{label:"外面有几颗",type:"追问",att:2,push:0},{label:"好，你送我",type:"安抚",att:3,push:0},{label:"……",type:"忽视",att:0,push:0}]}, {id:"kvd5",phase:2,minDay:5,lines:[{from:"them",text:"我说过送你出去。门口的灯我已经数好了，一颗都不会多。"},{from:"them",text:"……刚才数的时候是九颗。我揉揉眼睛，再数了一遍，又变回八颗了。"},{from:"them",text:"你走快一点。别跑，跑起来灯会闪。"}],replies:[{label:"我走快一点",type:"安抚",att:3,push:0},{label:"为什么是九颗",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}]}],
+    jacob:[{id:"jbd4",phase:2,minDay:4,lines:[{from:"them",text:"昨晚那碗汤，我今天早上去看了。还是满的。"},{from:"them",text:"可我记得你喝过，还记得你当时说有点烫。我问了厨房的人，他们说昨晚没有人动过那锅汤。"},{from:"them",text:"我现在有点记不清了。"}],replies:[{label:"我确实喝了",type:"质疑",att:2,push:1},{label:"别想了",type:"安抚",att:1,push:0},{label:"谁喝的不重要",type:"追问",att:3,push:1,anomaly:1}]}, {id:"jbd5",phase:2,minDay:5,lines:[{from:"them",text:"今天早上我又去厨房看了一次。那碗汤终于不见了。"},{from:"them",text:"我本来想问是谁喝掉的，后来觉得算了。"},{from:"them",text:"你今天记得吃点东西。出去以后也要好好吃饭。我希望你以后想起这里的时候，还能记得那碗汤的味道。"}],replies:[{label:"我记得",type:"安抚",att:3,push:0},{label:"那碗汤是谁喝的",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}]}],
+    eric:[{id:"erd4",phase:2,minDay:4,lines:[{from:"them",text:"(名字)！！我哥刚刚跟我说，最后离开园区的时候，要按照入园顺序排队。"},{from:"them",text:"我突然想到一个问题。我们当时到底是谁先进去的？"},{from:"them",text:"算了，到时候你跟我站一起就行。我可不想排队的时候找不到你。"}],replies:[{label:"好，站我旁边",type:"安抚",att:3,push:0},{label:"入园顺序怎么查",type:"追问",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]}],
+    juyeon:[{id:"jyd5",phase:2,minDay:5,lines:[{from:"them",text:"最后一天了。木马我给你留着。第十一匹。"},{from:"them",text:"……我说错了，只有十匹。昨晚我梦到十一匹。那匹马鞍上刻着字，我没敢看清。"},{from:"them",text:"你替我看看吧。"}],replies:[{label:"我会去看的",type:"安抚",att:3,push:0},{label:"刻着什么",type:"追问",att:3,push:1,anomaly:1,kw:"鞍上的名字"},{label:"没有第十一匹",type:"质疑",att:2,push:1}]}],
+    sunwoo:[{id:"swd5",phase:2,minDay:5,lines:[{from:"them",text:"收摊前我想再拍一张自拍。这次你拿着手机，我站你旁边。"},{from:"them",text:"洗出来只有一张，我放你那里。以后看到它，记得我就行。虽然我觉得，你应该很难忘掉我ㅋㅋ"}],replies:[{label:"记住了",type:"安抚",att:3,push:0},{label:"为什么只印一张",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}]}],
+    new:[{id:"nwd5",phase:2,minDay:5,lines:[{from:"them",text:"最后一天了。这张照片给你。我这次没有摆姿势。"},{from:"them",text:"照片里空着的那半边，你看见了吗？如果多了一个人，别急着删。"},{from:"them",text:"留着吧。"}],replies:[{label:"多的是谁",type:"追问",att:3,push:1,anomaly:1},{label:"好",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]}]
   };
   Object.keys(ADD).forEach(function(k){
     if(!DIALOGUE[k]) return;
@@ -7324,22 +7328,22 @@ const COMP_ZONES = {
   const ADD2={
     sunwoo:[
       {id:"swd2p",phase:1,minDay:2,lines:[{from:"them",text:"跟你说个好笑的。昨天排队的时候，前面那个人把票根叼在嘴里学鸟叫——"},{from:"them",text:"……我昨天是不是已经讲过这个了？没有吗。那再笑一遍，这次算新的。"}],replies:[{label:"昨天讲过了",type:"质疑",att:2,push:1},{label:"再笑一遍",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]},
-      {id:"swd5b",phase:2,minDay:5,lines:[{from:"them",text:"（最后一条。）闭园曲刚才响了，我跟着唱。唱到一半忘词了。"},{from:"them",text:"我从来没有忘过词。这句你就当是证据——我有点不想让你走。"}],replies:[{label:"我不走远",type:"安抚",att:3,push:0},{label:"忘词的是你吗",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}]}
+      {id:"swd5b",phase:2,minDay:5,lines:[{from:"them",text:"闭园曲刚才响了，我跟着唱，唱到一半突然忘词了。"},{from:"them",text:"很奇怪吧，我明明听过那么多遍。"},{from:"them",text:"（最后一条。）我有点不想让你走。"}],replies:[{label:"我不走远",type:"安抚",att:3,push:0},{label:"忘词的是你吗",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}]}
     ],
     new:[
       {id:"nwd2p",phase:1,minDay:2,lines:[{from:"them",text:"你昨天在灯牌下面站了一会儿。风把发箍吹歪了。"},{from:"them",text:"……我说的昨天。你昨天，去灯牌了吗？"}],replies:[{label:"我昨天没去过",type:"质疑",att:3,push:1,anomaly:1,kw:"昨天"},{label:"可能去过",type:"安抚",att:1,push:0},{label:"……",type:"忽视",att:0,push:0}]}
     ],
     sangyeon:[
-      {id:"syd5b",phase:2,minDay:5,lines:[{from:"them",text:"名单改到最后一版了。一共十一行。"},{from:"them",text:"第十行以后我没再数。数到底会少一个人。没数完的时候，就还都在。"}],replies:[{label:"第十一行是谁",type:"追问",att:3,push:1,anomaly:1,kw:"十一行"},{label:"别数了",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]}
+      {id:"syd5b",phase:2,minDay:5,lines:[{from:"them",text:"登记簿第十件失物的物品栏，今天填上了。"},{from:"them",text:"手机，一部，已归还。拾得人签名那一栏，我没有看。"},{from:"them",text:"我想，还是等你自己决定吧。"}],replies:[{label:"翻到会怎样",type:"追问",att:3,push:1,anomaly:1,kw:"已归还"},{label:"我不翻",type:"安抚",att:2,push:0},{label:"……",type:"忽视",att:0,push:0}]}
     ],
     juyeon:[
-      {id:"jyd5b",phase:2,minDay:5,lines:[{from:"them",text:"木马今晚转最后一圈。我在这里守着空座。"},{from:"them",text:"位置守得住。坐上去的人守不住。你出去以后，替我看一眼外面的木马——转不转。"}],replies:[{label:"我替你看",type:"安抚",att:3,push:0},{label:"空座在等谁",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}]}
+      {id:"jyd5b",phase:2,minDay:5,lines:[{from:"them",text:"木马今晚转最后一圈。我在这里守着空座。"},{from:"them",text:"你出去以后，替我看一眼外面的木马。看看它还转不转。"}],replies:[{label:"我替你看",type:"安抚",att:3,push:0},{label:"空座在等谁",type:"追问",att:3,push:1,anomaly:1},{label:"……",type:"忽视",att:0,push:0}]}
     ],
     kevin:[
       {id:"kvd5b",phase:2,minDay:5,lines:[{from:"them",text:"信写完了。落款空着，你回来我再签。"},{from:"them",text:"副歌我留了半句没唱。这里的东西都喜欢完整。这半句是我的，我带出去。"}],replies:[{label:"我等你的落款",type:"安抚",att:3,push:0},{label:"半句唱什么",type:"追问",att:2,push:1},{label:"……",type:"忽视",att:0,push:0}]}
     ],
     eric:[
-      {id:"erd5",phase:2,minDay:5,lines:[{from:"them",text:"(名字)！！排队的事查清楚了！！我们入园那天，根本没有排队！！"},{from:"them",text:"那明天按什么顺序出去？……算了。按谁最舍不得的顺序。那我肯定第一个，你别跟我抢。"}],replies:[{label:"不跟你抢",type:"安抚",att:3,push:0},{label:"为什么没排队",type:"追问",att:3,push:1,anomaly:1,kw:"入园顺序"},{label:"……",type:"忽视",att:0,push:0}]}
+      {id:"erd5",phase:2,minDay:5,lines:[{from:"them",text:"(名字)！！我哥那边我问清楚了！！我们入园那天根本没有排队！！"},{from:"them",text:"所以我也不知道明天出去的时候该按什么顺序。"},{from:"them",text:"算了，我第一个走。你跟在我后面，不许走丢。"}],replies:[{label:"不跟你抢",type:"安抚",att:3,push:0},{label:"为什么没排队",type:"追问",att:3,push:1,anomaly:1,kw:"入园顺序"},{label:"……",type:"忽视",att:0,push:0}]}
     ]
   };
   Object.keys(ADD2).forEach(function(k){
@@ -8303,12 +8307,33 @@ function day2SceneHtml(zid){
       S.flags.d2BackScene=1;
       return `<div class="card" style="border-left:3px solid var(--crimson)"><span class="npc-chip">第二天 · 后台</span><p style="margin:6px 0 0;line-height:1.8;font-size:13px">后台通道比外面安静许多，墙上的行程表还贴在原来的位置。你走近以后，才发现最后一天的名单上有一处被擦掉了，纸面留下了浅浅的痕迹，像是有人反复用橡皮擦过同一个地方。<br><br>你试着从侧面辨认，仍然看不出原本写着什么。手机在这时亮了一下，尚渊发来了消息。</p></div>`;
     }
+    if(S.day>=4&&zid==="night"&&!S.flags.d4NightScene){
+      S.flags.d4NightScene=1;
+      return `<div class="card" style="border-left:3px solid var(--crimson)"><span class="npc-chip">第四天 · 夜间</span><p style="margin:6px 0 0;line-height:1.8;font-size:13px">手机再次亮起。隐藏文件夹里多出了一份新文件。<br><br>标题是：给下一个捡到它的人。<br><br>你没有立刻点开。这时，聊天列表里有一个人发来了消息，只有短短一句：今天别太晚睡。明天，我们把剩下的话说完。</p></div>`;
+    }
+    if(S.day>=4&&!S.flags.d4DuskScene&&(S.hour||0)>=17){
+      S.flags.d4DuskScene=1;
+      return `<div class="card" style="border-left:3px solid var(--crimson)"><span class="npc-chip">第四天 · 傍晚</span><p style="margin:6px 0 0;line-height:1.8;font-size:13px">天色暗下来，你开始翻看前三天的备忘录。那些曾经被你标记为异常的内容，逐渐连在了一起。照片里的空位、重复出现的消息、被撕掉的排班表，还有那几个始终没有说清楚的人。<br><br>你发现自己漏掉了一个问题。这三天里，你一直在确认他们有没有说谎。可你从来没有认真想过：他们究竟是在向你隐瞒什么，又是在替谁隐瞒？</p></div>`;
+    }
+    if(S.day===3&&zid==="night"&&!S.flags.d3NightScene){
+      S.flags.d3NightScene=1;
+      return `<div class="card" style="border-left:3px solid var(--crimson)"><span class="npc-chip">第三天 · 夜场</span><p style="margin:6px 0 0;line-height:1.8;font-size:13px">白天听见的音乐，到了夜场仍然没有停。广播里放着昨天那首歌。你记得它在副歌处断过一次，今天却从头到尾都很完整。<br><br>工作人员从你身边经过，手里拿着一张排班表。第三天的那一栏空着。</p></div>`;
+    }
+    if(S.day===3&&zid==="night"&&!S.flags.d3NightAnomaly){
+      S.flags.d3NightAnomaly=1;
+      return `<div class="card" style="border-left:3px solid var(--crimson)"><span class="npc-chip">第三天 · 夜间异常</span><p style="margin:6px 0 0;line-height:1.8;font-size:13px">手机震动了一下。<br><br>你刚刚读过的消息重新变成了未读。时间比屏幕右上角显示的时间早了十分钟。</p></div>`;
+    }
     return "";
   }catch(e){ return ""; }
 }
 function d2PhotoSceneHtml(pid){
   try{
-    if(pid!=="p7"||!S||S.flags.d2P7Scene||(S.day||1)<2) return "";
+    if(pid!=="p7"||!S) return "";
+    if((S.day||1)>=4&&!S.flags.d4P7Scene){
+      S.flags.d4P7Scene=1;
+      return `<div class="card"><span class="npc-chip">第四天 · 合影</span><p style="line-height:1.8;font-size:13px">你重新打开入园第一天拍下的那张合照。照片的颜色比记忆里淡了一些。你把照片放大，重新数了一遍。十个人。<br><br>你又数了一遍。这一次，照片中央多了一团影子。你盯着它看了很久，忽然想起前三天那些说法。有人说人齐了，有人说少了一个。他们说的似乎一直是同一件事。</p></div>`;
+    }
+    if(S.flags.d2P7Scene||(S.day||1)<2) return "";
     S.flags.d2P7Scene=1;
     return `<div class="card"><p style="line-height:1.8;font-size:13px">照片下面写着「全员」，画面里的成员站在熟悉的位置上，脸部却已经有些模糊。你试着从左往右数了一遍，又重新确认了一次，最后发现照片里似乎少了一个人的位置。<br><br>你把照片放大了一些，屏幕上的画面没有变得更清楚，反而让那个空缺显得更加明显。</p></div>`;
   }catch(e){ return ""; }

@@ -11805,7 +11805,7 @@ const CROOK_WHISPERS = {
     {t:"我数过你在园里待了几个小时。那个数字比我来得还早。", k:"几个小时"},
   ],
   eric: [
-    {t:"喂！你在哪一盏灯下面？我找不到你。", k:"灯"},
+    {t:"(名字)！你在哪一盏灯下面？我找不到你。", k:"灯"},
     {t:"我一盏一盏找过去的。第七盏下面站着一个人，穿你的衣服。", k:"第七盏"},
     {t:"他不动。我叫他他也不回头。我就没再叫第二声。", k:"不回头"},
     {t:"ㅠㅠ你别怕。我在。我一直在。", k:"我在"},
@@ -11813,7 +11813,7 @@ const CROOK_WHISPERS = {
     {t:"我把手机灯关了。黑暗里有人跟我一起数「一、二、三」。", k:"黑暗"},
     {t:"我小时候怕黑。现在不怕了。现在我更怕亮着的地方。", k:"亮"},
     {t:"如果明天你看见我站在灯下不动，别喊我。喊了我就得跟你走。", k:"别喊"},
-    {t:"喂，我把灯全打开了。你数一下有几盏。数完别告诉我数字。", k:"全开"},
+    {t:"(名字)，我把灯全打开了。你数一下有几盏。数完别告诉我数字。", k:"全开"},
   ],
   new: [
     {t:"今晚的风是从园子里往外吹的。这不正常。", k:"风"},
@@ -11878,7 +11878,7 @@ function crookWhisper(cid){
   S.flags.crookIdx[cid]=i+1;
   if(!S.flags.crookLast) S.flags.crookLast={};
   S.flags.crookLast[cid]=w.t;
-  const line={from:"them",text:w.t,type:"text",t:realTime(),read:false};
+  const line={from:"them",text:(w.t&&w.t.indexOf("(名字)")>=0)?w.t.replace("(名字)",S.playerName||"……"):w.t,type:"text",t:realTime(),read:false};
   if(!S.chatLog[cid]) S.chatLog[cid]=[];
   S.chatLog[cid].push(line);
   S.unread[cid]=(S.unread[cid]||0)+1;
